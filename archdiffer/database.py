@@ -83,3 +83,24 @@ class DatabaseConnection(object):
             (id_diff, data, diff_type, diff)
         )
         self.con.commit()
+
+    def get_requests(self, module):
+        """Gets all unprocessed records for given module.
+        @param module: module name
+        @return list of records
+        """
+        self.cur.execute(
+            "SELECT * FROM comparisons WHERE module=? AND state=?",
+            (module, 'new',)
+        )
+        return self.cur.fetchall()
+
+    def set_state(self, id_comp, state):
+        """Sets state of record with given id.
+        @param id_comp: id
+        @param state: state to be set
+        """
+        self.cur.execute(
+            "UPDATE comparisons SET state=? WHERE id=?", (state, id_comp)
+        )
+        self.con.commit()
