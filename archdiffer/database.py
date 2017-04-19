@@ -104,3 +104,16 @@ class DatabaseConnection(object):
             "UPDATE comparisons SET state=? WHERE id=?", (state, id_comp)
         )
         self.con.commit()
+
+    def add_request(self, module, data1, data2):
+        """Adds new record into comparisons.
+        @param module: module name
+        @param data1: name of first archive
+        @param data2: name of second archive
+        """        
+        t = time.time()
+        self.cur.execute(
+            "INSERT INTO comparisons VALUES(?, ?, ?, ?, ?, ?)",
+            (None, t, module, data1, data2, 'new')
+        )
+        self.con.commit()

@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+    <form action="{{ url_for('zipdiff.add_entry') }}" method=post class=add-entry>
+      <dl>
+        <dt>First zip:
+        <dd><input type=text size=30 name=zip1>
+        <dt>Second zip:
+        <dd><input type=text size=30 name=zip2>
+        <dd><input type=submit value=Submit>
+      </dl>
+    </form>
+  {% endif %}
+  <ul class=comparisons>
+  {% for comp in comparisons %}
+    <li>{{ 'ID: ' }}{{ comp.id }}</br>
+	{{ 'Time: ' }}{{ comp.time }}</br>
+	{{ 'Module: ' }}{{ comp.module }}</br>
+	{{ 'Data 1: ' }}{{ comp.data1 }}</br>
+	{{ 'Data 2: ' }}{{ comp.data2 }}</br>
+	{{ 'State: ' }}{{ comp.state }}</br>
+  {% else %}
+    <li><em>Unbelievable.  No entries here so far</em>
+  {% endfor %}
+  </ul>
+{% endblock %}
