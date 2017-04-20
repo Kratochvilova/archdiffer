@@ -6,7 +6,6 @@ Created on Tue Apr 18 12:09:08 2017
 """
 
 from flask import Blueprint, render_template, abort, request, session, g, flash, redirect, url_for
-from jinja2 import TemplateNotFound
 from archdiffer import database
 
 MODULE = 'zip'
@@ -16,8 +15,10 @@ bp_zipdiff.config = {}
 
 @bp_zipdiff.record
 def record_params(setup_state):
-  app = setup_state.app
-  bp_zipdiff.config = dict([(key,value) for (key,value) in app.config.items()])
+    """Overwriting record_params only to keep app.config.
+    """
+    app = setup_state.app
+    bp_zipdiff.config = dict([(key,value) for (key,value) in app.config.items()])
 
 @bp_zipdiff.before_request
 def before_request():
@@ -35,7 +36,6 @@ def show_comparisons():
     dicts = []
     for row in rows:
         dicts.append(g.db.parse_row_comparisons(row))
-    print(dicts)
     return render_template('show_comparisons.html', comparisons=dicts)
 
 @bp_zipdiff.route('/add', methods=['POST'])

@@ -12,15 +12,27 @@
     </form>
   {% endif %}
   <ul class=comparisons>
-  {% for comp in comparisons %}
-    <li>{{ 'ID: ' }}{{ comp.id }}</br>
-	{{ 'Time: ' }}{{ comp.time }}</br>
-	{{ 'Module: ' }}{{ comp.module }}</br>
-	{{ 'Data 1: ' }}{{ comp.data1 }}</br>
-	{{ 'Data 2: ' }}{{ comp.data2 }}</br>
-	{{ 'State: ' }}{{ comp.state }}</br>
-  {% else %}
+	<table>
+	<tr>
+		<th>ID</th>
+		<th>Time</th>
+		<th>Module</th>
+		<th>Data 1</th>
+		<th>Data 2</th>
+		<th>State</th>
+	</tr>
+	{% for comp in comparisons %}
+	<tr>
+		<td><a href="{{ url_for('zipdiff.login') }}">{{ comp.id }}</a></td>
+		<td>{{ comp.time }}</td>
+		<td>{{ comp.module }}</td>
+		<td>{{ comp.data1 }}</td>
+		<td>{{ comp.data2 }}</td>
+		<td>{{ comp.state }}</td>
+	</tr>
+	{% else %}
     <li><em>Unbelievable.  No entries here so far</em>
-  {% endfor %}
+	{% endfor %}
+	</table>
   </ul>
 {% endblock %}
