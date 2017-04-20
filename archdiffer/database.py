@@ -39,7 +39,7 @@ class DatabaseConnection(object):
 
         row_dict = {
             'id': row[0],
-            'time': row[1],
+            'time': time.strftime("%d %b %Y %H:%M:%S", time.localtime(row[1])),
             'module': row[2],
             'data1': row[3],
             'data2': row[4],
