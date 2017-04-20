@@ -23,7 +23,7 @@
 	</tr>
 	{% for comp in comparisons %}
 	<tr>
-		<td><a href="{{ url_for('zipdiff.login') }}">{{ comp.id }}</a></td>
+		<td><a href="{{ url_for('zipdiff.show_differences', comp_id=comp.id) }}">{{ comp.id }}</a></td>
 		<td>{{ comp.time }}</td>
 		<td>{{ comp.module }}</td>
 		<td>{{ comp.data1 }}</td>

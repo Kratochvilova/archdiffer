@@ -38,6 +38,16 @@ def show_comparisons():
         dicts.append(g.db.parse_row_comparisons(row))
     return render_template('show_comparisons.html', comparisons=dicts)
 
+@bp_zipdiff.route('/comparison/<int:comp_id>')
+def show_differences(comp_id):
+    rows = g.db.get_table('differences')
+    dicts = []
+    for row in rows:
+        diff_dict = g.db.parse_row_differences(row)
+        if diff_dict['id'] == comp_id:
+            dicts.append(diff_dict)
+    return render_template('show_differences.html', differences=dicts)
+
 @bp_zipdiff.route('/add', methods=['POST'])
 def add_entry():
     if not session.get('logged_in'):

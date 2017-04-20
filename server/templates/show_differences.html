@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block body %}
+  <ul class=differences>
+	<table>
+	<tr>
+		<th>ID</th>
+		<th>Data</th>
+		<th>Type</th>
+		<th>Diff</th>
+	</tr>
+	{% for diff in differences %}
+	<tr>
+		<td>{{ diff.id }}</td>
+		<td>{{ diff.data }}</td>
+		<td>{{ diff.diff_type }}</td>
+		<td>{{ diff.diff }}</td>
+	</tr>
+	{% else %}
+    <li><em>Unbelievable.  No entries here so far</em>
+	{% endfor %}
+	</table>
+  </ul>
+  <a href="{{ url_for('zipdiff.show_comparisons') }}">Go back</a>
+{% endblock %}
