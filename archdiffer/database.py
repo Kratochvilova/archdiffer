@@ -15,12 +15,19 @@ class DatabaseConnection(object):
         self.con = sqlite3.connect(database_name)
         self.cur = self.con.cursor()
 
-    def get_table(self, table):
+    def get_table(self, table, module=None):
         """Gets all records from a table.
         @param table: table name
         @returns tuple of tuples
         """
-        self.cur.execute('SELECT * FROM %s' % table)
+        if not table.isalnum():
+            return []
+        if module is None:
+            self.cur.execute('SELECT * FROM %s' % table)
+        else:
+            self.cur.execute(
+                'SELECT * FROM %s WHERE module=?' % table, (module,)
+            )
         return self.cur.fetchall()
 
     def print_all(self):

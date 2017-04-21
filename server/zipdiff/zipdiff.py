@@ -32,7 +32,7 @@ def teardown_request(exception):
 
 @bp_zipdiff.route('/')
 def show_comparisons():
-    rows = g.db.get_table('comparisons')
+    rows = g.db.get_table('comparisons', MODULE)
     dicts = []
     for row in rows:
         dicts.append(g.db.parse_row_comparisons(row))
