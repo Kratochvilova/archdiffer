@@ -6,7 +6,7 @@ Created on Tue Apr 18 12:09:08 2017
 """
 
 from flask import Blueprint, render_template, abort, request, session, g, flash, redirect, url_for
-from archdiffer import database
+from ... import database
 
 MODULE = 'zip'
 

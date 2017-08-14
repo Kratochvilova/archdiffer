@@ -6,8 +6,7 @@ Created on Tue Jul 18 14:01:49 2017
 """
 
 from .repository import repository
-# TODO: correctly import database functions
-from ..archdiffer import database
+from .. import database
 from .config import DATABASE
 
 def resolve_type(compare_type, pkg1, pkg2):
