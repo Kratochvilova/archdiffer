@@ -124,3 +124,48 @@ class DatabaseConnection(object):
             (None, t, module, data1, data2, 'new')
         )
         self.con.commit()
+
+
+
+
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy.orm import relationship
+
+Base = declarative_base()
+
+class Comparison(Base):
+    __tablename__ = 'comparisons'
+
+    comparison_id = Column(Integer, primary_key=True, nullable=False)
+    time = Column(DateTime, default=func.now())
+    module = Column(String, nullable=False)
+    pkg1 = Column(String, nullable=False)
+    pkg2 = Column(String, nullable=False)
+    state = Column(String, nullable=False)
+
+    differences = relationship("Difference", back_populates="comparison")
+    
+    def __init__(self, module, pkg1, pkg2, state):
+        # generate id and time
+        pass
+
+    def __repr__(self):
+        return "<Comparison(id_comparison='%s', time='%s', module='%s', pkg1='%s', pkg2='%s', state='%s')>" % (
+        self.comparison_id, self.time, self.module, self.pkg1, self.pkg2, self.state)
+
+class Difference(Base):
+    __tablename__ = 'differences'
+
+    comparison_id = Column(Integer, ForeignKey('comparisons.comparison_id'), primary_key=True, nullable=False)
+    pkg =  Column(String, primary_key=True, nullable=False)
+    diff_type = Column(String, nullable=False)
+    diff = Column(String, nullable=False)
+    
+    comparison = relationship("Comparison", back_populates="differences")
+
+    def __repr__(self):
+        return "<Difference(comparison_id='%s', pkg='%s', diff_type='%s', diff='%s')>" % (
+        self.comparison_id, self.pkg, self.diff_type, self.diff)
+
+
