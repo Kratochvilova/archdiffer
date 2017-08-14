@@ -6,26 +6,11 @@ Created on Tue Apr 18 11:58:24 2017
 """
 
 from celery import Celery
-import os
-from .config import PLUGINS_PATH
+from .resolve_type import resolve_type 
 
-plugins = []
-for name in os.listdir(PLUGINS_PATH):
-    key = name.rsplit('.', 1)[0]
-    plugins.append('worker.plugins.' + key)
-    
-app = Celery('foo', broker='pyamqp://localhost')
+celery_app = Celery('backend', broker='pyamqp://localhost')
 
-@app.task(name='compare')
-def compare(x, y):
-    print("compare")
-    return x - y
-
-#from worker.zipdiff import zipdiff
-#from archdiffer import database
-#from worker.config import DATABASE
-
-#def run():
-#    db = database.DatabaseConnection(DATABASE)
-#    zipdiff.process_requests(db)
-#    db.print_all()
+@celery_app.task(name='compare')
+def compare(compare_type, pkg1, pkg2):
+    result = resolve_type(compare_type, pkg1, pkg2)
+    print(result)

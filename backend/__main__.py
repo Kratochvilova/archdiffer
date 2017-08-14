@@ -5,6 +5,6 @@ Created on Mon Jul 17 21:49:00 2017
 @author: pavla
 """
 
-from . import app
+from . import celery_app
 
-app.start()
+celery_app.start()

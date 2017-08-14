@@ -7,7 +7,7 @@ Created on Thu Apr 13 10:44:17 2017
 
 import zipfile
 import os.path
-from worker import config
+from .. import config
 
 MODULE = 'zip'
 
@@ -58,3 +58,7 @@ def process_requests(db):
     for req in requests:
         req_dict = db.parse_row_comparisons(req)
         create_log(db, req_dict)
+
+# TODO: compare function
+def compare(db, pkg1, pkg2):
+    return pkg1
