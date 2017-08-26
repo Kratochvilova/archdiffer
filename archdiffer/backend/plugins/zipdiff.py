@@ -9,6 +9,8 @@ import zipfile
 import os.path
 from .. import config
 
+from ... import database
+
 MODULE = 'zip'
 
 def diff_lists(list1, list2):
@@ -37,28 +39,24 @@ def diff_zips(name1, name2):
     zip2.close()
     return result
 
-def create_log(db, req_dict):
-    """Creates log for one comparisons record,
-    and sets state of the record as done.
-    @param db: DatabaseConnection
-    @param req_dict: dict for the comparisons record
-    """
-    only_zip1, only_zip2 = diff_zips(req_dict['data1'], req_dict['data2'])
+def compare(pkg1, pkg2):
+    session = database.Session()
+    comparison = database.Comparison(
+        module='zip', pkg1=pkg1, pkg2=pkg2, state='new'
+    )
+    session.add(comparison)
+    session.commit()
+    only_zip1, only_zip2 = diff_zips(pkg1, pkg2)
     for item in only_zip1:
-        db.insert_row_differences(req_dict['id'], req_dict['data1'], '+', item)
+        difference = database.Difference(
+            id_comp=comparison.id, pkg=pkg1, diff_type='+', diff=item
+        )
+        session.add(difference)
     for item in only_zip2:
-        db.insert_row_differences(req_dict['id'], req_dict['data2'], '+', item)
-    db.set_state(req_dict['id'], 'done')
-
-def process_requests(db):
-    """Gets all new requests for zip module, and processes them.
-    @param db: DatabaseConnection
-    """
-    requests = db.get_requests(MODULE)
-    for req in requests:
-        req_dict = db.parse_row_comparisons(req)
-        create_log(db, req_dict)
-
-# TODO: compare function
-def compare(db, pkg1, pkg2):
-    return pkg1
+        difference = database.Difference(
+            id_comp=comparison.id, pkg=pkg2, diff_type='+', diff=item
+        )
+        session.add(difference)
+    comparison.state = 'done'
+    session.add(comparison)
+    session.commit()

@@ -4,6 +4,7 @@
 	<table>
 	<tr>
 		<th>ID</th>
+		<th>Comparison</th>
 		<th>Data</th>
 		<th>Type</th>
 		<th>Diff</th>
@@ -11,7 +12,8 @@
 	{% for diff in differences %}
 	<tr>
 		<td>{{ diff.id }}</td>
-		<td>{{ diff.data }}</td>
+		<td>{{ diff.id_comp }}</td>
+		<td>{{ diff.pkg }}</td>
 		<td>{{ diff.diff_type }}</td>
 		<td>{{ diff.diff }}</td>
 	</tr>

@@ -6,11 +6,10 @@ Created on Tue Apr 18 11:58:24 2017
 """
 
 from celery import Celery
-from .resolve_type import resolve_type 
+from .resolve_type import resolve_type
 
 celery_app = Celery('backend', broker='pyamqp://localhost')
 
 @celery_app.task(name='compare')
 def compare(compare_type, pkg1, pkg2):
-    result = resolve_type(compare_type, pkg1, pkg2)
-    print(result)
+    resolve_type(compare_type, pkg1, pkg2)

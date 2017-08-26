@@ -17,8 +17,8 @@
 		<th>ID</th>
 		<th>Time</th>
 		<th>Module</th>
-		<th>Data 1</th>
-		<th>Data 2</th>
+		<th>Pkg 1</th>
+		<th>Pkg 2</th>
 		<th>State</th>
 	</tr>
 	{% for comp in comparisons %}
@@ -26,8 +26,8 @@
 		<td><a href="{{ url_for('zipdiff.show_differences', comp_id=comp.id) }}">{{ comp.id }}</a></td>
 		<td>{{ comp.time }}</td>
 		<td>{{ comp.module }}</td>
-		<td>{{ comp.data1 }}</td>
-		<td>{{ comp.data2 }}</td>
+		<td>{{ comp.pkg1 }}</td>
+		<td>{{ comp.pkg2 }}</td>
 		<td>{{ comp.state }}</td>
 	</tr>
 	{% else %}
