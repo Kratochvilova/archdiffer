@@ -7,8 +7,7 @@ Created on Thu Apr 13 10:44:17 2017
 
 import zipfile
 import os.path
-from .. import config
-
+from ...backend import config
 from ... import database
 
 MODULE = 'zip'
