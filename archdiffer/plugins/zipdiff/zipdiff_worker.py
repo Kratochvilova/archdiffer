@@ -7,7 +7,7 @@ Created on Thu Apr 13 10:44:17 2017
 
 import zipfile
 import os.path
-from ...backend import config
+from ...config import config
 from ... import database
 
 MODULE = 'zip'
@@ -29,8 +29,8 @@ def diff_zips(name1, name2):
     @param name2: name of the second zip
     @return (elements only in first zip, elements only in second zip)
     """
-    path1 = os.path.join(config.EXAMPLES_PATH, name1)
-    path2 = os.path.join(config.EXAMPLES_PATH, name2)
+    path1 = os.path.join(config['workers']['EXAMPLES_PATH'], name1)
+    path2 = os.path.join(config['workers']['EXAMPLES_PATH'], name2)
     zip1 = zipfile.ZipFile(path1, 'r')
     zip2 = zipfile.ZipFile(path2, 'r')
     result = diff_lists(zip1.namelist(), zip2.namelist())
