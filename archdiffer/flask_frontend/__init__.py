@@ -17,3 +17,5 @@ app.config.from_object(FlaskConfig)
 
 for key, blueprint in blueprints.items():
     app.register_blueprint(blueprint, url_prefix='/'+key)
+
+from . import login_tasks
