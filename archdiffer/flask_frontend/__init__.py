@@ -6,10 +6,10 @@ Created on Tue Apr 18 11:58:24 2017
 """
 
 from flask import Flask
-from ..repository import import_plugins, blueprints
+from ..repository import import_flask_frontends, blueprints
 from .config import FlaskConfig
 
-import_plugins()
+import_flask_frontends()
 
 app = Flask(__name__)
 

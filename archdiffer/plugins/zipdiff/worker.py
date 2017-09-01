@@ -9,6 +9,7 @@ import zipfile
 import os.path
 from ...config import config
 from ... import database
+from ...backend.celery_app import celery_app
 
 MODULE = 'zip'
 
@@ -38,6 +39,7 @@ def diff_zips(name1, name2):
     zip2.close()
     return result
 
+@celery_app.task(name='zipdiff.compare')
 def compare(pkg1, pkg2):
     session = database.Session()
     comparison = database.Comparison(
