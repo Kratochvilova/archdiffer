@@ -6,6 +6,6 @@ Created on Tue Apr 18 11:58:24 2017
 """
 
 from .celery_app import celery_app
-from ..repository import import_workers
+from ..repository import load_plugins_workers
 
-import_workers()
+load_plugins_workers()
