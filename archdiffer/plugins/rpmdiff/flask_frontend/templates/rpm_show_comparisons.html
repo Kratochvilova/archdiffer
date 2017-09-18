@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+    <form action="{{ url_for('rpmdiff.add_entry') }}" method=post class=add-entry>
+      <dl>
+        <dt>First rpm:
+        <dd><input type=text size=30 name=name1>
+        <dt>Arch:
+        <dd><input type=text size=30 name=arch1>
+        <dt>Epoch:
+        <dd><input type=text size=30 name=epoch1>
+        <dt>Version:
+        <dd><input type=text size=30 name=version1>
+        <dt>Release:
+        <dd><input type=text size=30 name=release1>
+        <dt>Repository:
+        <dd><input type=text size=30 name=repo1>
+        <dt>Second rpm:
+        <dd><input type=text size=30 name=name2>
+        <dt>Arch:
+        <dd><input type=text size=30 name=arch2>
+        <dt>Epoch:
+        <dd><input type=text size=30 name=epoch2>
+        <dt>Version:
+        <dd><input type=text size=30 name=version2>
+        <dt>Release:
+        <dd><input type=text size=30 name=release2>
+        <dt>Repository:
+        <dd><input type=text size=30 name=repo2>
+        <dd><input type=submit value=Submit>
+      </dl>
+    </form>
+  {% endif %}
+  <ul class=comparisons>
+	<table>
+	<tr>
+		<th>ID</th>
+		<th>Time</th>
+		<th>Module</th>
+		<th>Pkg 1</th>
+		<th>Pkg 2</th>
+		<th>State</th>
+	</tr>
+	{% for comp in comparisons %}
+	<tr>
+		<td><a href="{{ url_for('rpmdiff.show_differences', comp_id=comp.id) }}">{{ comp.id }}</a></td>
+		<td>{{ comp.time }}</td>
+		<td>{{ comp.module }}</td>
+		<td>{{ comp.pkg1 }}</td>
+		<td>{{ comp.pkg2 }}</td>
+		<td>{{ comp.state }}</td>
+	</tr>
+	{% else %}
+    <li><em>Unbelievable.  No entries here so far</em>
+	{% endfor %}
+	</table>
+  </ul>
+{% endblock %}
