@@ -58,6 +58,16 @@ def show_differences(id_comp):
         dicts.append(instance.get_dict())
     return render_template('rpm_show_differences.html', differences=dicts)
 
+@bp.route('/package/<int:pkg_id>')
+def show_package(pkg_id):
+    pkg = g.session.query(rpm_db_models.RPMPackage).filter_by(id=pkg_id).one()
+    return render_template('rpm_show_package.html', pkg=pkg.get_dict())
+
+@bp.route('/repository/<int:repo_id>')
+def show_repository(repo_id):
+    repo = g.session.query(rpm_db_models.RPMRepository).filter_by(id=repo_id).one()
+    return render_template('rpm_show_repository.html', repo=repo.get_dict())
+
 @bp.route('/add', methods=['POST'])
 def add_entry():
     if not session.get('logged_in'):

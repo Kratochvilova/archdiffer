@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block body %}
+  <ul class=repository>
+	<table>
+	<tr>
+		<th>ID</th>
+		<th>Path</th>
+	</tr>
+	<tr>
+		<td>{{ repo.id }}</a></td>
+		<td>{{ repo.path }}</td>
+	</tr>
+	</table>
+  </ul>
+{% endblock %}

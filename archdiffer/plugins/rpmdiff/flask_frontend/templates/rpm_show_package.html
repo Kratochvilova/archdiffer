@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block body %}
+  <ul class=package>
+	<table>
+	<tr>
+		<th>ID</th>
+		<th>Name</th>
+		<th>Epoch</th>
+		<th>Version</th>
+		<th>Release</th>
+		<th>Repo ID</th>
+	</tr>
+	<tr>
+		<td>{{ pkg.id }}</a></td>
+		<td>{{ pkg.name }}</td>
+		<td>{{ pkg.epoch }}</td>
+		<td>{{ pkg.version }}</td>
+		<td>{{ pkg.release }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=pkg.id_repo) }}">{{ pkg.id_repo }}</td>
+	</tr>
+	</table>
+  </ul>
+{% endblock %}
