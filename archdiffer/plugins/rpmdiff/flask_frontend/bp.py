@@ -9,6 +9,7 @@ from flask import (Blueprint, render_template, abort, request, session, g,
 flash, redirect, url_for)
 from celery import Celery
 from .... import database
+from .. import rpm_db_models
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
@@ -28,7 +29,7 @@ def record_params(setup_state):
 
 @bp.before_request
 def before_request():
-    g.session = database.Session()
+    g.session = database.session()
 
 @bp.teardown_request
 def teardown_request(exception):
@@ -44,16 +45,16 @@ def teardown_request(exception):
 @bp.route('/')
 def show_comparisons():
     dicts = []
-    comps = g.session.query(database.RPMComparison)
-    for instance in comps.order_by(database.RPMComparison.id):
+    comps = g.session.query(rpm_db_models.RPMComparison)
+    for instance in comps.order_by(rpm_db_models.RPMComparison.id_comp):
         dicts.append(instance.get_dict())
     return render_template('rpm_show_comparisons.html', comparisons=dicts)
 
-@bp.route('/comparison/<int:comp_id>')
-def show_differences(comp_id):
+@bp.route('/comparison/<int:id_comp>')
+def show_differences(id_comp):
     dicts = []
-    diffs = g.session.query(database.RPMDifference).filter_by(id_comp=comp_id)
-    for instance in diffs.order_by(database.RPMDifference.id):
+    diffs = g.session.query(rpm_db_models.RPMDifference).filter_by(id_comp=id_comp)
+    for instance in diffs.order_by(rpm_db_models.RPMDifference.id_comp):
         dicts.append(instance.get_dict())
     return render_template('rpm_show_differences.html', differences=dicts)
 

@@ -36,18 +36,16 @@
 	<tr>
 		<th>ID</th>
 		<th>Time</th>
-		<th>Module</th>
 		<th>Pkg 1</th>
 		<th>Pkg 2</th>
 		<th>State</th>
 	</tr>
 	{% for comp in comparisons %}
 	<tr>
-		<td><a href="{{ url_for('rpmdiff.show_differences', comp_id=comp.id) }}">{{ comp.id }}</a></td>
+		<td><a href="{{ url_for('rpmdiff.show_differences', id_comp=comp.id_comp) }}">{{ comp.id_comp }}</a></td>
 		<td>{{ comp.time }}</td>
-		<td>{{ comp.module }}</td>
-		<td>{{ comp.pkg1 }}</td>
-		<td>{{ comp.pkg2 }}</td>
+		<td>{{ comp.pkg1_id }}</td>
+		<td>{{ comp.pkg2_id }}</td>
 		<td>{{ comp.state }}</td>
 	</tr>
 	{% else %}

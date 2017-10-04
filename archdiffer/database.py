@@ -6,10 +6,9 @@ Created on Wed Apr  5 19:32:41 2017
 """
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session
 from .config import config
 
 Base = declarative_base()
@@ -18,156 +17,32 @@ class Comparison(Base):
     __tablename__ = 'comparisons'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    # time is set when commited
-    time = Column(DateTime, default=func.now())
     module = Column(String, nullable=False)
-    pkg1 = Column(String, nullable=False)
-    pkg2 = Column(String, nullable=False)
-    state = Column(String, nullable=False)
-    
-    differences = relationship("Difference", back_populates="comparison")
 
     def __repr__(self):
-        return "<Comparison(id='%s', time='%s', module='%s', pkg1='%s', pkg2='%s', state='%s')>" % (
-        self.id, self.time, self.module, self.pkg1, self.pkg2, self.state)
+        return "<Comparison(id='%s', module='%s')>" % (self.id, self.module)
 
-    def get_dict(self):
-        comparison_dict = {
-            'id':self.id,
-            'time':self.time,
-            'module':self.module,
-            'pkg1':self.pkg1,
-            'pkg2':self.pkg2,
-            'state':self.state
-        }
-        return comparison_dict
+class SessionSingleton():
+    engine = None
 
-class Difference(Base):
-    __tablename__ = 'differences'
+    @staticmethod
+    def init():
+        if SessionSingleton.engine is None:
+            SessionSingleton.engine = create_engine(
+                config['common']['DATABASE_URL'], echo=True
+            )
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    id_comp = Column(Integer, ForeignKey('comparisons.id'), nullable=False)
-    pkg =  Column(String, nullable=False)
-    diff_type = Column(String, nullable=False)
-    diff = Column(String, nullable=False)
+    @staticmethod
+    def get_engine():
+        SessionSingleton.init()
+        return SessionSingleton.engine
 
-    comparison = relationship("Comparison", back_populates="differences")
+    @staticmethod
+    def get_session(*args, **kwargs):
+        return Session(*args, bind=SessionSingleton.get_engine(), **kwargs)
 
-    def __repr__(self):
-        return "<Difference(id='%s', pkg='%s', diff_type='%s', diff='%s')>" % (
-        self.id_comp, self.pkg, self.diff_type, self.diff)
+def engine():
+    return SessionSingleton.get_engine()
 
-    def get_dict(self):
-        difference_dict = {
-            'id':self.id,
-            'id_comp':self.id_comp,
-            'pkg':self.pkg,
-            'diff_type':self.diff_type,
-            'diff':self.diff
-        }
-        return difference_dict
-
-class RPMPackage(Base):
-    __tablename__ = 'rpm_packages'
-    
-    id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
-    arch = Column(String, nullable=False)
-    epoch = Column(String, nullable=False)
-    version = Column(String, nullable=False)
-    release = Column(String, nullable=False)
-    repository = Column(String, nullable=False)
-
-    comparisons1 = relationship(
-        "RPMComparison",
-        foreign_keys='RPMComparison.pkg1_id',
-        back_populates="rpm_package1"
-    )
-    comparisons2 = relationship(
-        "RPMComparison",
-        foreign_keys='RPMComparison.pkg2_id',
-        back_populates="rpm_package2"
-    )
-    
-    def __repr__(self):
-        return "<Package(id='%s', name='%s', arch='%s', epoch='%s', version='%s', release='%s', repository='%s')>" % (
-        self.id, self.name, self.arch, self.epoch, self.version, self.release, self.repository)
-
-    def get_dict(self):
-        package_dict = {
-            'id':self.id,
-            'name':self.name,
-            'arch':self.arch,
-            'epoch':self.epoch,
-            'version':self.version,
-            'release':self.release,
-            'repository':self.repository
-        }
-        return package_dict
-
-class RPMComparison(Base):
-    __tablename__ = 'rpm_comparisons'
-
-    id = Column(Integer, primary_key=True, nullable=False)
-    # time is set when commited
-    time = Column(DateTime, default=func.now())
-    module = Column(String, nullable=False)
-    pkg1_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
-    pkg2_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
-    state = Column(String, nullable=False)
-    
-    rpm_differences = relationship(
-        "RPMDifference", back_populates="rpm_comparison"
-    )
-    rpm_package1 = relationship(
-        "RPMPackage", foreign_keys=[pkg1_id], back_populates="comparisons1"
-    )
-    rpm_package2 = relationship(
-        "RPMPackage", foreign_keys=[pkg2_id], back_populates="comparisons2"
-    )
-    
-    def __repr__(self):
-        return "<Comparison(id='%s', time='%s', module='%s', pkg1_id='%s', pkg2_id='%s', state='%s')>" % (
-        self.id, self.time, self.module, self.pkg1_id, self.pkg2_id, self.state)
-
-    def get_dict(self):
-        comparison_dict = {
-            'id':self.id,
-            'time':self.time,
-            'module':self.module,
-            'pkg1_id':self.pkg1_id,
-            #'pkg2_id':self.pkg2_id,
-            'state':self.state
-        }
-        return comparison_dict
-
-class RPMDifference(Base):
-    __tablename__ = 'rpm_differences'
-
-    id = Column(Integer, primary_key=True, nullable=False)
-    id_comp = Column(Integer, ForeignKey('rpm_comparisons.id'), nullable=False)
-    pkg =  Column(String, nullable=False)
-    diff_type = Column(String, nullable=False)
-    diff = Column(String, nullable=False)
-
-    rpm_comparison = relationship(
-        "RPMComparison", back_populates="rpm_differences"
-    )
-
-    def __repr__(self):
-        return "<Difference(id='%s', pkg='%s', diff_type='%s', diff='%s')>" % (
-        self.id_comp, self.pkg, self.diff_type, self.diff)
-
-    def get_dict(self):
-        difference_dict = {
-            'id':self.id,
-            'id_comp':self.id_comp,
-            'pkg':self.pkg,
-            'diff_type':self.diff_type,
-            'diff':self.diff
-        }
-        return difference_dict
-
-engine = create_engine(config['common']['DATABASE_URL'], echo=True)
-Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
+def session(*args, **kwargs):
+    return SessionSingleton.get_session(*args, **kwargs)
