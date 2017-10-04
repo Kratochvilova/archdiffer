@@ -24,14 +24,25 @@ def rpm_filename(package):
 def update_status(status):
     pass
 
-def download_packages(name, arch, epoch, release, version, repo_path):
-    # Add repository
-    # TODO: Label as repo_id with id from the database
-    label = 'tmp_repo'
+def repository(session, repo_path):
+    rpm_repo = session.query(rpm_db_models.RPMRepository).filter_by(path=repo_path).one_or_none()
+    if rpm_repo is None:
+        rpm_repo = rpm_db_models.RPMRepository(path=repo_path)
+        session.add(rpm_repo)
+        session.commit()
+    return rpm_repo
+
+def download_packages(session, name, arch, epoch, release, version, repo_path):
     base = dnf.Base()
+
+    # Add repository
+    label = 'repo_%s' % repository(session, repo_path).id
     base.repos.add_new_repo(label, base.conf, baseurl=[repo_path])
     base.repos[label].enable()
-    base.repos[label].load()
+    try:
+        base.repos[label].load()
+    except:
+        return None
     base.fill_sack()
 
     # Query packages
@@ -61,51 +72,38 @@ def run_rpmdiff(pkg1, pkg2):
 
 @celery_app.task(name='rpmdiff.compare')
 def compare(pkg1, pkg2):
-    # TODO: Add repos to the database if not already there
+    session = database.session()
 
     # Download packages
     package1 = download_packages(
-        pkg1['name'], pkg1['arch'], pkg1['epoch'],
+        session, pkg1['name'], pkg1['arch'], pkg1['epoch'],
         pkg1['release'], pkg1['version'], pkg1['repository']
     )
     package2 = download_packages(
-        pkg2['name'], pkg2['arch'], pkg2['epoch'],
+        session, pkg2['name'], pkg2['arch'], pkg2['epoch'],
         pkg2['release'], pkg2['version'], pkg2['repository']
     )
-
     if package1 is None or package2 is None:
         return
 
-    session = database.session()
-
-    repo1 = session.query(rpm_db_models.RPMRepository).filter_by(path=pkg1['repository']).one_or_none()
-    if repo1 is None:
-        repo1 = rpm_db_models.RPMRepository(path=pkg1['repository'])
-        session.add(repo1)
-        session.commit()
-
-    repo2 = session.query(rpm_db_models.RPMRepository).filter_by(path=pkg2['repository']).one_or_none()
-    if repo2 is None:
-        repo2 = rpm_db_models.RPMRepository(path=pkg2['repository'])
-        session.add(repo2)
-        session.commit()
-
+    # Add packages to the database
     db_package1 = rpm_db_models.RPMPackage(
         name=package1.name, arch=package1.arch, epoch=package1.epoch,
         version=package1.version, release=package1.release,
     )
-    db_package1.rpm_repository = repo1
+    db_package1.rpm_repository = repository(session, pkg1['repository'])
 
     db_package2 = rpm_db_models.RPMPackage(
         name=package2.name, arch=package2.arch, epoch=package2.epoch,
         version=package2.version, release=package2.release
     )
-    db_package2.rpm_repository = repo2
-    
+    db_package2.rpm_repository = repository(session, pkg2['repository'])
+
     session.add(db_package1)
     session.add(db_package2)
     session.commit()
 
+    # Add comparison and rpm_comparison to the database
     comparison = database.Comparison(module=MODULE)
     comparison.rpm_comparison = [
         rpm_db_models.RPMComparison(
@@ -115,13 +113,12 @@ def compare(pkg1, pkg2):
             state='done'
         )
     ]
-    
+
     session.add(comparison)
     session.commit()
 
+    # Compare packages
     completed_process = run_rpmdiff(rpm_filename(package1), rpm_filename(package2))
     print(completed_process.stdout.decode('UTF-8'))
 
-    
     # TODO: process results
-
