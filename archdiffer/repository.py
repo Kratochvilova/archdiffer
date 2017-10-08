@@ -12,6 +12,7 @@ workers = {}
 flask_frontends = {}
 
 def load_plugins_workers():
+    """Load worker modules from all plugins if possible."""
     for name in os.listdir(os.path.join(os.path.dirname(__file__), 'plugins')):
         try:
             workers[name] = importlib.import_module(
@@ -21,6 +22,7 @@ def load_plugins_workers():
             pass
 
 def load_plugins_flask_frontends():
+    """Load flask-frontend modules from all plugins if possible."""
     for name in os.listdir(os.path.join(os.path.dirname(__file__), 'plugins')):
         try:
             flask_frontends[name] = importlib.import_module(

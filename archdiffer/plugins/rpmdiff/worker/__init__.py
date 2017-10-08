@@ -14,6 +14,11 @@ from ....backend.celery_app import celery_app
 MODULE = 'rpm'
 
 def rpm_filename(package):
+    """Get RPM filename based on the package atributes.
+
+    :param package dnf.package.Package: corresponds to an RPM file
+    :return: RPM filename string
+    """
     return '{name}-{version}-{release}.{arch}.rpm'.format(
         name=package.name,
         version=package.version,
@@ -25,6 +30,14 @@ def update_status(status):
     pass
 
 def repository(session, repo_path):
+    """Get repository from the database; create new record if none exists.
+
+    :param session: session for communication with the database
+    :type session: qlalchemy.orm.session.Session
+    :param repo_path string: repository baseurl
+    :return: repository
+    :rtype: rpm_db_models.RPMRepository
+    """
     rpm_repo = session.query(rpm_db_models.RPMRepository).filter_by(path=repo_path).one_or_none()
     if rpm_repo is None:
         rpm_repo = rpm_db_models.RPMRepository(path=repo_path)
@@ -32,11 +45,55 @@ def repository(session, repo_path):
         session.commit()
     return rpm_repo
 
+def package(session, package, repo_path):
+    """Get package from the database; create new record if none exists.
+
+    :param session: session for communication with the database
+    :type session: qlalchemy.orm.session.Session
+    :param package dnf.package.Package: corresponds to an RPM file
+    :param repo_path string: repository baseurl
+    :return: package
+    :rtype: rpm_db_models.RPMPackage
+    """
+    id_repo = repository(session, repo_path).id
+    rpm_package = session.query(rpm_db_models.RPMPackage).filter_by(
+        name=package.name,
+        arch=package.arch,
+        epoch=package.epoch,
+        version=package.version,
+        release=package.release,
+        id_repo=id_repo
+    ).one_or_none()
+    if rpm_package is None:
+        rpm_package = rpm_db_models.RPMPackage(
+            name=package.name,
+            arch=package.arch,
+            epoch=package.epoch,
+            version=package.version,
+            release=package.release,
+            id_repo=id_repo
+        )
+        session.add(rpm_package)
+        session.commit()
+    return rpm_package
+
 def download_packages(session, name, arch, epoch, release, version, repo_path):
+    """Download packages whose parameters match the arguments.
+
+    :param session: session for communication with the database
+    :type session: qlalchemy.orm.session.Session
+    :param name string: name of the package
+    :param arch string: architecture of the package
+    :param epoch string: epoch of the package
+    :param release string: release of the package
+    :param version string: version of the package
+    :param repo_path string: repository baseurl
+    :return: list of packages
+    """
     base = dnf.Base()
 
     # Add repository
-    label = 'repo_%s' % repository(session, repo_path).id
+    label = 'temp_repo_label'
     base.repos.add_new_repo(label, base.conf, baseurl=[repo_path])
     base.repos[label].enable()
     try:
@@ -63,7 +120,7 @@ def download_packages(session, name, arch, epoch, release, version, repo_path):
     # Download the package
     print('Downloading package: %s' % rpm_filename(pkgs[0]))
     base.conf.destdir = '.'
-    base.download_packages(list(pkgs))
+    #base.download_packages(list(pkgs))
 
     return pkgs[0]
 
@@ -87,21 +144,8 @@ def compare(pkg1, pkg2):
         return
 
     # Add packages to the database
-    db_package1 = rpm_db_models.RPMPackage(
-        name=package1.name, arch=package1.arch, epoch=package1.epoch,
-        version=package1.version, release=package1.release,
-    )
-    db_package1.rpm_repository = repository(session, pkg1['repository'])
-
-    db_package2 = rpm_db_models.RPMPackage(
-        name=package2.name, arch=package2.arch, epoch=package2.epoch,
-        version=package2.version, release=package2.release
-    )
-    db_package2.rpm_repository = repository(session, pkg2['repository'])
-
-    session.add(db_package1)
-    session.add(db_package2)
-    session.commit()
+    db_package1 = package(session, package1, pkg1['repository'])
+    db_package2 = package(session, package2, pkg2['repository'])
 
     # Add comparison and rpm_comparison to the database
     comparison = database.Comparison(module=MODULE)

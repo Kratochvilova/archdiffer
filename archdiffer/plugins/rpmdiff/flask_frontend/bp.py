@@ -20,8 +20,7 @@ bp.config = {}
 
 @bp.record
 def record_params(setup_state):
-    """Overwriting record_params only to keep app.config.
-    """
+    """Overwrite record_params only to keep app.config."""
     app = setup_state.app
     bp.config = dict(
         [(key,value) for (key,value) in app.config.items()]
@@ -29,10 +28,12 @@ def record_params(setup_state):
 
 @bp.before_request
 def before_request():
+    """Get new database session for each request."""
     g.session = database.session()
 
 @bp.teardown_request
 def teardown_request(exception):
+    """Commit and close database session at the end of request."""
     session = getattr(g, 'session', None)
     if session is not None:
         try:

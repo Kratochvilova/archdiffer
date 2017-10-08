@@ -3,7 +3,12 @@
   {% if session.logged_in %}
     <form action="{{ url_for('rpmdiff.add_entry') }}" method=post class=add-entry>
       <dl>
-        <dt>First rpm:
+
+	<div class="wrapper">
+	<div class="left">
+
+        <h2>First RPM package</h2>
+	<dt>Name:
         <dd><input type=text size=30 name=name1>
         <dt>Arch:
         <dd><input type=text size=30 name=arch1>
@@ -15,7 +20,13 @@
         <dd><input type=text size=30 name=release1>
         <dt>Repository:
         <dd><input type=text size=30 name=repo1>
-        <dt>Second rpm:
+
+	</div>
+
+	<div class="right">
+
+        <h2>Second RPM package</h2>
+	<dt>Name:
         <dd><input type=text size=30 name=name2>
         <dt>Arch:
         <dd><input type=text size=30 name=arch2>
@@ -28,6 +39,10 @@
         <dt>Repository:
         <dd><input type=text size=30 name=repo2>
         <dd><input type=submit value=Submit>
+
+	</div>
+	</div>
+
       </dl>
     </form>
   {% endif %}
