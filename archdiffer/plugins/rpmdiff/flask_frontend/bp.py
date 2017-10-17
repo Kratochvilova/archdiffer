@@ -26,23 +26,6 @@ def record_params(setup_state):
         [(key,value) for (key,value) in app.config.items()]
     )
 
-@bp.before_request
-def before_request():
-    """Get new database session for each request."""
-    g.session = database.session()
-
-@bp.teardown_request
-def teardown_request(exception):
-    """Commit and close database session at the end of request."""
-    session = getattr(g, 'session', None)
-    if session is not None:
-        try:
-            session.commit()
-        except:
-            pass
-        finally:
-            session.close()
-
 @bp.route('/')
 def show_comparisons():
     dicts = []

@@ -22,6 +22,13 @@ class Comparison(Base):
     def __repr__(self):
         return "<Comparison(id='%s', module='%s')>" % (self.id, self.module)
 
+    def get_dict(self):
+        comparison_dict = {
+            'id':self.id,
+            'module':self.module
+        }
+        return comparison_dict
+
 class SessionSingleton():
     """Singleton that provides sqlalchemy engine and creates sessions."""
 
