@@ -29,6 +29,22 @@ class Comparison(Base):
         }
         return comparison_dict
 
+class Plugin(Base):
+    __tablename__ = 'plugins'
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    plugin = Column(String, nullable=False)
+
+    def __repr__(self):
+        return "<Plugin(id='%s', plugin='%s')>" % (self.id, self.plugin)
+
+    def get_dict(self):
+        plugin_dict = {
+            'id':self.id,
+            'plugin':self.plugin
+        }
+        return plugin_dict
+
 class SessionSingleton():
     """Singleton that provides sqlalchemy engine and creates sessions."""
 

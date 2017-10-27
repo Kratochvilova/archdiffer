@@ -35,6 +35,14 @@ def index():
         dicts.append(instance.get_dict())
     return render_template('show_comparisons.html', comparisons=dicts)
 
+@flask_app.route('/plugins')
+def show_plugins():
+    plugins_list = []
+    plugins = g.session.query(database.Plugin)
+    for instance in plugins.order_by(database.Plugin.id):
+        plugins_list.append(instance.plugin)
+    return render_template('show_plugins.html', plugins=plugins_list)
+
 @flask_app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None

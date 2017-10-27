@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block body %}
+  <div class=all_plugins>
+	  <ul>
+      {% for plugin in plugins %}
+        <li><a href="{{ url_for('index') + plugin }}">{{ plugin }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}
