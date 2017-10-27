@@ -1,19 +1,17 @@
 {% extends "layout.html" %}
 {% block body %}
-  <ul class=all_comparisons>
-	<table>
-	<tr>
-		<th>ID</th>
-		<th>Module</th>
-	</tr>
-	{% for comp in comparisons %}
-	<tr>
-		<td><a href="{{ url_for('rpmdiff.show_differences', id_comp=comp.id) }}">{{ comp.id }}</a></td>
-		<td><a href="{{ url_for('rpmdiff.show_comparisons') }}">{{ comp.module }}</td>
-	</tr>
-	{% else %}
-    <li><em>Unbelievable.  No entries here so far</em>
-	{% endfor %}
-	</table>
-  </ul>
+  <div class=all_comparisons>
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Module</th>
+      </tr>
+      {% for comp in comparisons %}
+      <tr>
+        <td><a href="{{ url_for(comp.module + '.show_differences', id_comp=comp.id) }}">{{ comp.id }}</a></td>
+        <td><a href="{{ url_for('index') + comp.module }}">{{ comp.module }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
 {% endblock %}

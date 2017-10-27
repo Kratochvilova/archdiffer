@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "rpm_layout.html" %}
 {% block body %}
   {% if session.logged_in %}
     <form action="{{ url_for('rpmdiff.add_entry') }}" method=post class=add-entry>
@@ -7,7 +7,7 @@
 	<div class="wrapper">
 	<div class="left">
 
-        <h2>First RPM package</h2>
+        <h3>First RPM package</h3>
 	<dt>Name:
         <dd><input type=text size=30 name=name1>
         <dt>Arch:
@@ -25,7 +25,7 @@
 
 	<div class="right">
 
-        <h2>Second RPM package</h2>
+        <h3>Second RPM package</h3>
 	<dt>Name:
         <dd><input type=text size=30 name=name2>
         <dt>Arch:
@@ -59,12 +59,10 @@
 	<tr>
 		<td><a href="{{ url_for('rpmdiff.show_differences', id_comp=comp.id_comp) }}">{{ comp.id_comp }}</a></td>
 		<td>{{ comp.time }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg1_id) }}">{{ comp.pkg1_id }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg2_id) }}">{{ comp.pkg2_id }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg1_id) }}">{{ comp.pkg1_name }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg2_id) }}">{{ comp.pkg2_name }}</td>
 		<td>{{ comp.state }}</td>
 	</tr>
-	{% else %}
-    <li><em>Unbelievable.  No entries here so far</em>
 	{% endfor %}
 	</table>
   </ul>

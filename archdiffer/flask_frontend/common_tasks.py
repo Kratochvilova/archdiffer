@@ -28,7 +28,7 @@ def teardown_request(exception):
             session.close()
 
 @flask_app.route('/')
-def show_comparisons():
+def index():
     dicts = []
     comps = g.session.query(database.Comparison)
     for instance in comps.order_by(database.Comparison.id):
@@ -46,12 +46,12 @@ def login():
         else:
             session['logged_in'] = True
             flash('You were logged in')
-            return redirect(url_for('zipdiff.show_comparisons'))
+            return redirect(url_for('index'))
     return render_template('login.html', error=error)
 
 @flask_app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
-    return redirect(url_for('zipdiff.show_comparisons'))
+    return redirect(url_for('index'))
 

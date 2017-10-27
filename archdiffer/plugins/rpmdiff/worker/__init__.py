@@ -11,7 +11,7 @@ from .... import database
 from .. import rpm_db_models
 from ....backend.celery_app import celery_app
 
-MODULE = 'rpm'
+MODULE = 'rpmdiff'
 
 def rpm_filename(package):
     """Get RPM filename based on the package atributes.
