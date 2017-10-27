@@ -8,8 +8,8 @@
       </tr>
       {% for comp in comparisons %}
       <tr>
-        <td><a href="{{ url_for(comp.module + '.show_differences', id_comp=comp.id) }}">{{ comp.id }}</a></td>
-        <td><a href="{{ url_for('index') + comp.module }}">{{ comp.module }}</td>
+        <td><a href="{{ url_for(comp.plugin + '.show_differences', id_comp=comp.id) }}">{{ comp.id }}</a></td>
+        <td><a href="{{ url_for('index') + comp.plugin }}">{{ comp.plugin }}</td>
       </tr>
       {% endfor %}
     </table>

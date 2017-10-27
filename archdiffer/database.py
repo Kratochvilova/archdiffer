@@ -17,15 +17,15 @@ class Comparison(Base):
     __tablename__ = 'comparisons'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    module = Column(String, nullable=False)
+    plugin = Column(String, nullable=False)
 
     def __repr__(self):
-        return "<Comparison(id='%s', module='%s')>" % (self.id, self.module)
+        return "<Comparison(id='%s', plugin='%s')>" % (self.id, self.plugin)
 
     def get_dict(self):
         comparison_dict = {
             'id':self.id,
-            'module':self.module
+            'plugin':self.plugin
         }
         return comparison_dict
 

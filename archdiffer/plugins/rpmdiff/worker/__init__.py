@@ -11,7 +11,7 @@ from .... import database
 from .. import rpm_db_models
 from ....backend.celery_app import celery_app
 
-MODULE = 'rpmdiff'
+PLUGIN = 'rpmdiff'
 
 def rpm_filename(package):
     """Get RPM filename based on the package atributes.
@@ -150,7 +150,7 @@ def compare(pkg1, pkg2):
     db_package2 = package(session, package2, pkg2['repository'])
 
     # Add comparison and rpm_comparison to the database
-    comparison = database.Comparison(module=MODULE)
+    comparison = database.Comparison(plugin=PLUGIN)
     comparison.rpm_comparison = [
         rpm_db_models.RPMComparison(
             id_comp = comparison.id,
