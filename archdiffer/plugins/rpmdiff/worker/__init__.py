@@ -120,7 +120,9 @@ def download_packages(session, name, arch, epoch, release, version, repo_path):
     # Download the package
     print('Downloading package: %s' % rpm_filename(pkgs[0]))
     base.conf.destdir = '.'
-    #base.download_packages(list(pkgs))
+    base.repos.all().pkgdir = base.conf.destdir
+    base.download_packages(list(pkgs))
+    print('Download complete')
 
     return pkgs[0]
 
