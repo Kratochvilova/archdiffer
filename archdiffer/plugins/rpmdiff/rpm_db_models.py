@@ -120,6 +120,19 @@ class RPMPackage(database.Base):
         }
         return package_dict
 
+    def rpm_filename(self):
+        """Get RPM filename based on the package atributes.
+
+        :param package dnf.package.Package: corresponds to an RPM file
+        :return: RPM filename string
+        """
+        return '{name}-{version}-{release}.{arch}.rpm'.format(
+            name=self.name,
+            version=self.version,
+            release=self.release,
+            arch=self.arch
+        )
+
 class RPMRepository(database.Base):
     __tablename__ = 'rpm_repositories'
 

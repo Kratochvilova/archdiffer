@@ -13,19 +13,6 @@ from ....backend.celery_app import celery_app
 
 PLUGIN = 'rpmdiff'
 
-def rpm_filename(package):
-    """Get RPM filename based on the package atributes.
-
-    :param package dnf.package.Package: corresponds to an RPM file
-    :return: RPM filename string
-    """
-    return '{name}-{version}-{release}.{arch}.rpm'.format(
-        name=package.name,
-        version=package.version,
-        release=package.release,
-        arch=package.arch
-    )
-
 def update_status(status):
     pass
 
@@ -118,7 +105,7 @@ def download_packages(session, name, arch, epoch, release, version, repo_path):
         return None
 
     # Download the package
-    print('Downloading package: %s' % rpm_filename(pkgs[0]))
+    print('Downloading package: %s' % pkgs[0].rpm_filename())
     base.conf.destdir = '.'
     base.repos.all().pkgdir = base.conf.destdir
     base.download_packages(list(pkgs))
@@ -177,7 +164,7 @@ def compare(pkg1, pkg2):
     session.commit()
 
     # Compare packages
-    completed_process = run_rpmdiff(rpm_filename(package1), rpm_filename(package2))
+    completed_process = run_rpmdiff(package1.rpm_filename(), package2.rpm_filename())
     rpmdiff_output = completed_process.stdout.decode('UTF-8')
     parse_rpmdiff(session, comparison.id, package1, package2, rpmdiff_output)
 
