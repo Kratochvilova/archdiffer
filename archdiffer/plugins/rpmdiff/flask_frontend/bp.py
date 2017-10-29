@@ -36,8 +36,8 @@ def show_comparisons():
         comparison_dict = instance.get_dict()
         pkg1 = g.session.query(RPMPackage).filter_by(id=instance.pkg1_id).one()
         pkg2 = g.session.query(RPMPackage).filter_by(id=instance.pkg2_id).one()
-        comparison_dict['pkg1_name'] = pkg1.name
-        comparison_dict['pkg2_name'] = pkg2.name
+        comparison_dict['pkg1_name'] = pkg1.rpm_filename()
+        comparison_dict['pkg2_name'] = pkg2.rpm_filename()
         dicts.append(comparison_dict)        
     return my_render_template('rpm_show_comparisons.html', comparisons=dicts)
 
