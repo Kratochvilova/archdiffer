@@ -11,6 +11,7 @@ from celery import Celery
 from .... import database
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
 RPMRepository)
+from ....flask_frontend.common_tasks import my_render_template
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
@@ -38,7 +39,7 @@ def show_comparisons():
         comparison_dict['pkg1_name'] = pkg1.name
         comparison_dict['pkg2_name'] = pkg2.name
         dicts.append(comparison_dict)        
-    return render_template('rpm_show_comparisons.html', comparisons=dicts)
+    return my_render_template('rpm_show_comparisons.html', comparisons=dicts)
 
 @bp.route('/comparison/<int:id_comp>')
 def show_differences(id_comp):
@@ -46,7 +47,7 @@ def show_differences(id_comp):
     diffs = g.session.query(RPMDifference).filter_by(id_comp=id_comp)
     for instance in diffs.order_by(RPMDifference.id_comp):
         dicts.append(instance.get_dict())
-    return render_template('rpm_show_differences.html', differences=dicts)
+    return my_render_template('rpm_show_differences.html', differences=dicts)
 
 @bp.route('/package/<int:pkg_id>')
 def show_package(pkg_id):
@@ -54,12 +55,12 @@ def show_package(pkg_id):
     package_dict = pkg.get_dict()
     repo = g.session.query(RPMRepository).filter_by(id=pkg.id_repo).one()
     package_dict['repo_path'] = repo.path
-    return render_template('rpm_show_package.html', pkg=package_dict)
+    return my_render_template('rpm_show_package.html', pkg=package_dict)
 
 @bp.route('/repository/<int:repo_id>')
 def show_repository(repo_id):
     repo = g.session.query(RPMRepository).filter_by(id=repo_id).one()
-    return render_template('rpm_show_repository.html', repo=repo.get_dict())
+    return my_render_template('rpm_show_repository.html', repo=repo.get_dict())
 
 
 @bp.route('/packages')
@@ -71,7 +72,7 @@ def show_packages():
         repo = g.session.query(RPMRepository).filter_by(id=pkg.id_repo).one()
         package_dict['repo_path'] = repo.path
         dicts.append(package_dict)
-    return render_template('rpm_show_packages.html', pkgs=dicts)
+    return my_render_template('rpm_show_packages.html', pkgs=dicts)
 
 @bp.route('/repositories')
 def show_repositories():
@@ -79,7 +80,7 @@ def show_repositories():
     repos = g.session.query(RPMRepository).all()
     for repo in repos:
         dicts.append(repo.get_dict())
-    return render_template('rpm_show_repositories.html', repos=dicts)
+    return my_render_template('rpm_show_repositories.html', repos=dicts)
 
 
 @bp.route('/add', methods=['POST'])

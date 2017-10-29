@@ -1,12 +1,17 @@
 <!doctype html>
 <title>Archdiffer</title>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-	
-<div class="nav darktheme">
-    <ul class=menulist>
-	  <li class=menuitem><a href="{{ url_for('index') }}">Archdiffer</a></li>
-	  <li class=menuitem><a href="{{ url_for('show_plugins') }}">Plugins</a></li>
+
+<div class="menu darktheme">
+  <ul>
+    <li><a href="{{ url_for('index') }}">Archdiffer</a></li>
+    <li><a href="{{ url_for('show_plugins') }}">Plugins</a></li>
+    <ul>
+      {% for plugin in plugins %}
+      <li><a href="{{ url_for('index') + plugin }}">{{ plugin }}</a></li>
+      {% endfor %}
     </ul>
+  </ul>
 </div>
 
 <div class="header lighttheme">
@@ -22,6 +27,4 @@
 
 <div class="content lighttheme">
   {% block body %}{% endblock %}
-</div>
-
 </div>

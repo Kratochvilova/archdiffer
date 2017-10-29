@@ -10,6 +10,14 @@ g)
 from .flask_app import flask_app
 from .. import database
 
+def list_plugins(session):
+    plugins = session.query(database.Plugin).order_by(database.Plugin.id)
+    return [instance.plugin for instance in plugins]
+
+def my_render_template(html, **arguments):
+    arguments.setdefault('plugins', list_plugins(g.session))
+    return render_template(html, **arguments)
+
 @flask_app.before_request
 def before_request():
     """Get new database session for each request."""
@@ -33,7 +41,7 @@ def index():
     comps = g.session.query(database.Comparison)
     for instance in comps.order_by(database.Comparison.id):
         dicts.append(instance.get_dict())
-    return render_template('show_comparisons.html', comparisons=dicts)
+    return my_render_template('show_comparisons.html', comparisons=dicts)
 
 @flask_app.route('/plugins')
 def show_plugins():
@@ -41,7 +49,7 @@ def show_plugins():
     plugins = g.session.query(database.Plugin)
     for instance in plugins.order_by(database.Plugin.id):
         plugins_list.append(instance.plugin)
-    return render_template('show_plugins.html', plugins=plugins_list)
+    return my_render_template('show_plugins.html')
 
 @flask_app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -55,7 +63,7 @@ def login():
             session['logged_in'] = True
             flash('You were logged in')
             return redirect(url_for('index'))
-    return render_template('login.html', error=error)
+    return my_render_template('login.html', error=error)
 
 @flask_app.route('/logout')
 def logout():

@@ -63,8 +63,8 @@ class RPMDifference(database.Base):
     )
 
     def __repr__(self):
-        return "<Difference(id='%s', pkg='%s', diff_type='%s', diff='%s')>" % (
-        self.id_comp, self.pkg, self.diff_type, self.diff)
+        return "<Difference(id='%s', id_comp='%s', pkg='%s', diff_type='%s', diff='%s')>" % (
+        self.id, self.id_comp, self.pkg, self.diff_type, self.diff)
 
     def get_dict(self):
         difference_dict = {

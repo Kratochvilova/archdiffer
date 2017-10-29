@@ -2,15 +2,24 @@
 <title>Rpmdiff</title>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 
-<div class="nav darktheme">
-  <ul class=menulist>
-    <li class=menuitem><a href="{{ url_for('index') }}">Archdiffer</a></li>
-    <li class=menuitem><a href="{{ url_for('show_plugins') }}">Plugins</a></li>
-    <li class=menuitem><a href="{{ url_for('rpmdiff.show_comparisons') }}">Rpmdiff</a></li>
-    <li class=menuitem><a href="{{ url_for('rpmdiff.show_packages') }}">Packages</a></li>
-    <li class=menuitem><a href="{{ url_for('rpmdiff.show_repositories') }}">Repositories</a></li>
+<div class="menu darktheme">
+  <ul>
+    <li><a href="{{ url_for('index') }}">Archdiffer</a></li>
+    <li><a href="{{ url_for('show_plugins') }}">Plugins</a></li>
+    <ul>
+      {% for plugin in plugins %}
+      <li><a href="{{ url_for('index') + plugin }}">{{ plugin }}</a></li>
+      {% if plugin == 'rpmdiff' %}
+      <ul>
+      <li><a href="{{ url_for('rpmdiff.show_packages') }}">Packages</a></li>
+      <li><a href="{{ url_for('rpmdiff.show_repositories') }}">Repositories</a></li>
+      </ul>
+      {% endif %}
+      {% endfor %}
+    </ul>
   </ul>
 </div>
+
 
 <div class="header lighttheme">
   <h1>Archdiffer</h1>
