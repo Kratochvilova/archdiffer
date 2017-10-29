@@ -129,6 +129,19 @@ def download_packages(session, name, arch, epoch, release, version, repo_path):
 def run_rpmdiff(pkg1, pkg2):
     return subprocess.run(["rpmdiff", pkg1, pkg2], stdout=subprocess.PIPE)
 
+def parse_rpmdiff(session, id_comp, pkg1, pkg2, rpmdiff_output):
+    lines = rpmdiff_output.split('\n')
+    for line in lines:
+        try:
+            left, right = line.split()
+            difference = rpm_db_models.RPMDifference(
+                id_comp=int(id_comp), pkg=str(pkg1), diff_type=left, diff=right
+            )
+            session.add(difference)
+            session.commit()
+        except:
+            print(line)
+
 @celery_app.task(name='rpmdiff.compare')
 def compare(pkg1, pkg2):
     session = database.session()
@@ -165,6 +178,7 @@ def compare(pkg1, pkg2):
 
     # Compare packages
     completed_process = run_rpmdiff(rpm_filename(package1), rpm_filename(package2))
-    print(completed_process.stdout.decode('UTF-8'))
+    rpmdiff_output = completed_process.stdout.decode('UTF-8')
+    parse_rpmdiff(session, comparison.id, package1, package2, rpmdiff_output)
 
     # TODO: process results
