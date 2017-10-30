@@ -105,7 +105,7 @@ def download_packages(session, name, arch, epoch, release, version, repo_path):
         return None
 
     # Download the package
-    print('Downloading package: %s' % pkgs[0].rpm_filename())
+    print('Downloading package: %s' % pkgs[0].name)
     base.conf.destdir = '.'
     base.repos.all().pkgdir = base.conf.destdir
     base.download_packages(list(pkgs))
@@ -164,7 +164,7 @@ def compare(pkg1, pkg2):
     session.commit()
 
     # Compare packages
-    completed_process = run_rpmdiff(package1.rpm_filename(), package2.rpm_filename())
+    completed_process = run_rpmdiff(db_package1.rpm_filename(), db_package2.rpm_filename())
     rpmdiff_output = completed_process.stdout.decode('UTF-8')
     parse_rpmdiff(session, comparison.id, package1, package2, rpmdiff_output)
 
