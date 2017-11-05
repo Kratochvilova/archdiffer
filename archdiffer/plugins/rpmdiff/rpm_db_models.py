@@ -5,7 +5,7 @@ Created on Tue Oct  3 10:56:53 2017
 @author: pavla
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from ... import database
 
@@ -15,8 +15,6 @@ class RPMComparison(database.Base):
     id_comp = Column(
         Integer, ForeignKey('comparisons.id'), primary_key=True, nullable=False
     )
-    # time is set when commited
-    time = Column(DateTime, default=func.now())
     pkg1_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
     pkg2_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
     state = Column(String, nullable=False)
@@ -32,20 +30,15 @@ class RPMComparison(database.Base):
     )    
 
     comparison = relationship("Comparison", backref="rpm_comparison")
-    
-    def __repr__(self):
-        return "<Comparison(id_comp='%s', time='%s', pkg1_id='%s', pkg2_id='%s', state='%s')>" % (
-        self.id_comp, self.time, self.pkg1_id, self.pkg2_id, self.state)
 
-    def get_dict(self):
-        comparison_dict = {
-            'id_comp':self.id_comp,
-            'time':self.time,
-            'pkg1_id':self.pkg1_id,
-            'pkg2_id':self.pkg2_id,
-            'state':self.state
-        }
-        return comparison_dict
+    def __repr__(self):
+        return ("<Comparison(id_comp='%s', pkg1_id='%s', pkg2_id='%s', "
+                "state='%s')>") % (
+                    self.id_comp,
+                    self.pkg1_id,
+                    self.pkg2_id,
+                    self.state
+                )
 
 class RPMDifference(database.Base):
     __tablename__ = 'rpm_differences'
@@ -63,18 +56,10 @@ class RPMDifference(database.Base):
     )
 
     def __repr__(self):
-        return "<Difference(id='%s', id_comp='%s', pkg='%s', diff_type='%s', diff='%s')>" % (
-        self.id, self.id_comp, self.pkg, self.diff_type, self.diff)
-
-    def get_dict(self):
-        difference_dict = {
-            'id':self.id,
-            'id_comp':self.id_comp,
-            'pkg':self.pkg,
-            'diff_type':self.diff_type,
-            'diff':self.diff
-        }
-        return difference_dict
+        return ("<Difference(id='%s', id_comp='%s', pkg='%s', diff_type='%s', "
+                "diff='%s')>") % (
+                    self.id, self.id_comp, self.pkg, self.diff_type, self.diff
+                )
 
 class RPMPackage(database.Base):
     __tablename__ = 'rpm_packages'
@@ -105,20 +90,16 @@ class RPMPackage(database.Base):
     )
 
     def __repr__(self):
-        return "<Package(id='%s', name='%s', arch='%s', epoch='%s', version='%s', release='%s', id_repo='%s')>" % (
-        self.id, self.name, self.arch, self.epoch, self.version, self.release, self.id_repo)
-
-    def get_dict(self):
-        package_dict = {
-            'id':self.id,
-            'name':self.name,
-            'arch':self.arch,
-            'epoch':self.epoch,
-            'version':self.version,
-            'release':self.release,
-            'id_repo':self.id_repo
-        }
-        return package_dict
+        return ("<Package(id='%s', name='%s', arch='%s', epoch='%s', "
+                "version='%s', release='%s', id_repo='%s')>") % (
+                    self.id,
+                    self.name,
+                    self.arch,
+                    self.epoch,
+                    self.version,
+                    self.release,
+                    self.id_repo
+                )
 
     def rpm_filename(self):
         """Get RPM filename based on the package atributes.
@@ -145,10 +126,3 @@ class RPMRepository(database.Base):
 
     def __repr__(self):
         return "<RPMRepository(id='%s', path='%s')>" % (self.id, self.path)
-
-    def get_dict(self):
-        repository_dict = {
-            'id':self.id,
-            'path':self.path
-        }
-        return repository_dict

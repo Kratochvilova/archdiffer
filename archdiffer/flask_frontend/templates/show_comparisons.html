@@ -4,12 +4,14 @@
     <table>
       <tr>
         <th>ID</th>
+	<th>Time</th>
         <th>Module</th>
       </tr>
       {% for comp in comparisons %}
       <tr>
-        <td><a href="{{ url_for(comp.plugin + '.show_differences', id_comp=comp.id) }}">{{ comp.id }}</a></td>
-        <td><a href="{{ url_for('index') + comp.plugin }}">{{ comp.plugin }}</td>
+        <td><a href="{{ url_for(comp.plugin.name + '.show_differences', id_comp=comp.id) }}">{{ comp.id }}</a></td>
+	<td>{{ comp.time }}</td>
+        <td><a href="{{ url_for('index') + comp.plugin.name }}">{{ comp.plugin.name }}</td>
       </tr>
       {% endfor %}
     </table>

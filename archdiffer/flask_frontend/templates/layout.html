@@ -8,7 +8,7 @@
     <li><a href="{{ url_for('show_plugins') }}">Plugins</a></li>
     <ul>
       {% for plugin in plugins %}
-      <li><a href="{{ url_for('index') + plugin }}">{{ plugin }}</a></li>
+      <li><a href="{{ url_for('index') + plugin.name }}">{{ plugin.name }}</a></li>
       {% endfor %}
     </ul>
   </ul>

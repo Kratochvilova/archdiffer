@@ -5,23 +5,19 @@ Created on Wed Aug 30 14:55:56 2017
 @author: pavla
 """
 
-from flask import (render_template, request, session, flash, redirect, url_for,
-g)
+from flask import render_template, request, flash, redirect, url_for, g
+from flask import session as flask_session
 from .flask_app import flask_app
-from .. import database
-
-def list_plugins(session):
-    plugins = session.query(database.Plugin).order_by(database.Plugin.id)
-    return [instance.plugin for instance in plugins]
+from ..database import session, Comparison, Plugin
 
 def my_render_template(html, **arguments):
-    arguments.setdefault('plugins', list_plugins(g.session))
+    arguments.setdefault('plugins', g.session.query(Plugin).order_by(Plugin.id))
     return render_template(html, **arguments)
 
 @flask_app.before_request
 def before_request():
     """Get new database session for each request."""
-    g.session = database.session()
+    g.session = session()
 
 @flask_app.teardown_request
 def teardown_request(exception):
@@ -37,18 +33,11 @@ def teardown_request(exception):
 
 @flask_app.route('/')
 def index():
-    dicts = []
-    comps = g.session.query(database.Comparison)
-    for instance in comps.order_by(database.Comparison.id):
-        dicts.append(instance.get_dict())
-    return my_render_template('show_comparisons.html', comparisons=dicts)
+    comparisons = g.session.query(Comparison).order_by(Comparison.id).all()
+    return my_render_template('show_comparisons.html', comparisons=comparisons)
 
 @flask_app.route('/plugins')
 def show_plugins():
-    plugins_list = []
-    plugins = g.session.query(database.Plugin)
-    for instance in plugins.order_by(database.Plugin.id):
-        plugins_list.append(instance.plugin)
     return my_render_template('show_plugins.html')
 
 @flask_app.route('/login', methods=['GET', 'POST'])
@@ -60,14 +49,14 @@ def login():
         elif request.form['password'] != flask_app.config['PASSWORD']:
             error = 'Invalid password'
         else:
-            session['logged_in'] = True
+            flask_session['logged_in'] = True
             flash('You were logged in')
             return redirect(url_for('index'))
     return my_render_template('login.html', error=error)
 
 @flask_app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
+    flask_session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('index'))
 

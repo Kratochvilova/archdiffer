@@ -120,7 +120,7 @@ def parse_rpmdiff(session, id_comp, pkg1, pkg2, rpmdiff_output):
     lines = rpmdiff_output.split('\n')
     for line in lines:
         try:
-            left, right = line.split()
+            left, right = line.split(maxsplit=1)
             difference = rpm_db_models.RPMDifference(
                 id_comp=int(id_comp), pkg=str(pkg1), diff_type=left, diff=right
             )
@@ -150,7 +150,8 @@ def compare(pkg1, pkg2):
     db_package2 = package(session, package2, pkg2['repository'])
 
     # Add comparison and rpm_comparison to the database
-    comparison = database.Comparison(plugin=PLUGIN)
+    comparison = database.Comparison()
+    comparison.plugin = session.query(database.Plugin).filter(database.Plugin.name==PLUGIN).one()
     comparison.rpm_comparison = [
         rpm_db_models.RPMComparison(
             id_comp = comparison.id,

@@ -6,8 +6,9 @@ Created on Wed Apr  5 19:32:41 2017
 """
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
 from sqlalchemy import create_engine
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
 from .config import config
 
@@ -17,33 +18,27 @@ class Comparison(Base):
     __tablename__ = 'comparisons'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    plugin = Column(String, nullable=False)
+    # time is set when commited
+    time = Column(DateTime, default=func.now())
+    plugin_id = Column(Integer, ForeignKey('plugins.id'), nullable=False)
+
+    plugin = relationship("Plugin", back_populates="comparison")
 
     def __repr__(self):
-        return "<Comparison(id='%s', plugin='%s')>" % (self.id, self.plugin)
-
-    def get_dict(self):
-        comparison_dict = {
-            'id':self.id,
-            'plugin':self.plugin
-        }
-        return comparison_dict
+        return "<Comparison(id='%s', time='%s', plugin_id='%s')>" % (
+            self.id, self.time, self.plugin_id
+        )
 
 class Plugin(Base):
     __tablename__ = 'plugins'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    plugin = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+
+    comparison = relationship("Comparison", back_populates="plugin")
 
     def __repr__(self):
-        return "<Plugin(id='%s', plugin='%s')>" % (self.id, self.plugin)
-
-    def get_dict(self):
-        plugin_dict = {
-            'id':self.id,
-            'plugin':self.plugin
-        }
-        return plugin_dict
+        return "<Plugin(id='%s', name='%s')>" % (self.id, self.name)
 
 class SessionSingleton():
     """Singleton that provides sqlalchemy engine and creates sessions."""

@@ -50,7 +50,6 @@
 	<table>
 	<tr>
 		<th>ID</th>
-		<th>Time</th>
 		<th>Pkg 1</th>
 		<th>Pkg 2</th>
 		<th>State</th>
@@ -58,9 +57,8 @@
 	{% for comp in comparisons %}
 	<tr>
 		<td><a href="{{ url_for('rpmdiff.show_differences', id_comp=comp.id_comp) }}">{{ comp.id_comp }}</a></td>
-		<td>{{ comp.time }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg1_id) }}">{{ comp.pkg1_name }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg2_id) }}">{{ comp.pkg2_name }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg1_id) }}">{{ comp.rpm_package1.name }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg2_id) }}">{{ comp.rpm_package2.name }}</td>
 		<td>{{ comp.state }}</td>
 	</tr>
 	{% endfor %}

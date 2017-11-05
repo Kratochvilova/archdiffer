@@ -5,10 +5,9 @@ Created on Sat Sep 16 22:54:57 2017
 @author: pavla
 """
 
-from flask import (Blueprint, render_template, abort, request, session, g,
-flash, redirect, url_for)
+from flask import (Blueprint, abort, request, session, g, flash, redirect,
+url_for)
 from celery import Celery
-from .... import database
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
 RPMRepository)
 from ....flask_frontend.common_tasks import my_render_template
@@ -30,58 +29,33 @@ def record_params(setup_state):
 
 @bp.route('/')
 def show_comparisons():
-    dicts = []
-    comps = g.session.query(RPMComparison)
-    for instance in comps.order_by(RPMComparison.id_comp):
-        comparison_dict = instance.get_dict()
-        pkg1 = g.session.query(RPMPackage).filter_by(id=instance.pkg1_id).one()
-        pkg2 = g.session.query(RPMPackage).filter_by(id=instance.pkg2_id).one()
-        comparison_dict['pkg1_name'] = pkg1.rpm_filename()
-        comparison_dict['pkg2_name'] = pkg2.rpm_filename()
-        dicts.append(comparison_dict)        
-    return my_render_template('rpm_show_comparisons.html', comparisons=dicts)
+    comps = g.session.query(RPMComparison)  
+    return my_render_template('rpm_show_comparisons.html', comparisons=comps)
 
 @bp.route('/comparison/<int:id_comp>')
 def show_differences(id_comp):
-    dicts = []
     diffs = g.session.query(RPMDifference).filter_by(id_comp=id_comp)
-    for instance in diffs.order_by(RPMDifference.id_comp):
-        dicts.append(instance.get_dict())
-    return my_render_template('rpm_show_differences.html', differences=dicts)
+    return my_render_template('rpm_show_differences.html', differences=diffs)
 
 @bp.route('/package/<int:pkg_id>')
 def show_package(pkg_id):
     pkg = g.session.query(RPMPackage).filter_by(id=pkg_id).one()
-    package_dict = pkg.get_dict()
-    repo = g.session.query(RPMRepository).filter_by(id=pkg.id_repo).one()
-    package_dict['repo_path'] = repo.path
-    return my_render_template('rpm_show_package.html', pkg=package_dict)
+    return my_render_template('rpm_show_package.html', pkg=pkg)
 
 @bp.route('/repository/<int:repo_id>')
 def show_repository(repo_id):
     repo = g.session.query(RPMRepository).filter_by(id=repo_id).one()
-    return my_render_template('rpm_show_repository.html', repo=repo.get_dict())
-
+    return my_render_template('rpm_show_repository.html', repo=repo)
 
 @bp.route('/packages')
 def show_packages():
-    dicts = []
     pkgs = g.session.query(RPMPackage).all()
-    for pkg in pkgs:
-        package_dict = pkg.get_dict()
-        repo = g.session.query(RPMRepository).filter_by(id=pkg.id_repo).one()
-        package_dict['repo_path'] = repo.path
-        dicts.append(package_dict)
-    return my_render_template('rpm_show_packages.html', pkgs=dicts)
+    return my_render_template('rpm_show_packages.html', pkgs=pkgs)
 
 @bp.route('/repositories')
 def show_repositories():
-    dicts = []
     repos = g.session.query(RPMRepository).all()
-    for repo in repos:
-        dicts.append(repo.get_dict())
-    return my_render_template('rpm_show_repositories.html', repos=dicts)
-
+    return my_render_template('rpm_show_repositories.html', repos=repos)
 
 @bp.route('/add', methods=['POST'])
 def add_entry():

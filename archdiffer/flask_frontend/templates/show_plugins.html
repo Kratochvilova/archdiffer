@@ -3,7 +3,7 @@
   <div class=all_plugins>
     <ul>
       {% for plugin in plugins %}
-      <li><a href="{{ url_for('index') + plugin }}">{{ plugin }}</a></li>
+      <li><a href="{{ url_for('index') + plugin.name }}">{{ plugin.name }}</a></li>
       {% endfor %}
     </ul>
   </div>
