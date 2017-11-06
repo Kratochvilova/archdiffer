@@ -5,10 +5,11 @@ Created on Mon Sep  4 12:32:32 2017
 @author: pavla
 """
 
-import dnf
 import subprocess
+import dnf
 from .... import database
-from .. import rpm_db_models
+from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
+                             RPMRepository)
 from ....backend.celery_app import celery_app
 
 PLUGIN = 'rpmdiff'
@@ -25,14 +26,14 @@ def repository(session, repo_path):
     :return: repository
     :rtype: rpm_db_models.RPMRepository
     """
-    rpm_repo = session.query(rpm_db_models.RPMRepository).filter_by(path=repo_path).one_or_none()
-    if rpm_repo is None:
-        rpm_repo = rpm_db_models.RPMRepository(path=repo_path)
-        session.add(rpm_repo)
+    repo = session.query(RPMRepository).filter_by(path=repo_path).one_or_none()
+    if repo is None:
+        repo = RPMRepository(path=repo_path)
+        session.add(repo)
         session.commit()
-    return rpm_repo
+    return repo
 
-def package(session, package, repo_path):
+def package(session, pkg, repo_path):
     """Get package from the database; create new record if none exists.
 
     :param session: session for communication with the database
@@ -43,32 +44,30 @@ def package(session, package, repo_path):
     :rtype: rpm_db_models.RPMPackage
     """
     id_repo = repository(session, repo_path).id
-    rpm_package = session.query(rpm_db_models.RPMPackage).filter_by(
-        name=package.name,
-        arch=package.arch,
-        epoch=package.epoch,
-        version=package.version,
-        release=package.release,
+    rpm_package = session.query(RPMPackage).filter_by(
+        name=pkg.name,
+        arch=pkg.arch,
+        epoch=pkg.epoch,
+        version=pkg.version,
+        release=pkg.release,
         id_repo=id_repo
     ).one_or_none()
     if rpm_package is None:
-        rpm_package = rpm_db_models.RPMPackage(
-            name=package.name,
-            arch=package.arch,
-            epoch=package.epoch,
-            version=package.version,
-            release=package.release,
+        rpm_package = RPMPackage(
+            name=pkg.name,
+            arch=pkg.arch,
+            epoch=pkg.epoch,
+            version=pkg.version,
+            release=pkg.release,
             id_repo=id_repo
         )
         session.add(rpm_package)
         session.commit()
     return rpm_package
 
-def download_packages(session, name, arch, epoch, release, version, repo_path):
+def download_packages(name, arch, epoch, release, version, repo_path):
     """Download packages whose parameters match the arguments.
 
-    :param session: session for communication with the database
-    :type session: qlalchemy.orm.session.Session
     :param name string: name of the package
     :param arch string: architecture of the package
     :param epoch string: epoch of the package
@@ -121,7 +120,7 @@ def parse_rpmdiff(session, id_comp, pkg1, pkg2, rpmdiff_output):
     for line in lines:
         try:
             left, right = line.split(maxsplit=1)
-            difference = rpm_db_models.RPMDifference(
+            difference = RPMDifference(
                 id_comp=int(id_comp), pkg=str(pkg1), diff_type=left, diff=right
             )
             session.add(difference)
@@ -151,10 +150,10 @@ def compare(pkg1, pkg2):
 
     # Add comparison and rpm_comparison to the database
     comparison = database.Comparison()
-    comparison.plugin = session.query(database.Plugin).filter(database.Plugin.name==PLUGIN).one()
+    comparison.plugin = session.query(database.Plugin).filter(database.Plugin.name == PLUGIN).one()
     comparison.rpm_comparison = [
-        rpm_db_models.RPMComparison(
-            id_comp = comparison.id,
+        RPMComparison(
+            id_comp=comparison.id,
             pkg1_id=db_package1.id,
             pkg2_id=db_package2.id,
             state='done'

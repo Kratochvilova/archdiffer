@@ -6,10 +6,10 @@ Created on Sat Sep 16 22:54:57 2017
 """
 
 from flask import (Blueprint, abort, request, session, g, flash, redirect,
-url_for)
+                   url_for)
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
-RPMRepository)
+                             RPMRepository)
 from ....flask_frontend.common_tasks import my_render_template
 
 celery_app = Celery(broker='pyamqp://localhost', )
@@ -24,12 +24,12 @@ def record_params(setup_state):
     """Overwrite record_params only to keep app.config."""
     app = setup_state.app
     bp.config = dict(
-        [(key,value) for (key,value) in app.config.items()]
+        [(key, value) for (key, value) in app.config.items()]
     )
 
 @bp.route('/')
 def show_comparisons():
-    comps = g.session.query(RPMComparison)  
+    comps = g.session.query(RPMComparison)
     return my_render_template('rpm_show_comparisons.html', comparisons=comps)
 
 @bp.route('/comparison/<int:id_comp>')
@@ -67,15 +67,15 @@ def add_entry():
         'epoch': request.form['epoch1'],
         'version': request.form['version1'],
         'release': request.form['release1'],
-        'repository': request.form['repo1']
+        'repository': request.form['repo1'],
     }
     pkg2 = {
-       'name': request.form['name2'],
+        'name': request.form['name2'],
         'arch': request.form['arch2'],
         'epoch': request.form['epoch2'],
         'version': request.form['version2'],
         'release': request.form['release2'],
-        'repository': request.form['repo2']
+        'repository': request.form['repo2'],
     }
     celery_app.send_task(
         'rpmdiff.compare', args=(pkg1, pkg2)

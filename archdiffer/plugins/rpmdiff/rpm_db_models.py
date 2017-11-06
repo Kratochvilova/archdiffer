@@ -27,7 +27,7 @@ class RPMComparison(database.Base):
     )
     rpm_package2 = relationship(
         "RPMPackage", foreign_keys=[pkg2_id], back_populates="rpm_comparisons2"
-    )    
+    )
 
     comparison = relationship("Comparison", backref="rpm_comparison")
 
@@ -47,7 +47,7 @@ class RPMDifference(database.Base):
     id_comp = Column(
         Integer, ForeignKey('rpm_comparisons.id_comp'), nullable=False
     )
-    pkg =  Column(String, nullable=False)
+    pkg = Column(String, nullable=False)
     diff_type = Column(String, nullable=False)
     diff = Column(String, nullable=False)
 
@@ -63,7 +63,7 @@ class RPMDifference(database.Base):
 
 class RPMPackage(database.Base):
     __tablename__ = 'rpm_packages'
-    
+
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
     arch = Column(String, nullable=False)
@@ -84,7 +84,6 @@ class RPMPackage(database.Base):
         foreign_keys='RPMComparison.pkg2_id',
         back_populates="rpm_package2"
     )
-    
     rpm_repository = relationship(
         "RPMRepository", back_populates="rpm_package"
     )

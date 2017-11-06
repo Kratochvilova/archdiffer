@@ -11,6 +11,7 @@ from .flask_app import flask_app
 from ..database import session, Comparison, Plugin
 
 def my_render_template(html, **arguments):
+    """Call render_template with plugins as one of the arguments."""
     arguments.setdefault('plugins', g.session.query(Plugin).order_by(Plugin.id))
     return render_template(html, **arguments)
 
@@ -22,14 +23,14 @@ def before_request():
 @flask_app.teardown_request
 def teardown_request(exception):
     """Commit and close database session at the end of request."""
-    session = getattr(g, 'session', None)
-    if session is not None:
+    ses = getattr(g, 'session', None)
+    if ses is not None:
         try:
-            session.commit()
+            ses.commit()
         except:
             pass
         finally:
-            session.close()
+            ses.close()
 
 @flask_app.route('/')
 def index():
@@ -59,4 +60,3 @@ def logout():
     flask_session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('index'))
-
