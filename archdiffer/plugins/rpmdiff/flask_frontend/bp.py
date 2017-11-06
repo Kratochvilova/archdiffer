@@ -14,9 +14,9 @@ from ....flask_frontend.common_tasks import my_render_template
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
-MODULE = 'rpm'
+PLUGIN = 'rpmdiff'
 
-bp = Blueprint('rpmdiff', __name__, template_folder='templates')
+bp = Blueprint(PLUGIN, __name__, template_folder='templates')
 bp.config = {}
 
 @bp.record
