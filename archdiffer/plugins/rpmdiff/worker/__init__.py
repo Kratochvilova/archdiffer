@@ -65,22 +65,17 @@ def package(session, pkg, repo_path):
         session.commit()
     return rpm_package
 
-def download_packages(name, arch, epoch, release, version, repo_path):
+def download_packages(pkg):
     """Download packages whose parameters match the arguments.
 
-    :param name string: name of the package
-    :param arch string: architecture of the package
-    :param epoch string: epoch of the package
-    :param release string: release of the package
-    :param version string: version of the package
-    :param repo_path string: repository baseurl
+    :param pkg dict: dict containing package parameters
     :return: list of packages
     """
     base = dnf.Base()
 
     # Add repository
     label = 'temp_repo_label'
-    base.repos.add_new_repo(label, base.conf, baseurl=[repo_path])
+    base.repos.add_new_repo(label, base.conf, baseurl=[pkg['repository']])
     base.repos[label].enable()
     try:
         base.repos[label].load()
@@ -89,15 +84,15 @@ def download_packages(name, arch, epoch, release, version, repo_path):
     base.fill_sack()
 
     # Query packages
-    pkgs = base.sack.query().available().filter(name=name)
-    if arch != '':
-        pkgs = pkgs.filter(arch=arch)
-    if epoch != '':
-        pkgs = pkgs.filter(epoch=epoch)
-    if release != '':
-        pkgs = pkgs.filter(release=release)
-    if version != '':
-        pkgs = pkgs.filter(version=version)
+    pkgs = base.sack.query().available().filter(name=pkg['name'])
+    if pkg['arch'] != '':
+        pkgs = pkgs.filter(arch=pkg['arch'])
+    if pkg['epoch'] != '':
+        pkgs = pkgs.filter(epoch=pkg['epoch'])
+    if pkg['release'] != '':
+        pkgs = pkgs.filter(release=pkg['release'])
+    if pkg['version'] != '':
+        pkgs = pkgs.filter(version=pkg['version'])
 
     # Not allowing more than one package
     if len(pkgs) != 1:
@@ -133,14 +128,8 @@ def compare(pkg1, pkg2):
     session = database.session()
 
     # Download packages
-    package1 = download_packages(
-        session, pkg1['name'], pkg1['arch'], pkg1['epoch'],
-        pkg1['release'], pkg1['version'], pkg1['repository']
-    )
-    package2 = download_packages(
-        session, pkg2['name'], pkg2['arch'], pkg2['epoch'],
-        pkg2['release'], pkg2['version'], pkg2['repository']
-    )
+    package1 = download_packages(session, pkg1)
+    package2 = download_packages(session, pkg2)
     if package1 is None or package2 is None:
         return
 
@@ -150,7 +139,7 @@ def compare(pkg1, pkg2):
 
     # Add comparison and rpm_comparison to the database
     comparison = database.Comparison()
-    comparison.plugin = session.query(database.Plugin).filter(database.Plugin.name == PLUGIN).one()
+    comparison.plugin = session.query(database.Plugin).filter(database.Plugin.name=PLUGIN).one()
     comparison.rpm_comparison = [
         RPMComparison(
             id_comp=comparison.id,
