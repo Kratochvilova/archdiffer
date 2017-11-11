@@ -35,7 +35,7 @@ class Plugin(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
 
-    comparison = relationship("Comparison", back_populates="plugin")
+    comparisons = relationship("Comparison", back_populates="plugin")
 
     def __repr__(self):
         return "<Plugin(id='%s', name='%s')>" % (self.id, self.name)

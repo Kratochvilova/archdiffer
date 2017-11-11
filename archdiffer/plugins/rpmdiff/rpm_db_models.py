@@ -6,7 +6,7 @@ Created on Tue Oct  3 10:56:53 2017
 """
 
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from ... import database
 
 class RPMComparison(database.Base):
@@ -29,7 +29,10 @@ class RPMComparison(database.Base):
         "RPMPackage", foreign_keys=[pkg2_id], back_populates="rpm_comparisons2"
     )
 
-    comparison = relationship("Comparison", backref="rpm_comparison")
+    comparison = relationship(
+        "Comparison",
+        backref=backref("rpm_comparison", uselist=False)
+    )
 
     def __repr__(self):
         return ("<Comparison(id_comp='%s', pkg1_id='%s', pkg2_id='%s', "
