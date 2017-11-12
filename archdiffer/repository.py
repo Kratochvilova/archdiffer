@@ -18,8 +18,8 @@ def load_plugins_workers():
             workers[name] = importlib.import_module(
                 '.plugins.' + name + '.worker', 'archdiffer'
             )
-        except:
-            pass
+        except ImportError as ie:
+            print(ie)
 
 def load_plugins_flask_frontends():
     """Load flask-frontend plugins from all plugins if possible."""
@@ -28,5 +28,5 @@ def load_plugins_flask_frontends():
             flask_frontends[name] = importlib.import_module(
                 '.plugins.' + name + '.flask_frontend', 'archdiffer'
             )
-        except:
-            pass
+        except ImportError as ie:
+            print(ie)
