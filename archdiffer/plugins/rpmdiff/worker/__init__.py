@@ -73,11 +73,11 @@ def package(session, pkg, repo_path):
 
     return rpm_package
 
-def download_packages(pkg):
-    """Download packages whose parameters match the arguments.
+def download_package(pkg):
+    """Download package whose parameters match the arguments.
 
     :param pkg dict: dict containing package parameters
-    :return: list of packages
+    :return: package or None
     """
     base = dnf.Base()
 
@@ -107,11 +107,11 @@ def download_packages(pkg):
         return None
 
     # Download the package
-    print('Downloading package: %s' % pkgs[0].name)
+    print('Started package download: %s' % pkgs[0].name)
     base.conf.destdir = '.'
     base.repos.all().pkgdir = base.conf.destdir
     base.download_packages(list(pkgs))
-    print('Download complete')
+    print('Finished package download: %s' % pkgs[0].name)
 
     return pkgs[0]
 
@@ -136,33 +136,30 @@ def compare(pkg1, pkg2):
     session = database.session()
 
     # Download packages
-    package1 = download_packages(session, pkg1)
-    package2 = download_packages(session, pkg2)
-    if package1 is None or package2 is None:
+    dnf_package1 = download_package(pkg1)
+    dnf_package2 = download_package(pkg2)
+    if dnf_package1 is None or dnf_package2 is None:
         return
 
     # Add packages to the database
-    db_package1 = package(session, package1, pkg1['repository'])
-    db_package2 = package(session, package2, pkg2['repository'])
+    db_package1 = package(session, dnf_package1, pkg1['repository'])
+    db_package2 = package(session, dnf_package2, pkg2['repository'])
 
     # Add comparison and rpm_comparison to the database
     comparison = database.Comparison()
-    comparison.plugin = session.query(database.Plugin).filter(database.Plugin.name=PLUGIN).one()
-    comparison.rpm_comparison = [
-        RPMComparison(
+    comparison.plugin = session.query(database.Plugin).filter_by(name=PLUGIN).one()
+    comparison.rpm_comparison = RPMComparison(
             id_comp=comparison.id,
             pkg1_id=db_package1.id,
             pkg2_id=db_package2.id,
-            state='done'
+            state='done',
         )
-    ]
-
     session.add(comparison)
     session.commit()
 
     # Compare packages
     completed_process = run_rpmdiff(db_package1.rpm_filename(), db_package2.rpm_filename())
     rpmdiff_output = completed_process.stdout.decode('UTF-8')
-    parse_rpmdiff(session, comparison.id, package1, package2, rpmdiff_output)
+    parse_rpmdiff(session, comparison.id, dnf_package1, dnf_package2, rpmdiff_output)
 
     # TODO: process results
