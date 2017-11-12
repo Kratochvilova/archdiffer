@@ -7,6 +7,7 @@ Created on Mon Sep  4 12:32:32 2017
 
 import subprocess
 import dnf
+from sqlalchemy.exc import IntegrityError
 from .... import database
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository)
@@ -26,11 +27,14 @@ def repository(session, repo_path):
     :return: repository
     :rtype: rpm_db_models.RPMRepository
     """
-    repo = session.query(RPMRepository).filter_by(path=repo_path).one_or_none()
-    if repo is None:
+    try:
         repo = RPMRepository(path=repo_path)
         session.add(repo)
         session.commit()
+    except IntegrityError:
+        session.rollback()
+        repo = session.query(RPMRepository).filter_by(path=repo_path).one()
+
     return repo
 
 def package(session, pkg, repo_path):
@@ -44,15 +48,8 @@ def package(session, pkg, repo_path):
     :rtype: rpm_db_models.RPMPackage
     """
     id_repo = repository(session, repo_path).id
-    rpm_package = session.query(RPMPackage).filter_by(
-        name=pkg.name,
-        arch=pkg.arch,
-        epoch=pkg.epoch,
-        version=pkg.version,
-        release=pkg.release,
-        id_repo=id_repo
-    ).one_or_none()
-    if rpm_package is None:
+
+    try:
         rpm_package = RPMPackage(
             name=pkg.name,
             arch=pkg.arch,
@@ -63,6 +60,17 @@ def package(session, pkg, repo_path):
         )
         session.add(rpm_package)
         session.commit()
+    except IntegrityError:
+        session.rollback()
+        rpm_package = session.query(RPMPackage).filter_by(
+            name=pkg.name,
+            arch=pkg.arch,
+            epoch=pkg.epoch,
+            version=pkg.version,
+            release=pkg.release,
+            id_repo=id_repo
+        ).one()
+
     return rpm_package
 
 def download_packages(pkg):
