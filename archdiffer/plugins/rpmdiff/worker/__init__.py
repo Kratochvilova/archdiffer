@@ -147,19 +147,30 @@ def compare(pkg1, pkg2):
 
     # Add comparison and rpm_comparison to the database
     comparison = database.Comparison()
-    comparison.plugin = session.query(database.Plugin).filter_by(name=PLUGIN).one()
+    comparison.plugin = session.query(database.Plugin).filter_by(
+        name=PLUGIN
+    ).one()
     comparison.rpm_comparison = RPMComparison(
-            id_comp=comparison.id,
-            pkg1_id=db_package1.id,
-            pkg2_id=db_package2.id,
-            state='done',
-        )
+        id_comp=comparison.id,
+        pkg1_id=db_package1.id,
+        pkg2_id=db_package2.id,
+        state='done',
+    )
     session.add(comparison)
     session.commit()
 
     # Compare packages
-    completed_process = run_rpmdiff(db_package1.rpm_filename(), db_package2.rpm_filename())
+    completed_process = run_rpmdiff(
+        db_package1.rpm_filename(),
+        db_package2.rpm_filename()
+    )
     rpmdiff_output = completed_process.stdout.decode('UTF-8')
-    parse_rpmdiff(session, comparison.id, dnf_package1, dnf_package2, rpmdiff_output)
+    parse_rpmdiff(
+        session,
+        comparison.id,
+        dnf_package1,
+        dnf_package2,
+        rpmdiff_output
+    )
 
     # TODO: process results
