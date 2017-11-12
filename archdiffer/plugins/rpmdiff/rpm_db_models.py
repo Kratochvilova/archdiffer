@@ -7,6 +7,7 @@ Created on Tue Oct  3 10:56:53 2017
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.schema import UniqueConstraint
 from ... import database
 
 class RPMComparison(database.Base):
@@ -40,7 +41,7 @@ class RPMComparison(database.Base):
                     self.id_comp,
                     self.pkg1_id,
                     self.pkg2_id,
-                    self.state
+                    self.state,
                 )
 
 class RPMDifference(database.Base):
@@ -77,6 +78,8 @@ class RPMPackage(database.Base):
         Integer, ForeignKey('rpm_repositories.id'), nullable=False
     )
 
+    UniqueConstraint('name', 'arch', 'epoch', 'version', 'release', 'id_repo')
+
     rpm_comparisons1 = relationship(
         "RPMComparison",
         foreign_keys='RPMComparison.pkg1_id',
@@ -100,7 +103,7 @@ class RPMPackage(database.Base):
                     self.epoch,
                     self.version,
                     self.release,
-                    self.id_repo
+                    self.id_repo,
                 )
 
     def rpm_filename(self):
@@ -113,14 +116,14 @@ class RPMPackage(database.Base):
             name=self.name,
             version=self.version,
             release=self.release,
-            arch=self.arch
+            arch=self.arch,
         )
 
 class RPMRepository(database.Base):
     __tablename__ = 'rpm_repositories'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    path = Column(String, nullable=False)
+    path = Column(String, nullable=False, unique=True)
 
     rpm_package = relationship(
         "RPMPackage", back_populates="rpm_repository"

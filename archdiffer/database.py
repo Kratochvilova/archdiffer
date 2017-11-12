@@ -22,7 +22,7 @@ class Comparison(Base):
     time = Column(DateTime, default=func.now())
     plugin_id = Column(Integer, ForeignKey('plugins.id'), nullable=False)
 
-    plugin = relationship("Plugin", back_populates="comparison")
+    plugin = relationship("Plugin", back_populates="comparisons")
 
     def __repr__(self):
         return "<Comparison(id='%s', time='%s', plugin_id='%s')>" % (
@@ -33,7 +33,7 @@ class Plugin(Base):
     __tablename__ = 'plugins'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
 
     comparisons = relationship("Comparison", back_populates="plugin")
 
