@@ -1,24 +1,56 @@
 {% extends "rpm_layout.html" %}
 {% block body %}
-  <ul class=differences>
-	<table>
-	<tr>
-		<th>ID</th>
-		<th>Comparison</th>
-		<th>Data</th>
-		<th>Type</th>
-		<th>Diff</th>
-	</tr>
-	{% for diff in differences %}
-	<tr>
-		<td>{{ diff.id }}</td>
-		<td>{{ diff.id_comp }}</td>
-		<td>{{ diff.pkg }}</td>
-		<td>{{ diff.diff_type }}</td>
-		<td>{{ diff.diff }}</td>
-	</tr>
-	{% endfor %}
-	</table>
-  </ul>
-  <a href="{{ url_for('rpmdiff.show_comparisons') }}">Go back</a>
+<ul class=differences>
+
+  <h3>Comparison</h3>
+  <table>
+    <tr>
+      <th>Comparison ID</th>
+      <th>{{ differences[0].id_comp }}</th>
+    </tr>
+  </table>
+
+  <h3>Tags</h3>
+  <table>
+    <tr>
+      <th>Type</th>
+      <th>Diff</th>
+    </tr>
+    {% for diff in differences if diff.category == 'tags' %}
+    <tr>
+      <td>{{ diff.diff_type }}</td>
+      <td>{{ diff.diff }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h3>PRCO</h3>
+  <table>
+    <tr>
+      <th>Type</th>
+      <th>Diff</th>
+    </tr>
+    {% for diff in differences if diff.category == 'PRCO' %}
+    <tr>
+      <td>{{ diff.diff_type }}</td>
+      <td>{{ diff.diff }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h3>Files</h3>
+  <table>
+    <tr>
+      <th>Type</th>
+      <th>Diff</th>
+    </tr>
+    {% for diff in differences if diff.category == 'files' %}
+    <tr>
+      <td>{{ diff.diff_type }}</td>
+      <td>{{ diff.diff }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</ul>
+<a href="{{ url_for('rpmdiff.show_comparisons') }}">Go back</a>
 {% endblock %}

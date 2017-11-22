@@ -51,7 +51,7 @@ class RPMDifference(database.Base):
     id_comp = Column(
         Integer, ForeignKey('rpm_comparisons.id_comp'), nullable=False
     )
-    pkg = Column(String, nullable=False)
+    category = Column(String)
     diff_type = Column(String, nullable=False)
     diff = Column(String, nullable=False)
 

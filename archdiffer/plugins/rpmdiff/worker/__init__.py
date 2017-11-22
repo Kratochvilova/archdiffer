@@ -15,6 +15,12 @@ from ....backend.celery_app import celery_app
 
 PLUGIN = 'rpmdiff'
 
+TAGS = ('NAME', 'SUMMARY', 'DESCRIPTION', 'GROUP', 'LICENSE', 'URL',
+        'PREIN', 'POSTIN', 'PREUN', 'POSTUN', 'PRETRANS', 'POSTTRANS')
+
+PRCO = ('REQUIRES', 'PROVIDES', 'CONFLICTS', 'OBSOLETES',
+        'RECOMMENDS', 'SUGGESTS', 'ENHANCES', 'SUPPLEMENTS')
+
 def update_status(status):
     pass
 
@@ -118,18 +124,48 @@ def download_package(pkg):
 def run_rpmdiff(pkg1, pkg2):
     return subprocess.run(["rpmdiff", pkg1, pkg2], stdout=subprocess.PIPE)
 
-def parse_rpmdiff(session, id_comp, pkg1, pkg2, rpmdiff_output):
+def parse_rpmdiff(rpmdiff_output):
+    diffs = []
     lines = rpmdiff_output.split('\n')
     for line in lines:
-        try:
-            left, right = line.split(maxsplit=1)
+        if line != '':
+            diffs.append(line.split(maxsplit=1))
+    return diffs
+
+def proces_differences(session, id_comp, pkg1, pkg2, diffs):
+    errors = []
+    for diff in diffs:
+        if len(diff) != 2:
+            errors.append(diff)
+            continue
+
+        if diff[1] in TAGS:
             difference = RPMDifference(
-                id_comp=int(id_comp), pkg=str(pkg1), diff_type=left, diff=right
+                id_comp=int(id_comp),
+                category='tags',
+                diff_type=diff[0],
+                diff=diff[1]
             )
-            session.add(difference)
-            session.commit()
-        except:
-            print(line)
+        elif diff[1].startswith(PRCO):
+            difference = RPMDifference(
+                id_comp=int(id_comp),
+                category='PRCO',
+                diff_type=diff[0],
+                diff=diff[1]
+            )
+        else:
+            difference = RPMDifference(
+                id_comp=int(id_comp),
+                category='files',
+                diff_type=diff[0],
+                diff=diff[1]
+            )
+        session.add(difference)
+        session.commit()
+
+    print('Unrecognized line in rpmdiff output:')
+    for e in errors:
+        print(e)
 
 @celery_app.task(name='rpmdiff.compare')
 def compare(pkg1, pkg2):
@@ -165,12 +201,13 @@ def compare(pkg1, pkg2):
         db_package2.rpm_filename()
     )
     rpmdiff_output = completed_process.stdout.decode('UTF-8')
-    parse_rpmdiff(
+    diffs = parse_rpmdiff(rpmdiff_output)
+
+    # Process results
+    proces_differences(
         session,
         comparison.id,
         dnf_package1,
         dnf_package2,
-        rpmdiff_output
+        diffs
     )
-
-    # TODO: process results
