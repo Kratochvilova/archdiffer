@@ -133,37 +133,50 @@ def parse_rpmdiff(rpmdiff_output):
     return diffs
 
 def proces_differences(session, id_comp, pkg1, pkg2, diffs):
+    # TODO: also check for renamed files
+    # (diff_type='renamed', diff_info='name_of_new_file')
+
     errors = []
     for diff in diffs:
         if len(diff) != 2:
             errors.append(diff)
             continue
 
+        if diff[0] == 'added' or diff[0] == 'removed':
+            diff_type = diff[0]
+            diff_info = None
+        else:
+            diff_type = 'cahnged'
+            diff_info = diff[0]
+
         if diff[1] in TAGS:
             difference = RPMDifference(
                 id_comp=int(id_comp),
                 category='tags',
-                diff_type=diff[0],
+                diff_type=diff_type,
+                diff_info=diff_info,
                 diff=diff[1]
             )
         elif diff[1].startswith(PRCO):
             difference = RPMDifference(
                 id_comp=int(id_comp),
                 category='PRCO',
-                diff_type=diff[0],
+                diff_type=diff_type,
+                diff_info=diff_info,
                 diff=diff[1]
             )
         else:
             difference = RPMDifference(
                 id_comp=int(id_comp),
                 category='files',
-                diff_type=diff[0],
+                diff_type=diff_type,
+                diff_info=diff_info,
                 diff=diff[1]
             )
         session.add(difference)
         session.commit()
 
-    print('Unrecognized line in rpmdiff output:')
+    print('Unrecognized lines in rpmdiff output:')
     for e in errors:
         print(e)
 

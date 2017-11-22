@@ -5,8 +5,21 @@
   <h3>Comparison</h3>
   <table>
     <tr>
-      <th>Comparison ID</th>
-      <th>{{ differences[0].id_comp }}</th>
+      <td>Comparison</td>
+      <td>{{ comp.id_comp }}</td>
+    </tr>
+    <tr>
+      <td>Package 1</td>
+      <td>{{ comp.rpm_package1.rpm_filename() }}</td>
+    </tr>
+    <tr>
+    <tr>
+      <td>Package 2</td>
+      <td>{{ comp.rpm_package2.rpm_filename() }}</td>
+    </tr>
+    <tr>
+      <td>State</td>
+      <td>{{ comp.state }}</td>
     </tr>
   </table>
 
@@ -43,11 +56,13 @@
     <tr>
       <th>Type</th>
       <th>Diff</th>
+      <th>Info</th>
     </tr>
     {% for diff in differences if diff.category == 'files' %}
     <tr>
       <td>{{ diff.diff_type }}</td>
       <td>{{ diff.diff }}</td>
+      <td>{% if diff.diff_info %}{{ diff.diff_info }}{% endif %}</td>
     </tr>
     {% endfor %}
   </table>

@@ -53,6 +53,7 @@ class RPMDifference(database.Base):
     )
     category = Column(String)
     diff_type = Column(String, nullable=False)
+    diff_info = Column(String)
     diff = Column(String, nullable=False)
 
     rpm_comparison = relationship(
@@ -60,9 +61,14 @@ class RPMDifference(database.Base):
     )
 
     def __repr__(self):
-        return ("<Difference(id='%s', id_comp='%s', pkg='%s', diff_type='%s', "
-                "diff='%s')>") % (
-                    self.id, self.id_comp, self.pkg, self.diff_type, self.diff
+        return ("<Difference(id='%s', id_comp='%s', category='%s', "
+                "diff_type='%s', diff_info='%s')>, diff='%s'") % (
+                    self.id,
+                    self.id_comp,
+                    self.category,
+                    self.diff_type,
+                    self.diff_info,
+                    self.diff,
                 )
 
 class RPMPackage(database.Base):
