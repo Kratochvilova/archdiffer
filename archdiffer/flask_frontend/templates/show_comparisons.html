@@ -5,13 +5,13 @@
       <tr>
         <th>ID</th>
 	<th>Time</th>
-        <th>Module</th>
+        <th>Comparison Type</th>
       </tr>
       {% for comp in comparisons %}
       <tr>
-        <td><a href="{{ url_for(comp.plugin.name + '.show_differences', id_comp=comp.id) }}">{{ comp.id }}</a></td>
+        <td><a href="{{ url_for(comp.comparison_type.name + '.show_differences', id_comp=comp.id) }}">{{ comp.id }}</a></td>
 	<td>{{ comp.time }}</td>
-        <td><a href="{{ url_for('index') + comp.plugin.name }}">{{ comp.plugin.name }}</td>
+        <td><a href="{{ url_for('index') + comp.comparison_type.name }}">{{ comp.comparison_type.name }}</td>
       </tr>
       {% endfor %}
     </table>

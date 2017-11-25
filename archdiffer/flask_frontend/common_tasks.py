@@ -8,11 +8,14 @@ Created on Wed Aug 30 14:55:56 2017
 from flask import render_template, request, flash, redirect, url_for, g
 from flask import session as flask_session
 from .flask_app import flask_app
-from ..database import session, Comparison, Plugin
+from ..database import session, Comparison, ComparisonType
 
 def my_render_template(html, **arguments):
-    """Call render_template with plugins as one of the arguments."""
-    arguments.setdefault('plugins', g.session.query(Plugin).order_by(Plugin.id))
+    """Call render_template with comparison_types as one of the arguments."""
+    arguments.setdefault(
+        'comparison_types',
+        g.session.query(ComparisonType).order_by(ComparisonType.id)
+    )
     return render_template(html, **arguments)
 
 @flask_app.before_request
@@ -37,9 +40,9 @@ def index():
     comparisons = g.session.query(Comparison).order_by(Comparison.id).all()
     return my_render_template('show_comparisons.html', comparisons=comparisons)
 
-@flask_app.route('/plugins')
-def show_plugins():
-    return my_render_template('show_plugins.html')
+@flask_app.route('/comparison_types')
+def show_comparison_types():
+    return my_render_template('show_comparison_types.html')
 
 @flask_app.route('/login', methods=['GET', 'POST'])
 def login():

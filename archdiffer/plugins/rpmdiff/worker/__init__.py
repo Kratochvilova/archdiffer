@@ -13,7 +13,7 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository)
 from ....backend.celery_app import celery_app
 
-PLUGIN = 'rpmdiff'
+COMPARISON_TYPE = 'rpmdiff'
 
 TAGS = ('NAME', 'SUMMARY', 'DESCRIPTION', 'GROUP', 'LICENSE', 'URL',
         'PREIN', 'POSTIN', 'PREUN', 'POSTUN', 'PRETRANS', 'POSTTRANS')
@@ -196,9 +196,9 @@ def compare(pkg1, pkg2):
 
     # Add comparison and rpm_comparison to the database
     comparison = database.Comparison()
-    comparison.plugin = session.query(database.Plugin).filter_by(
-        name=PLUGIN
-    ).one()
+    comparison.comparison_type = session.query(
+        database.ComparisonType
+    ).filter_by(name=COMPARISON_TYPE).one()
     comparison.rpm_comparison = RPMComparison(
         id_comp=comparison.id,
         pkg1_id=db_package1.id,

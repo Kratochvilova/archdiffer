@@ -20,25 +20,29 @@ class Comparison(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     # time is set when commited
     time = Column(DateTime, default=func.now())
-    plugin_id = Column(Integer, ForeignKey('plugins.id'), nullable=False)
+    comparison_type_id = Column(
+        Integer, ForeignKey('comparison_types.id'), nullable=False
+    )
 
-    plugin = relationship("Plugin", back_populates="comparisons")
+    comparison_type = relationship(
+        "ComparisonType", back_populates="comparisons"
+    )
 
     def __repr__(self):
-        return "<Comparison(id='%s', time='%s', plugin_id='%s')>" % (
-            self.id, self.time, self.plugin_id
+        return "<Comparison(id='%s', time='%s', comparison_type_id='%s')>" % (
+            self.id, self.time, self.comparison_type_id
         )
 
-class Plugin(Base):
-    __tablename__ = 'plugins'
+class ComparisonType(Base):
+    __tablename__ = 'comparison_types'
 
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False, unique=True)
 
-    comparisons = relationship("Comparison", back_populates="plugin")
+    comparisons = relationship("Comparison", back_populates="comparison_type")
 
     def __repr__(self):
-        return "<Plugin(id='%s', name='%s')>" % (self.id, self.name)
+        return "<ComparisonType(id='%s', name='%s')>" % (self.id, self.name)
 
 class SessionSingleton():
     """Singleton that provides sqlalchemy engine and creates sessions."""
