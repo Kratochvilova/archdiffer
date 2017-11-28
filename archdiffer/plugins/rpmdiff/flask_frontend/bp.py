@@ -5,8 +5,8 @@ Created on Sat Sep 16 22:54:57 2017
 @author: pavla
 """
 
-from flask import (Blueprint, abort, request, session, g, flash, redirect,
-                   url_for)
+from flask import Blueprint, abort, request, g, flash, redirect, url_for
+from flask import session as flask_session
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository)
@@ -29,13 +29,13 @@ def record_params(setup_state):
 
 @bp.route('/')
 def show_comparisons():
-    comps = g.session.query(RPMComparison)
+    comps = g.db_session.query(RPMComparison)
     return my_render_template('rpm_show_comparisons.html', comparisons=comps)
 
 @bp.route('/comparison/<int:id_comp>')
 def show_differences(id_comp):
-    comp = g.session.query(RPMComparison).filter_by(id_comp=id_comp).one()
-    diffs = g.session.query(RPMDifference).filter_by(id_comp=id_comp).all()
+    comp = g.db_session.query(RPMComparison).filter_by(id_comp=id_comp).one()
+    diffs = g.db_session.query(RPMDifference).filter_by(id_comp=id_comp).all()
     return my_render_template(
         'rpm_show_differences.html',
         comp=comp,
@@ -44,27 +44,27 @@ def show_differences(id_comp):
 
 @bp.route('/package/<int:pkg_id>')
 def show_package(pkg_id):
-    pkg = g.session.query(RPMPackage).filter_by(id=pkg_id).one()
+    pkg = g.db_session.query(RPMPackage).filter_by(id=pkg_id).one()
     return my_render_template('rpm_show_package.html', pkg=pkg)
 
 @bp.route('/repository/<int:repo_id>')
 def show_repository(repo_id):
-    repo = g.session.query(RPMRepository).filter_by(id=repo_id).one()
+    repo = g.db_session.query(RPMRepository).filter_by(id=repo_id).one()
     return my_render_template('rpm_show_repository.html', repo=repo)
 
 @bp.route('/packages')
 def show_packages():
-    pkgs = g.session.query(RPMPackage).all()
+    pkgs = g.db_session.query(RPMPackage).all()
     return my_render_template('rpm_show_packages.html', pkgs=pkgs)
 
 @bp.route('/repositories')
 def show_repositories():
-    repos = g.session.query(RPMRepository).all()
+    repos = g.db_session.query(RPMRepository).all()
     return my_render_template('rpm_show_repositories.html', repos=repos)
 
 @bp.route('/add', methods=['POST'])
 def add_entry():
-    if not session.get('logged_in'):
+    if not flask_session.get('logged_in'):
         abort(401)
     pkg1 = {
         'name': request.form['name1'],
