@@ -17,7 +17,7 @@
 <div class="header lighttheme">
   <h1>Archdiffer</h1>
   <div class="metanav middletheme">
-  {% if not session.logged_in %}
+  {% if not session.openid %}
     <a href="{{ url_for('login') }}">log in</a>
   {% else %}
     <a href="{{ url_for('logout') }}">log out</a>

@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Wed Apr  5 19:32:41 2017
@@ -43,6 +44,16 @@ class ComparisonType(Base):
 
     def __repr__(self):
         return "<ComparisonType(id='%s', name='%s')>" % (self.id, self.name)
+
+class User(Base):
+    __tablename__ = 'users'
+
+    openid = Column(String, primary_key=True, nullable=False)
+    name = Column(String)
+    email = Column(String)
+
+    def __repr__(self):
+        return "<User(name='%s')>" % (self.openid)
 
 class SessionSingleton():
     """Singleton that provides sqlalchemy engine and creates sessions."""

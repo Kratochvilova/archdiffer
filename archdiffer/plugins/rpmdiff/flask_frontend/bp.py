@@ -64,7 +64,7 @@ def show_repositories():
 
 @bp.route('/add', methods=['POST'])
 def add_entry():
-    if not flask_session.get('logged_in'):
+    if 'openid' not in flask_session:
         abort(401)
     pkg1 = {
         'name': request.form['name1'],

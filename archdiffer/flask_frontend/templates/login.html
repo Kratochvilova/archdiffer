@@ -3,12 +3,10 @@
   <h2>Login</h2>
   {% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
   <form action="{{ url_for('login') }}" method=post>
-    <dl>
-      <dt>Username:
-      <dd><input type=text name=username>
-      <dt>Password:
-      <dd><input type=password name=password>
-      <dd><input type=submit value=Login>
-    </dl>
+    <p>
+      OpenID:
+      <input type=text name=openid size=30>
+      <input type=submit value="Sign in">
+      <input type=hidden name=next value="{{ next }}">
   </form>
 {% endblock %}

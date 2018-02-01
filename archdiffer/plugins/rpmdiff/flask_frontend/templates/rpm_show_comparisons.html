@@ -1,6 +1,6 @@
 {% extends "rpm_layout.html" %}
 {% block body %}
-  {% if session.logged_in %}
+  {% if session.openid %}
     <form action="{{ url_for('rpmdiff.add_entry') }}" method=post class=add-entry>
       <dl>
 
