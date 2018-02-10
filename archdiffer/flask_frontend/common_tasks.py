@@ -10,7 +10,7 @@ from flask import session as flask_session
 from flask_openid import OpenID
 from .flask_app import flask_app
 from ..database import session as db_session
-from ..database import Comparison, ComparisonType, User
+from ..database import ComparisonType, User
 
 oid = OpenID(flask_app, '/tmp', safe_roots=[])
 
@@ -23,24 +23,20 @@ def my_render_template(html, **arguments):
     return render_template(html, **arguments)
 
 @flask_app.before_request
-def before_request():
+def new_database_session():
     """Get new database session for each request."""
     g.db_session = db_session()
 
 @flask_app.before_request
 def lookup_current_user():
+    """Get user for the request."""
     g.user = None
     if 'openid' in flask_session:
         openid = flask_session['openid']
         g.user = g.db_session.query(User).filter_by(openid=openid).first()
-        print()
-        print('___')
-        print(g.user)
-        print('___')
-        print()
 
 @flask_app.teardown_request
-def teardown_request(exception):
+def close_database_session(exception):
     """Commit and close database session at the end of request."""
     ses = getattr(g, 'db_session', None)
     if ses is not None:
@@ -50,15 +46,6 @@ def teardown_request(exception):
             pass
         finally:
             ses.close()
-
-@flask_app.route('/')
-def index():
-    comparisons = g.db_session.query(Comparison).order_by(Comparison.id).all()
-    return my_render_template('show_comparisons.html', comparisons=comparisons)
-
-@flask_app.route('/comparison_types')
-def show_comparison_types():
-    return my_render_template('show_comparison_types.html')
 
 @flask_app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler

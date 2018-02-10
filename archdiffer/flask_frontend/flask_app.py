@@ -6,7 +6,9 @@ Created on Sun Sep 10 10:36:51 2017
 """
 
 from flask import Flask
+from flask_restful import Api
 from .config import FlaskConfig
 
 flask_app = Flask(__name__)
 flask_app.config.from_object(FlaskConfig)
+flask_api = Api(flask_app)
