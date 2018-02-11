@@ -7,10 +7,13 @@ Created on Sat Sep 16 22:54:57 2017
 
 from flask import Blueprint, abort, request, g, flash, redirect, url_for
 from flask import session as flask_session
+from flask.views import View
+from flask_restful import Api, Resource, fields, marshal_with
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository)
 from ....flask_frontend.common_tasks import my_render_template
+from ....flask_frontend.database_tasks import query_database_table
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
@@ -18,6 +21,7 @@ COMPARISON_TYPE = 'rpmdiff'
 
 bp = Blueprint(COMPARISON_TYPE, __name__, template_folder='templates')
 bp.config = {}
+flask_api = Api(bp)
 
 @bp.record
 def record_params(setup_state):
@@ -27,10 +31,29 @@ def record_params(setup_state):
         [(key, value) for (key, value) in app.config.items()]
     )
 
-@bp.route('/')
-def show_comparisons():
-    comps = g.db_session.query(RPMComparison)
-    return my_render_template('rpm_show_comparisons.html', comparisons=comps)
+# For marshalling sqlalchemy objects
+RPM_COMPARISON_FIELDS = {
+    'id_comp': fields.Integer,
+    'pkg1_id': fields.Integer,
+    'pkg2_id': fields.Integer,
+    'state': fields.String,
+}
+
+# RPMComparisons
+class ShowRPMComparisons(Resource):
+    @marshal_with(RPM_COMPARISON_FIELDS)
+    def get(self):
+        return query_database_table(RPMComparison)
+
+class RPMComparisonsView(View):
+    def dispatch_request(self):
+        return my_render_template(
+            'rpm_show_comparisons.html',
+            comparisons=query_database_table(RPMComparison)
+        )
+
+flask_api.add_resource(ShowRPMComparisons, '/rest/comparisons')
+bp.add_url_rule('/', view_func=RPMComparisonsView.as_view('show_comparisons'))
 
 @bp.route('/comparison/<int:id_comp>')
 def show_differences(id_comp):
