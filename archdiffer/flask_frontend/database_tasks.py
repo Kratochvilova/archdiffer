@@ -9,8 +9,8 @@ Created on Fri Feb  9 22:32:02 2018
 
 from flask import request, g
 from flask.views import View
-from flask_restful import Resource
-from flask_restful import fields, marshal_with
+from flask_restful import Resource, fields, marshal_with
+from werkzeug.exceptions import BadRequest
 from .flask_app import flask_app, flask_api
 from ..database import Comparison, ComparisonType
 from .common_tasks import my_render_template
@@ -48,7 +48,10 @@ def parse_request():
     """
     args_dict = {}
     for key, value in request.args.items():
-        args_dict[key] = _TRANSFORMATIONS[key](value)
+        try:
+            args_dict[key] = _TRANSFORMATIONS[key](value)
+        except KeyError:
+            raise BadRequest()
     return args_dict
 
 def query_database_table(table):
