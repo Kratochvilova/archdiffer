@@ -220,8 +220,8 @@ def compare(pkg1, pkg2):
 
     # Compare packages
     completed_process = run_rpmdiff(
-        db_package1.rpm_filename(),
-        db_package2.rpm_filename()
+        dnf_package1.localPkg(),
+        dnf_package2.localPkg()
     )
     rpmdiff_output = completed_process.stdout.decode('UTF-8')
     diffs = parse_rpmdiff(rpmdiff_output)
