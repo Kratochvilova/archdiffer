@@ -16,13 +16,13 @@ from ..database import Comparison, ComparisonType
 from .common_tasks import my_render_template
 
 # For marshalling sqlalchemy objects
-comparison_fields = {
+COMPARISON_FIELDS = {
     'id': fields.Integer,
     'time': fields.String,
     'comparison_type_id': fields.Integer
 }
 
-comparison_type_fields = {
+COMPARISON_TYPE_FIELDS = {
     'id': fields.Integer,
     'name': fields.String
 }
@@ -41,13 +41,23 @@ _TRANSFORMATIONS = {
 }
 
 def parse_request():
+    """Parse arguments in request according to the _TRANSFORMATIONS.
+    Requests containing other keys are considered invalid.
+
+    :return dict: dict of parsed arguments
+    """
     args_dict = {}
     for key, value in request.args.items():
         args_dict[key] = _TRANSFORMATIONS[key](value)
     return args_dict
 
-def query_database_table(table_name):
-    result = g.db_session.query(table_name)
+def query_database_table(table):
+    """Query database table according to the request arguments.
+
+    :param table: table to query
+    :return list: list of query results
+    """
+    result = g.db_session.query(table)
     args_dict = parse_request()
     if 'filter_by' in args_dict:
         result = result.filter_by(**args_dict['filter_by'])
@@ -62,20 +72,23 @@ def query_database_table(table_name):
 
 # Comparisons
 class ShowComparisons(Resource):
-    @marshal_with(comparison_fields)
+    @marshal_with(COMPARISON_FIELDS)
     def get(self):
         return query_database_table(Comparison)
 
 class ComparisonsView(View):
     def dispatch_request(self):
-        return my_render_template('show_comparisons.html', comparisons=query_database_table(Comparison))
+        return my_render_template(
+            'show_comparisons.html',
+            comparisons=query_database_table(Comparison)
+        )
 
-flask_api.add_resource(ShowComparisons, '/rest/comparisons/')
+flask_api.add_resource(ShowComparisons, '/rest/comparisons')
 flask_app.add_url_rule('/', view_func=ComparisonsView.as_view('index'))
 
 # Comparison types
 class ShowComparisonTypes(Resource):
-    @marshal_with(comparison_fields)
+    @marshal_with(COMPARISON_TYPE_FIELDS)
     def get(self):
         return query_database_table(ComparisonType)
 
@@ -83,6 +96,8 @@ class ComparisonTypesView(View):
     def dispatch_request(self):
         return my_render_template('show_comparison_types.html')
 
-flask_api.add_resource(ShowComparisonTypes, '/rest/comparison_types/')
-flask_app.add_url_rule('/comparison_types', view_func=ComparisonTypesView.as_view('show_comparison_types'))
-
+flask_api.add_resource(ShowComparisonTypes, '/rest/comparison_types')
+flask_app.add_url_rule(
+    '/comparison_types',
+    view_func=ComparisonTypesView.as_view('show_comparison_types')
+)

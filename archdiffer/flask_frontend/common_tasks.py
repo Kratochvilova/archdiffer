@@ -55,8 +55,11 @@ def login():
     if request.method == 'POST':
         openid = request.form.get('openid')
         if openid:
-            return oid.try_login(openid, ask_for=['email', 'nickname'],
-                                         ask_for_optional=['fullname'])
+            return oid.try_login(
+                openid,
+                ask_for=['email', 'nickname'],
+                ask_for_optional=['fullname']
+            )
     return my_render_template('login.html', next=oid.get_next_url(),
                               error=oid.fetch_error())
 
@@ -85,7 +88,9 @@ def create_profile():
             flash(u'Error: you have to enter a valid email address')
         else:
             flash(u'Profile successfully created')
-            g.db_session.add(User(openid=flask_session['openid'], name=name, email=email))
+            g.db_session.add(
+                User(openid=flask_session['openid'], name=name, email=email)
+            )
             g.db_session.commit()
             return redirect(oid.get_next_url())
     return render_template('create_profile.html', next=oid.get_next_url())

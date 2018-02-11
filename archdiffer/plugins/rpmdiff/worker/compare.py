@@ -122,9 +122,20 @@ def download_package(pkg):
     return pkgs[0]
 
 def run_rpmdiff(pkg1, pkg2):
+    """Run rpmdiff as subprocess.
+
+    :param pkg1 string: name of the first package
+    :param pkg2 string: name of the second package
+    :return: CompletedProcess instance
+    """
     return subprocess.run(["rpmdiff", pkg1, pkg2], stdout=subprocess.PIPE)
 
 def parse_rpmdiff(rpmdiff_output):
+    """Parse output from rpmdiff.
+
+    :param rpmdiff_output string: rpmdiff output
+    :return list: list of diffs
+    """
     diffs = []
     lines = rpmdiff_output.split('\n')
     for line in lines:
@@ -135,7 +146,6 @@ def parse_rpmdiff(rpmdiff_output):
 def proces_differences(session, id_comp, pkg1, pkg2, diffs):
     # TODO: also check for renamed files
     # (diff_type='renamed', diff_info='name_of_new_file')
-
     errors = []
     for diff in diffs:
         if len(diff) != 2:
