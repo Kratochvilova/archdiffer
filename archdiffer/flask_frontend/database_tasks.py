@@ -36,6 +36,7 @@ def _list_transform(string):
 
 _TRANSFORMATIONS = {
     'filter_by' : _dict_transform,
+    'filter' : _list_transform,
     'order_by' : _list_transform,
     'limit' : lambda x: int(x),
 }
@@ -64,6 +65,8 @@ def query_database_table(table):
     args_dict = parse_request()
     if 'filter_by' in args_dict:
         result = result.filter_by(**args_dict['filter_by'])
+    if 'filter' in args_dict:
+        result = result.filter(*args_dict['filter'])
     if 'order_by' in args_dict:
         result = result.order_by(*args_dict['order_by'])
     if 'limit' in args_dict:
