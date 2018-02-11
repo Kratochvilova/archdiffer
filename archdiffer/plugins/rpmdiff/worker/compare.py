@@ -156,7 +156,7 @@ def proces_differences(session, id_comp, pkg1, pkg2, diffs):
             diff_type = diff[0]
             diff_info = None
         else:
-            diff_type = 'cahnged'
+            diff_type = 'changed'
             diff_info = diff[0]
 
         if diff[1] in TAGS:
