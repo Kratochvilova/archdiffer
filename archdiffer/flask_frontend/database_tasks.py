@@ -50,7 +50,7 @@ def parse_request():
     for key, value in request.args.items():
         try:
             args_dict[key] = _TRANSFORMATIONS[key](value)
-        except KeyError:
+        except:
             raise BadRequest()
     return args_dict
 
