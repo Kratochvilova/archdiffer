@@ -59,7 +59,7 @@
 		<td><a href="{{ url_for('rpmdiff.show_differences', id_comp=comp.id_comp) }}">{{ comp.id_comp }}</a></td>
 		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg1_id) }}">{{ comp.rpm_package1.name }}</td>
 		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg2_id) }}">{{ comp.rpm_package2.name }}</td>
-		<td>{{ STATE_STRINGS[STATE_DONE] }}</td>
+		<td>{{ STATE_STRINGS[comp.state] }}</td>
 	</tr>
 	{% endfor %}
 	</table>

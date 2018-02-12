@@ -26,11 +26,13 @@
   <h3>Tags</h3>
   <table>
     <tr>
+      <th>Id</th>
       <th>Type</th>
       <th>Diff</th>
     </tr>
     {% for diff in differences if diff.category == CATEGORY_TAGS %}
     <tr>
+      <td>{{ diff.id }}</td>
       <td>{{ DIFF_TYPE_STRINGS[diff.diff_type] }}</td>
       <td>{{ diff.diff }}</td>
     </tr>
@@ -40,11 +42,13 @@
   <h3>PRCO</h3>
   <table>
     <tr>
+      <th>Id</th>
       <th>Type</th>
       <th>Diff</th>
     </tr>
     {% for diff in differences if diff.category == CATEGORY_PRCO %}
     <tr>
+      <td>{{ diff.id }}</td>
       <td>{{ DIFF_TYPE_STRINGS[diff.diff_type] }}</td>
       <td>{{ diff.diff }}</td>
     </tr>
@@ -54,12 +58,14 @@
   <h3>Files</h3>
   <table>
     <tr>
+      <th>Id</th>
       <th>Type</th>
       <th>Diff</th>
       <th>Info</th>
     </tr>
     {% for diff in differences if diff.category == CATEGORY_FILES %}
     <tr>
+      <td>{{ diff.id }}</td>
       <td>{{ DIFF_TYPE_STRINGS[diff.diff_type] }}</td>
       <td>{{ diff.diff }}</td>
       <td>{% if diff.diff_info %}{{ diff.diff_info }}{% endif %}</td>

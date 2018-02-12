@@ -22,8 +22,10 @@ TAGS = ('NAME', 'SUMMARY', 'DESCRIPTION', 'GROUP', 'LICENSE', 'URL',
 PRCO = ('REQUIRES', 'PROVIDES', 'CONFLICTS', 'OBSOLETES',
         'RECOMMENDS', 'SUGGESTS', 'ENHANCES', 'SUPPLEMENTS')
 
-def update_status(status):
-    pass
+def update_state(session, rpm_comparison, state):
+    rpm_comparison.state = state
+    session.add(rpm_comparison)
+    session.commit()
 
 def repository(session, repo_path):
     """Get repository from the database; create new record if none exists.
@@ -217,7 +219,7 @@ def compare(pkg1, pkg2):
         id_comp=comparison.id,
         pkg1_id=db_package1.id,
         pkg2_id=db_package2.id,
-        state=constants.STATE_DONE,
+        state=constants.STATE_NEW,
     )
     session.add(comparison)
     session.commit()
@@ -238,3 +240,5 @@ def compare(pkg1, pkg2):
         dnf_package2,
         diffs
     )
+
+    update_state(session, comparison.rpm_comparison, constants.STATE_DONE)

@@ -9,7 +9,6 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.schema import UniqueConstraint
 from ... import database
-from . import constants
 
 class RPMComparison(database.Base):
     __tablename__ = 'rpm_comparisons'
