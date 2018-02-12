@@ -146,13 +146,20 @@ def parse_rpmdiff(rpmdiff_output):
             diffs.append(line.split(maxsplit=1))
     return diffs
 
-def proces_differences(session, id_comp, pkg1, pkg2, diffs):
+def proces_differences(session, id_comp, diffs):
+    """Process differences from the rpmdiff output and add to the database.
+    
+    :param session: session for communication with the database
+    :type session: qlalchemy.orm.session.Session
+    :param id_comp integer: id_comp of the corresponding RPMComparison
+    :param diffs list: list of parsed differences from rpmdiff output
+    """
     # TODO: also check for renamed files
     # (diff_type='renamed', diff_info='name_of_new_file')
-    errors = []
+    bad_diffs = []
     for diff in diffs:
         if len(diff) != 2:
-            errors.append(diff)
+            bad_diffs.append(diff)
             continue
 
         if diff[0] == 'removed':
@@ -192,9 +199,10 @@ def proces_differences(session, id_comp, pkg1, pkg2, diffs):
         session.add(difference)
         session.commit()
 
-    print('Unrecognized lines in rpmdiff output:')
-    for e in errors:
-        print(e)
+    if bad_diffs != []:
+        print('Unrecognized lines in rpmdiff output:')
+        for bad_diff in bad_diffs:
+            print(bad_diff)
 
 @celery_app.task(name='rpmdiff.compare')
 def compare(pkg1, pkg2):
@@ -233,12 +241,7 @@ def compare(pkg1, pkg2):
     diffs = parse_rpmdiff(rpmdiff_output)
 
     # Process results
-    proces_differences(
-        session,
-        comparison.id,
-        dnf_package1,
-        dnf_package2,
-        diffs
-    )
+    proces_differences(session, comparison.id, diffs)
 
+    # Update RPMComparison state
     update_state(session, comparison.rpm_comparison, constants.STATE_DONE)
