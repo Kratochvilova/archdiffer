@@ -7,7 +7,6 @@ Created on Sat Sep 16 22:54:57 2017
 
 from flask import Blueprint, abort, request, g, flash, redirect, url_for
 from flask import session as flask_session
-from flask.views import View
 from flask_restful import Api, Resource, fields, marshal_with
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
@@ -36,29 +35,10 @@ def record_params(setup_state):
         [(key, value) for (key, value) in app.config.items()]
     )
 
-# For marshalling sqlalchemy objects
-RPM_COMPARISON_FIELDS = {
-    'id_comp': fields.Integer,
-    'pkg1_id': fields.Integer,
-    'pkg2_id': fields.Integer,
-    'state': fields.String,
-}
-
-# RPMComparisons
-class ShowRPMComparisons(Resource):
-    @marshal_with(RPM_COMPARISON_FIELDS)
-    def get(self):
-        return query_database_table(RPMComparison)
-
-class RPMComparisonsView(View):
-    def dispatch_request(self):
-        return my_render_template(
-            'rpm_show_comparisons.html',
-            comparisons=query_database_table(RPMComparison)
-        )
-
-flask_api.add_resource(ShowRPMComparisons, '/rest/comparisons')
-bp.add_url_rule('/', view_func=RPMComparisonsView.as_view('show_comparisons'))
+@bp.route('/')
+def show_comparisons():
+    comp = g.db_session.query(RPMComparison).all()
+    return my_render_template('rpm_show_comparisons.html', comparisons=comp)
 
 @bp.route('/comparison/<int:id_comp>')
 def show_differences(id_comp):
@@ -115,3 +95,73 @@ def add_entry():
     )
     flash('New entry was successfully posted')
     return redirect(url_for('rpmdiff.show_comparisons'))
+
+# Marshalling sqlalchemy objects
+class StateItem(fields.Raw):
+    def format(self, value):
+        return constants.STATE_STRINGS[value]
+
+class CategoryItem(fields.Raw):
+    def format(self, value):
+        return constants.CATEGORY_STRINGS[value]
+
+class DiffTypeItem(fields.Raw):
+    def format(self, value):
+        return constants.DIFF_TYPE_STRINGS[value]
+
+RPM_COMPARISON_FIELDS = {
+    'id_comp': fields.Integer,
+    'pkg1_id': fields.Integer,
+    'pkg2_id': fields.Integer,
+    'state': StateItem,
+}
+
+RPM_DIFFERENCE_FIELDS = {
+    'id': fields.Integer,
+    'id_comp': fields.Integer,
+    'category': CategoryItem,
+    'diff_type': DiffTypeItem,
+    'diff_info': fields.String,
+    'diff': fields.String,
+}
+
+RPM_PACKAGE_FIELDS = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'arch': fields.String,
+    'epoch': fields.String,
+    'version': fields.String,
+    'release': fields.String,
+    'id_repo': fields.Integer,
+}
+
+RPM_REPOSITORY_FIELDS = {
+    'id': fields.Integer,
+    'path': fields.String,
+}
+
+# Resources
+class ShowRPMComparisons(Resource):
+    @marshal_with(RPM_COMPARISON_FIELDS)
+    def get(self):
+        return query_database_table(RPMComparison)
+
+class ShowRPMDifferences(Resource):
+    @marshal_with(RPM_DIFFERENCE_FIELDS)
+    def get(self):
+        return query_database_table(RPMDifference)
+
+class ShowRPMPackages(Resource):
+    @marshal_with(RPM_PACKAGE_FIELDS)
+    def get(self):
+        return query_database_table(RPMPackage)
+
+class ShowRPMRepositories(Resource):
+    @marshal_with(RPM_REPOSITORY_FIELDS)
+    def get(self):
+        return query_database_table(RPMRepository)
+
+flask_api.add_resource(ShowRPMComparisons, '/rest/comparisons')
+flask_api.add_resource(ShowRPMDifferences, '/rest/differences')
+flask_api.add_resource(ShowRPMPackages, '/rest/packages')
+flask_api.add_resource(ShowRPMRepositories, '/rest/repositories')
