@@ -9,6 +9,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.schema import UniqueConstraint
 from ... import database
+from . import constants
 
 class RPMComparison(database.Base):
     __tablename__ = 'rpm_comparisons'
@@ -18,7 +19,7 @@ class RPMComparison(database.Base):
     )
     pkg1_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
     pkg2_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
-    state = Column(String, nullable=False)
+    state = Column(Integer, nullable=False)
 
     rpm_differences = relationship(
         "RPMDifference", back_populates="rpm_comparison"
@@ -51,8 +52,8 @@ class RPMDifference(database.Base):
     id_comp = Column(
         Integer, ForeignKey('rpm_comparisons.id_comp'), nullable=False
     )
-    category = Column(String)
-    diff_type = Column(String, nullable=False)
+    category = Column(Integer)
+    diff_type = Column(Integer, nullable=False)
     diff_info = Column(String)
     diff = Column(String, nullable=False)
 

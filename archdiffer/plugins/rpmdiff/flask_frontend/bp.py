@@ -12,6 +12,7 @@ from flask_restful import Api, Resource, fields, marshal_with
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository)
+from .. import constants
 from ....flask_frontend.common_tasks import my_render_template
 from ....flask_frontend.database_tasks import query_database_table
 
@@ -22,6 +23,10 @@ COMPARISON_TYPE = 'rpmdiff'
 bp = Blueprint(COMPARISON_TYPE, __name__, template_folder='templates')
 bp.config = {}
 flask_api = Api(bp)
+
+@bp.context_processor
+def inject_constants():
+    return vars(constants)
 
 @bp.record
 def record_params(setup_state):

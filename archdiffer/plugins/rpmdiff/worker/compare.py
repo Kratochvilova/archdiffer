@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from .... import database
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository)
+from .. import constants
 from ....backend.celery_app import celery_app
 
 COMPARISON_TYPE = 'rpmdiff'
@@ -152,17 +153,20 @@ def proces_differences(session, id_comp, pkg1, pkg2, diffs):
             errors.append(diff)
             continue
 
-        if diff[0] == 'added' or diff[0] == 'removed':
-            diff_type = diff[0]
+        if diff[0] == 'removed':
+            diff_type = constants.DIFF_TYPE_REMOVED
+            diff_info = None
+        elif diff[0] == 'added':
+            diff_type = constants.DIFF_TYPE_ADDED
             diff_info = None
         else:
-            diff_type = 'changed'
+            diff_type = constants.DIFF_TYPE_CHANGED
             diff_info = diff[0]
 
         if diff[1] in TAGS:
             difference = RPMDifference(
                 id_comp=int(id_comp),
-                category='tags',
+                category=constants.CATEGORY_TAGS,
                 diff_type=diff_type,
                 diff_info=diff_info,
                 diff=diff[1]
@@ -170,7 +174,7 @@ def proces_differences(session, id_comp, pkg1, pkg2, diffs):
         elif diff[1].startswith(PRCO):
             difference = RPMDifference(
                 id_comp=int(id_comp),
-                category='PRCO',
+                category=constants.CATEGORY_PRCO,
                 diff_type=diff_type,
                 diff_info=diff_info,
                 diff=diff[1]
@@ -178,7 +182,7 @@ def proces_differences(session, id_comp, pkg1, pkg2, diffs):
         else:
             difference = RPMDifference(
                 id_comp=int(id_comp),
-                category='files',
+                category=constants.CATEGORY_FILES,
                 diff_type=diff_type,
                 diff_info=diff_info,
                 diff=diff[1]
@@ -213,7 +217,7 @@ def compare(pkg1, pkg2):
         id_comp=comparison.id,
         pkg1_id=db_package1.id,
         pkg2_id=db_package2.id,
-        state='done',
+        state=constants.STATE_DONE,
     )
     session.add(comparison)
     session.commit()
