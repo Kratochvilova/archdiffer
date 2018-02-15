@@ -55,26 +55,33 @@ def parse_request():
             raise BadRequest()
     return args_dict
 
+def modify_query_by_request(query):
+    """Modify query according to the request arguments.
+
+    :param query sqlalchemy.orm.query.Query: query to be modified
+    :return query sqlalchemy.orm.query.Query: modified query
+    """
+    args_dict = parse_request()
+    if 'filter_by' in args_dict:
+        query = query.filter_by(**args_dict['filter_by'])
+    if 'filter' in args_dict:
+        query = query.filter(*args_dict['filter'])
+    if 'order_by' in args_dict:
+        query = query.order_by(*args_dict['order_by'])
+    if 'limit' in args_dict:
+        query = query.limit(args_dict['limit'])
+    return query
+
 def query_database_table(table):
     """Query database table according to the request arguments.
 
     :param table: table to query
     :return list: list of query results
     """
-    result = g.db_session.query(table)
-    args_dict = parse_request()
-    if 'filter_by' in args_dict:
-        result = result.filter_by(**args_dict['filter_by'])
-    if 'filter' in args_dict:
-        result = result.filter(*args_dict['filter'])
-    if 'order_by' in args_dict:
-        result = result.order_by(*args_dict['order_by'])
-    if 'limit' in args_dict:
-        result = result.all()[:args_dict['limit']]
-    else:
-        result = result.all()
+    query = g.db_session.query(table)
+    modify_query_by_request(query)
 
-    return result
+    return query.all()
 
 # Comparisons
 class ShowComparisons(Resource):
