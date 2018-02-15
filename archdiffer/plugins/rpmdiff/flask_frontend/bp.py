@@ -52,7 +52,8 @@ def show_differences(id_comp):
 
 @bp.route('/package/<int:pkg_id>')
 def show_package(pkg_id):
-    pkg = g.db_session.query(RPMPackage).filter_by(id=pkg_id).one()
+    query = joined_query(RPMPackage).filter(RPMPackage.id==pkg_id)
+    pkg = dict(iter_query_result(query, RPMPackage))
     return my_render_template('rpm_show_package.html', pkg=pkg)
 
 @bp.route('/repository/<int:repo_id>')

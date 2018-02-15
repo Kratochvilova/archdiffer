@@ -1,5 +1,6 @@
 {% extends "rpm_layout.html" %}
 {% block body %}
+{% for id, pkg in pkg.items() %}
   <ul class=package>
 	<table>
 	<tr>
@@ -11,13 +12,14 @@
 		<th>Repo ID</th>
 	</tr>
 	<tr>
-		<td>{{ pkg.id }}</a></td>
-		<td>{{ pkg.name }}</td>
-		<td>{{ pkg.epoch }}</td>
-		<td>{{ pkg.version }}</td>
-		<td>{{ pkg.release }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=pkg.id_repo) }}">{{ pkg.rpm_repository.path }}</td>
+		<td>{{ id }}</a></td>
+		<td>{{ pkg['name'] }}</td>
+		<td>{{ pkg['epoch'] }}</td>
+		<td>{{ pkg['version'] }}</td>
+		<td>{{ pkg['release'] }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=pkg['repo']['id']) }}">{{ pkg['repo']['path'] }}</td>
 	</tr>
 	</table>
   </ul>
+{% endfor %}
 {% endblock %}
