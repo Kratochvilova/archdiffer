@@ -32,9 +32,9 @@ def joined_query(table=RPMComparison):
     repo2 = aliased(RPMRepository, name='repo2')
     
     if table == RPMRepository:
-        tables = [repo1]
+        tables = [RPMRepository]
     if table == RPMPackage:
-        tables = [pkg1, repo1]
+        tables = [RPMPackage, RPMRepository]
         conditions = [pkg1.id_repo==repo1.id]
     if table == RPMComparison or table == RPMDifference:
         tables = [Comparison, RPMComparison, pkg1, pkg2, repo1, repo2]
@@ -68,7 +68,7 @@ def iter_query_result(result, table=RPMComparison):
         if table == RPMComparison or table == RPMDifference:
             return line.RPMComparison.id_comp
         elif table == RPMPackage:
-            return line.pkg1.id
+            return line.RPMPackage.id
         else:
             return line.id
 
@@ -86,11 +86,11 @@ def iter_query_result(result, table=RPMComparison):
             result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
             result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
         elif table == RPMPackage:
-            result_dict = line.pkg1.exported()
-            result_dict['repo'] = line.repo1.exported()
-            result_dict['filename'] = line.pkg1.rpm_filename()
+            result_dict = line.RPMPackage.exported()
+            result_dict['repo'] = line.RPMRepository.exported()
+            result_dict['filename'] = line.RPMPackage.rpm_filename()
         else:
-            result_dict = {'repo1': line.path}
+            result_dict = {'path': line.path}
 
         return result_dict
 
