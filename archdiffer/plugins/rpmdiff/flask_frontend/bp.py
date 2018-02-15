@@ -43,12 +43,11 @@ def show_comparisons():
 
 @bp.route('/comparison/<int:id_comp>')
 def show_differences(id_comp):
-    comp = g.db_session.query(RPMComparison).filter_by(id_comp=id_comp).one()
-    diffs = g.db_session.query(RPMDifference).filter_by(id_comp=id_comp).all()
+    query = joined_query(RPMDifference).filter(RPMComparison.id_comp==id_comp)
+    comparison = dict(iter_query_result(query, RPMDifference))
     return my_render_template(
         'rpm_show_differences.html',
-        comp=comp,
-        differences=diffs
+        comparison=comparison
     )
 
 @bp.route('/package/<int:pkg_id>')

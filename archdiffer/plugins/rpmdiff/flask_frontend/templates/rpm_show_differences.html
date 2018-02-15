@@ -1,25 +1,25 @@
 {% extends "rpm_layout.html" %}
 {% block body %}
 <ul class=differences>
-
+{% for id_comp, comp in comparison.items() %}
   <h3>Comparison</h3>
   <table>
     <tr>
       <td>Comparison</td>
-      <td>{{ comp.id_comp }}</td>
+      <td>{{ id_comp }}</td>
     </tr>
     <tr>
       <td>Package 1</td>
-      <td>{{ comp.rpm_package1.rpm_filename() }}</td>
+      <td>{{ comp['pkg1']['filename'] }}</td>
     </tr>
     <tr>
     <tr>
       <td>Package 2</td>
-      <td>{{ comp.rpm_package2.rpm_filename() }}</td>
+      <td>{{ comp['pkg2']['filename'] }}</td>
     </tr>
     <tr>
       <td>State</td>
-      <td>{{ comp.state }}</td>
+      <td>{{ comp['state'] }}</td>
     </tr>
   </table>
 
@@ -30,11 +30,11 @@
       <th>Type</th>
       <th>Diff</th>
     </tr>
-    {% for diff in differences if diff.category == CATEGORY_TAGS %}
+    {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_TAGS] %}
     <tr>
-      <td>{{ diff.id }}</td>
-      <td>{{ DIFF_TYPE_STRINGS[diff.diff_type] }}</td>
-      <td>{{ diff.diff }}</td>
+      <td>{{ diff['id'] }}</td>
+      <td>{{ diff['diff_type'] }}</td>
+      <td>{{ diff['diff'] }}</td>
     </tr>
     {% endfor %}
   </table>
@@ -46,11 +46,11 @@
       <th>Type</th>
       <th>Diff</th>
     </tr>
-    {% for diff in differences if diff.category == CATEGORY_PRCO %}
+    {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_PRCO] %}
     <tr>
-      <td>{{ diff.id }}</td>
-      <td>{{ DIFF_TYPE_STRINGS[diff.diff_type] }}</td>
-      <td>{{ diff.diff }}</td>
+      <td>{{ diff['id'] }}</td>
+      <td>{{ diff['diff_type'] }}</td>
+      <td>{{ diff['diff'] }}</td>
     </tr>
     {% endfor %}
   </table>
@@ -63,15 +63,17 @@
       <th>Diff</th>
       <th>Info</th>
     </tr>
-    {% for diff in differences if diff.category == CATEGORY_FILES %}
+    {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_FILES] %}
     <tr>
-      <td>{{ diff.id }}</td>
-      <td>{{ DIFF_TYPE_STRINGS[diff.diff_type] }}</td>
-      <td>{{ diff.diff }}</td>
-      <td>{% if diff.diff_info %}{{ diff.diff_info }}{% endif %}</td>
+      <td>{{ diff['id'] }}</td>
+      <td>{{ diff['diff_type'] }}</td>
+      <td>{{ diff['diff'] }}</td>
+      <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
     </tr>
     {% endfor %}
   </table>
 </ul>
 <a href="{{ url_for('rpmdiff.show_comparisons') }}">Go back</a>
+
+{% endfor %}
 {% endblock %}
