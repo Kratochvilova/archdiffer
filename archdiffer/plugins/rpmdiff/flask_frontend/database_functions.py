@@ -86,9 +86,9 @@ def iter_query_result(result, table=RPMComparison):
             result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
             result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
         elif table == RPMPackage:
-            result_dict = {'pkg1': line.pkg1.exported()}
-            result_dict['pkg1']['repo'] = line.repo1.exported()
-            result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
+            result_dict = line.pkg1.exported()
+            result_dict['repo'] = line.repo1.exported()
+            result_dict['filename'] = line.pkg1.rpm_filename()
         else:
             result_dict = {'repo1': line.path}
 
