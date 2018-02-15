@@ -21,7 +21,7 @@ class BaseExported(object):
 class RPMComparison(BaseExported, database.Base):
     __tablename__ = 'rpm_comparisons'
 
-    to_export = ['id_comp', 'pkg1_id', 'pkg2_id', 'state']
+    to_export = ['id_comp', 'state']
 
     id_comp = Column(
         Integer, ForeignKey('comparisons.id'), primary_key=True, nullable=False
@@ -57,7 +57,7 @@ class RPMComparison(BaseExported, database.Base):
 class RPMDifference(BaseExported, database.Base):
     __tablename__ = 'rpm_differences'
 
-    to_export = ['id', 'id_comp', 'category', 'diff_type', 'diff_info', 'diff']
+    to_export = ['id', 'category', 'diff_type', 'diff_info', 'diff']
 
     id = Column(Integer, primary_key=True, nullable=False)
     id_comp = Column(
@@ -86,9 +86,7 @@ class RPMDifference(BaseExported, database.Base):
 class RPMPackage(BaseExported, database.Base):
     __tablename__ = 'rpm_packages'
     
-    to_export = [
-        'id', 'name', 'arch', 'epoch', 'version', 'release', 'id_repo'
-    ]
+    to_export = ['id', 'name', 'arch', 'epoch', 'version', 'release']
 
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
@@ -144,7 +142,7 @@ class RPMPackage(BaseExported, database.Base):
 class RPMRepository(BaseExported, database.Base):
     __tablename__ = 'rpm_repositories'
 
-    to_export = ['path', 'name']
+    to_export = ['id', 'path']
 
     id = Column(Integer, primary_key=True, nullable=False)
     path = Column(String, nullable=False, unique=True)

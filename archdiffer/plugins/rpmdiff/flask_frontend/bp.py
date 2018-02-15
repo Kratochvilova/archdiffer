@@ -169,8 +169,8 @@ flask_api.add_resource(ShowRPMRepositories, '/rest/repositories')
 
 class ShowJoinedData(Resource):    
     def get(self):
-        return dict(iter_query_result(
-            modify_query_by_request(joined_query(diffs=True)), diffs=True
+        return dict(iter_query_result(modify_query_by_request(
+            joined_query(RPMDifference)), RPMDifference
         ))
 
 flask_api.add_resource(ShowJoinedData, '/rest/joined')

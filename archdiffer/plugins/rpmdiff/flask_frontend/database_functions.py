@@ -15,47 +15,87 @@ from .. import constants
 
 COMPARISON_TYPE = 'rpmdiff'
 
-def joined_query(diffs=False):
-    """Query all database tables except rpm_differences.
+def joined_query(table=RPMComparison):
+    """Query database tables jointly.
 
+    :param table: table setting which tables to query
+    :type table: one of (RPMDifference, RPMComparison, RPMPackage,
+                         RPMRepository)
     :return sqlalchemy.orm.query.Query: resulting query object
     """
+    tables = []
+    conditions = []
+
     pkg1 = aliased(RPMPackage, name='pkg1')
     pkg2 = aliased(RPMPackage, name='pkg2')
     repo1 = aliased(RPMRepository, name='repo1')
     repo2 = aliased(RPMRepository, name='repo2')
-    query = g.db_session.query(
-        RPMComparison, Comparison, pkg1, pkg2, repo1, repo2
-    ).filter(
-        RPMComparison.id_comp==Comparison.id,
-        RPMComparison.pkg1_id==pkg1.id,
-        RPMComparison.pkg2_id==pkg2.id,
-        repo1.id==pkg1.id_repo,
-        repo2.id==pkg2.id_repo
-    )
     
-    if diffs:
+    if table == RPMRepository:
+        tables = [repo1]
+    if table == RPMPackage:
+        tables = [pkg1, repo1]
+        conditions = [pkg1.id_repo==repo1.id]
+    if table == RPMComparison or table == RPMDifference:
+        tables = [Comparison, RPMComparison, pkg1, pkg2, repo1, repo2]
+        conditions = [
+            RPMComparison.id_comp==Comparison.id,
+            RPMComparison.pkg1_id==pkg1.id,
+            RPMComparison.pkg2_id==pkg2.id,
+            pkg1.id_repo==repo1.id,
+            pkg2.id_repo==repo2.id,
+        ]
+
+    query = g.db_session.query(*tables).filter(*conditions)
+
+    if table == RPMDifference:
         query = query.add_entity(RPMDifference).outerjoin(
             RPMDifference, RPMDifference.id_comp==RPMComparison.id_comp
         )
 
     return query
 
-def iter_query_result(result, diffs=False):
-    def make_comparison(line):
-        comp_dict = {
-            'time': str(line.Comparison.time),
-            'type': COMPARISON_TYPE,
-            'pkg1': line.pkg1.exported(),
-            'pkg2': line.pkg2.exported(),
-            'state': constants.STATE_STRINGS[line.RPMComparison.state],
-        }
-        comp_dict['pkg1']['repo'] = line.repo1.path
-        comp_dict['pkg2']['repo'] = line.repo2.path
-        return line.RPMComparison.id_comp, comp_dict
+def iter_query_result(result, table=RPMComparison):
+    """Process result of the joined query.
 
-    def get_difference(line, diffs):
-        if not diffs or line.RPMDifference is None:
+    :param table: table setting which tables were queried
+    :type table: one of (RPMDifference, RPMComparison, RPMPackage,
+                         RPMRepository)
+    :return: iterator of resulting dict
+    :rtype: Iterator[dict]
+    """
+    def get_id(line):
+        if table == RPMComparison or table == RPMDifference:
+            return line.RPMComparison.id_comp
+        elif table == RPMPackage:
+            return line.pkg1.id
+        else:
+            return line.id
+
+    def parse_line(line):
+        if table == RPMComparison or table == RPMDifference:
+            result_dict = {
+                'time': str(line.Comparison.time),
+                'type': COMPARISON_TYPE,
+                'pkg1': line.pkg1.exported(),
+                'pkg2': line.pkg2.exported(),
+                'state': constants.STATE_STRINGS[line.RPMComparison.state],
+            }
+            result_dict['pkg1']['repo'] = line.repo1.exported()
+            result_dict['pkg2']['repo'] = line.repo2.exported()
+            result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
+            result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
+        elif table == RPMPackage:
+            result_dict = {'pkg1': line.pkg1.exported()}
+            result_dict['pkg1']['repo'] = line.repo1.exported()
+            result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
+        else:
+            result_dict = {'repo1': line.path}
+
+        return result_dict
+
+    def get_difference(line):
+        if table != RPMDifference or line.RPMDifference is None:
             return
         diff = line.RPMDifference.exported()
         diff['category'] = constants.CATEGORY_STRINGS[diff['category']]
@@ -63,25 +103,27 @@ def iter_query_result(result, diffs=False):
         return diff
 
     last_id = None
-    comparison = None
+    result_dict = None
     differences = []
 
     for line in result:
         if last_id is None:
             # Save new id and comparison
-            last_id, comparison = make_comparison(line)
-        if line.RPMComparison.id_comp != last_id:
+            last_id = get_id(line)
+            result_dict = parse_line(line)
+        if get_id(line) != last_id:
             # Add all differences and yield
-            if diffs:
-                comparison['differences'] = differences
-            yield (last_id, comparison)
+            if table == RPMDifference:
+                result_dict['differences'] = differences
+            yield (last_id, result_dict)
             # Save new id and comparison
-            last_id, comparison = make_comparison(line)
+            last_id = get_id(line)
+            result_dict = parse_line(line)
             differences = []
-        diff = get_difference(line, diffs)
+        diff = get_difference(line)
         if diff is not None:
             differences.append(diff)
     # Add all differences and yield
-    if diffs:
-        comparison['differences'] = differences
-    yield (last_id, comparison)
+    if table == RPMDifference:
+        result_dict['differences'] = differences
+    yield (last_id, result_dict)
