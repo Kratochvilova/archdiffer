@@ -12,12 +12,13 @@ from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository)
 from .. import constants
+from .database_functions import (COMPARISON_TYPE, joined_query,
+                                 iter_query_result)
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.database_tasks import query_database_table
+from ....flask_frontend.database_tasks import (query_database_table,
+                                               modify_query_by_request)
 
 celery_app = Celery(broker='pyamqp://localhost', )
-
-COMPARISON_TYPE = 'rpmdiff'
 
 bp = Blueprint(COMPARISON_TYPE, __name__, template_folder='templates')
 bp.config = {}
@@ -37,8 +38,8 @@ def record_params(setup_state):
 
 @bp.route('/')
 def show_comparisons():
-    comp = g.db_session.query(RPMComparison).all()
-    return my_render_template('rpm_show_comparisons.html', comparisons=comp)
+    comps = dict(iter_query_result(joined_query()))
+    return my_render_template('rpm_show_comparisons.html', comparisons=comps)
 
 @bp.route('/comparison/<int:id_comp>')
 def show_differences(id_comp):
@@ -165,3 +166,11 @@ flask_api.add_resource(ShowRPMComparisons, '/rest/comparisons')
 flask_api.add_resource(ShowRPMDifferences, '/rest/differences')
 flask_api.add_resource(ShowRPMPackages, '/rest/packages')
 flask_api.add_resource(ShowRPMRepositories, '/rest/repositories')
+
+class ShowJoinedData(Resource):    
+    def get(self):
+        return dict(iter_query_result(
+            modify_query_by_request(joined_query(diffs=True)), diffs=True
+        ))
+
+flask_api.add_resource(ShowJoinedData, '/rest/joined')

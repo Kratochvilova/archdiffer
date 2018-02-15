@@ -54,12 +54,12 @@
 		<th>Pkg 2</th>
 		<th>State</th>
 	</tr>
-	{% for comp in comparisons %}
+	{% for id_comp, comp in comparisons.items() %}
 	<tr>
-		<td><a href="{{ url_for('rpmdiff.show_differences', id_comp=comp.id_comp) }}">{{ comp.id_comp }}</a></td>
-		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg1_id) }}">{{ comp.rpm_package1.name }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp.pkg2_id) }}">{{ comp.rpm_package2.name }}</td>
-		<td>{{ STATE_STRINGS[comp.state] }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_differences', id_comp=id_comp) }}">{{ id_comp }}</a></td>
+		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp['pkg1']['id']) }}">{{ comp['pkg1']['name'] }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp['pkg2']['id']) }}">{{ comp['pkg2']['name'] }}</td>
+		<td>{{ comp['state'] }}</td>
 	</tr>
 	{% endfor %}
 	</table>
