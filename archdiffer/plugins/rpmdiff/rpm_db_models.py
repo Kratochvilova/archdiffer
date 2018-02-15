@@ -10,8 +10,18 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.schema import UniqueConstraint
 from ... import database
 
-class RPMComparison(database.Base):
+class BaseExported(object):
+    to_export = []
+
+    def exported(self, overwrite=None):
+        if overwrite is None:
+            overwrite = self.to_export
+        return {k:v for k, v in vars(self).items() if k in overwrite}
+
+class RPMComparison(BaseExported, database.Base):
     __tablename__ = 'rpm_comparisons'
+
+    to_export = ['id_comp', 'pkg1_id', 'pkg2_id', 'state']
 
     id_comp = Column(
         Integer, ForeignKey('comparisons.id'), primary_key=True, nullable=False
@@ -44,8 +54,10 @@ class RPMComparison(database.Base):
                     self.state,
                 )
 
-class RPMDifference(database.Base):
+class RPMDifference(BaseExported, database.Base):
     __tablename__ = 'rpm_differences'
+
+    to_export = ['id', 'id_comp', 'category', 'diff_type', 'diff_info', 'diff']
 
     id = Column(Integer, primary_key=True, nullable=False)
     id_comp = Column(
@@ -62,7 +74,7 @@ class RPMDifference(database.Base):
 
     def __repr__(self):
         return ("<Difference(id='%s', id_comp='%s', category='%s', "
-                "diff_type='%s', diff_info='%s')>, diff='%s'") % (
+                "diff_type='%s', diff_info='%s', diff='%s')>") % (
                     self.id,
                     self.id_comp,
                     self.category,
@@ -71,8 +83,12 @@ class RPMDifference(database.Base):
                     self.diff,
                 )
 
-class RPMPackage(database.Base):
+class RPMPackage(BaseExported, database.Base):
     __tablename__ = 'rpm_packages'
+    
+    to_export = [
+        'id', 'name', 'arch', 'epoch', 'version', 'release', 'id_repo'
+    ]
 
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
@@ -125,8 +141,10 @@ class RPMPackage(database.Base):
             arch=self.arch,
         )
 
-class RPMRepository(database.Base):
+class RPMRepository(BaseExported, database.Base):
     __tablename__ = 'rpm_repositories'
+
+    to_export = ['path', 'name']
 
     id = Column(Integer, primary_key=True, nullable=False)
     path = Column(String, nullable=False, unique=True)
