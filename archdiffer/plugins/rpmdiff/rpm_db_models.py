@@ -98,7 +98,7 @@ class RPMPackage(BaseExported, database.Base):
         Integer, ForeignKey('rpm_repositories.id'), nullable=False
     )
 
-    UniqueConstraint('name', 'arch', 'epoch', 'version', 'release', 'id_repo')
+    UniqueConstraint(name, arch, epoch, version, release, id_repo)
 
     rpm_comparisons1 = relationship(
         "RPMComparison",
