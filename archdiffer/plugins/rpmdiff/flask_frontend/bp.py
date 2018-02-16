@@ -40,7 +40,7 @@ def show_comparisons():
     comps = dict(iter_query_result(joined_query()))
     return my_render_template('rpm_show_comparisons.html', comparisons=comps)
 
-@bp.route('/comparison/<int:id_comp>')
+@bp.route('/comparisons/<int:id_comp>')
 def show_differences(id_comp):
     query = joined_query(RPMDifference).filter(RPMComparison.id==id_comp)
     comparison = dict(iter_query_result(query, RPMDifference))
@@ -49,13 +49,13 @@ def show_differences(id_comp):
         comparison=comparison
     )
 
-@bp.route('/package/<int:pkg_id>')
+@bp.route('/packages/<int:pkg_id>')
 def show_package(pkg_id):
     query = joined_query(RPMPackage).filter(RPMPackage.id==pkg_id)
     pkg = dict(iter_query_result(query, RPMPackage))[pkg_id]
     return my_render_template('rpm_show_package.html', pkg_id=pkg_id, pkg=pkg)
 
-@bp.route('/repository/<int:repo_id>')
+@bp.route('/repositories/<int:repo_id>')
 def show_repository(repo_id):
     query = joined_query(RPMRepository).filter(RPMRepository.id==repo_id)
     repo = dict(iter_query_result(query, RPMRepository))[repo_id]
