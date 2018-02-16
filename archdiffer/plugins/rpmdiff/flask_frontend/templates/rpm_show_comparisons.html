@@ -50,6 +50,7 @@
 	<table>
 	<tr>
 		<th>ID</th>
+		<th>Time</th>
 		<th>Pkg 1</th>
 		<th>Pkg 2</th>
 		<th>State</th>
@@ -57,6 +58,7 @@
 	{% for id, comp in comparisons.items() %}
 	<tr>
 		<td><a href="{{ url_for('rpmdiff.show_differences', id_comp=id) }}">{{ id }}</a></td>
+		<td>{{ comp['time'] }}</td>
 		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp['pkg1']['id']) }}">{{ comp['pkg1']['filename'] }}</td>
 		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=comp['pkg2']['id']) }}">{{ comp['pkg2']['filename'] }}</td>
 		<td>{{ comp['state'] }}</td>

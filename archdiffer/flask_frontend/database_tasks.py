@@ -6,26 +6,12 @@ Created on Fri Feb  9 22:32:02 2018
 @author: pavla
 """
 
-
 from flask import request, g
-from flask.views import View
-from flask_restful import Resource, fields, marshal_with
+from flask_restful import Resource
 from werkzeug.exceptions import BadRequest
 from .flask_app import flask_app, flask_api
 from ..database import Comparison, ComparisonType
 from .common_tasks import my_render_template
-
-# For marshalling sqlalchemy objects
-COMPARISON_FIELDS = {
-    'id': fields.Integer,
-    'time': fields.String,
-    'comparison_type_id': fields.Integer
-}
-
-COMPARISON_TYPE_FIELDS = {
-    'id': fields.Integer,
-    'name': fields.String
-}
 
 # Transformation functions for parsing requests
 def _dict_transform(string):
@@ -72,6 +58,50 @@ def modify_query_by_request(query):
         query = query.limit(args_dict['limit'])
     return query
 
+def joined_query(table=Comparison):
+    """Query database tables jointly.
+
+    :param table: table setting which tables to query
+    :type table: one of (Comparison, ComparisonType)
+    :return sqlalchemy.orm.query.Query: resulting query object
+    """
+    if table == Comparison:
+        return g.db_session.query(Comparison, ComparisonType).filter(
+            Comparison.comparison_type_id == ComparisonType.id
+        )
+    return g.db_session.query(ComparisonType)
+
+def iter_query_result(result, table=Comparison):
+    """Process result of the joined query.
+
+    :param table: table setting which tables were queried
+    :type table: one of (Comparison, ComparisonType)
+    :return: iterator of resulting dict
+    :rtype: Iterator[dict]
+    """
+    def get_id(line):
+        if table == Comparison:
+            return line.Comparison.id
+        return line.ComparisonType.id
+
+    def parse_line(line):
+        result_dict = {}
+        if table == Comparison:
+            result_dict['time'] = str(line.Comparison.time)
+            result_dict['type'] = {
+                'id': line.ComparisonType.id,
+                'name': line.ComparisonType.name,
+            }
+        else:
+            result_dict = {'name': line.name}
+
+        return result_dict
+
+    for line in result:
+        result_id = get_id(line)
+        result_dict = parse_line(line)
+        yield (result_id, result_dict)
+
 def query_database_table(table):
     """Query database table according to the request arguments.
 
@@ -83,34 +113,27 @@ def query_database_table(table):
 
     return query.all()
 
-# Comparisons
-class ShowComparisons(Resource):
-    @marshal_with(COMPARISON_FIELDS)
-    def get(self):
-        return query_database_table(Comparison)
+@flask_app.route('/')
+def index():
+    comps = dict(iter_query_result(joined_query()))
+    return my_render_template('show_comparisons.html', comparisons=comps)
 
-class ComparisonsView(View):
-    def dispatch_request(self):
-        return my_render_template(
-            'show_comparisons.html',
-            comparisons=query_database_table(Comparison)
-        )
+@flask_app.route('/comparison_types')
+def show_comparison_types():
+    return my_render_template('show_comparison_types.html')
 
-flask_api.add_resource(ShowComparisons, '/rest/comparisons')
-flask_app.add_url_rule('/', view_func=ComparisonsView.as_view('index'))
+# Resources
+class ShowTable(Resource):
+    def table_by_string(self, string_table):
+        if string_table == "comparisons":
+            return Comparison
+        if string_table == "comparison_types":
+            return ComparisonType
 
-# Comparison types
-class ShowComparisonTypes(Resource):
-    @marshal_with(COMPARISON_TYPE_FIELDS)
-    def get(self):
-        return query_database_table(ComparisonType)
+    def get(self, string_table):
+        table = self.table_by_string(string_table)
+        return dict(iter_query_result(modify_query_by_request(
+            joined_query(table)), table
+        ))
 
-class ComparisonTypesView(View):
-    def dispatch_request(self):
-        return my_render_template('show_comparison_types.html')
-
-flask_api.add_resource(ShowComparisonTypes, '/rest/comparison_types')
-flask_app.add_url_rule(
-    '/comparison_types',
-    view_func=ComparisonTypesView.as_view('show_comparison_types')
-)
+flask_api.add_resource(ShowTable, '/rest/<string:string_table>')

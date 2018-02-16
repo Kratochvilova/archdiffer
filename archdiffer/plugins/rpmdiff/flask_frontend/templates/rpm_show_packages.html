@@ -5,6 +5,7 @@
 	<tr>
 		<th>ID</th>
 		<th>Name</th>
+		<th>Arch</th>
 		<th>Epoch</th>
 		<th>Version</th>
 		<th>Release</th>
@@ -14,6 +15,7 @@
 	<tr>
 		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=id) }}">{{ id }}</a></td>
 		<td>{{ pkg['name'] }}</td>
+		<td>{{ pkg['arch'] }}</td>
 		<td>{{ pkg['epoch'] }}</td>
 		<td>{{ pkg['version'] }}</td>
 		<td>{{ pkg['release'] }}</td>
