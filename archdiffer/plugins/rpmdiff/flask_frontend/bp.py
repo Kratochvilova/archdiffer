@@ -130,7 +130,7 @@ class ShowRPMTableItem(ShowRPMTable):
         query = joined_query(table).filter(self.shown_table(table).id == id)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
-flask_api.add_resource(ShowRPMTable, '/rest/<string:string_table>/<int:id>')
+flask_api.add_resource(ShowRPMTable, '/rest/<string:string_table>/')
 flask_api.add_resource(
     ShowRPMTableItem, '/rest/<string:string_table>/<int:id>'
 )
