@@ -1,6 +1,5 @@
 {% extends "rpm_layout.html" %}
 {% block body %}
-{% for id, pkg in pkg.items() %}
   <ul class=package>
 	<table>
 	<tr>
@@ -12,7 +11,7 @@
 		<th>Repo ID</th>
 	</tr>
 	<tr>
-		<td>{{ id }}</a></td>
+		<td>{{ ipkg_d }}</a></td>
 		<td>{{ pkg['name'] }}</td>
 		<td>{{ pkg['epoch'] }}</td>
 		<td>{{ pkg['version'] }}</td>
@@ -21,5 +20,4 @@
 	</tr>
 	</table>
   </ul>
-{% endfor %}
 {% endblock %}

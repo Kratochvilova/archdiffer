@@ -10,14 +10,14 @@
 		<th>Release</th>
 		<th>Repo ID</th>
 	</tr>
-	{% for pkg in pkgs %}
+	{% for id, pkg in pkgs.items() %}
 	<tr>
-		<td>{{ pkg.id }}</a></td>
-		<td>{{ pkg.name }}</td>
-		<td>{{ pkg.epoch }}</td>
-		<td>{{ pkg.version }}</td>
-		<td>{{ pkg.release }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=pkg.id_repo) }}">{{ pkg.rpm_repository.path }}</td>
+		<td>{{ id }}</a></td>
+		<td>{{ pkg['name'] }}</td>
+		<td>{{ pkg['epoch'] }}</td>
+		<td>{{ pkg['version'] }}</td>
+		<td>{{ pkg['release'] }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=pkg['repo']['id']) }}">{{ pkg['repo']['path'] }}</td>
 	</tr>
 	{% endfor %}
 	</table>	

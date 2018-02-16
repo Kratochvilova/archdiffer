@@ -6,10 +6,10 @@
 		<th>ID</th>
 		<th>Path</th>
 	</tr>
-	{% for repo in repos %}
+	{% for id, repo in repos.items() %}
 	<tr>
-		<td>{{ repo.id }}</a></td>
-		<td>{{ repo.path }}</td>
+		<td>{{ id }}</a></td>
+		<td>{{ repo['path'] }}</td>
 	</tr>
 	{% endfor %}
 	</table>

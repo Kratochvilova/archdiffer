@@ -5,7 +5,7 @@ Created on Sat Sep 16 22:54:57 2017
 @author: pavla
 """
 
-from flask import Blueprint, abort, request, g, flash, redirect, url_for
+from flask import Blueprint, abort, request, flash, redirect, url_for
 from flask import session as flask_session
 from flask_restful import Api, Resource, fields, marshal_with
 from celery import Celery
@@ -53,22 +53,27 @@ def show_differences(id_comp):
 @bp.route('/package/<int:pkg_id>')
 def show_package(pkg_id):
     query = joined_query(RPMPackage).filter(RPMPackage.id==pkg_id)
-    pkg = dict(iter_query_result(query, RPMPackage))
-    return my_render_template('rpm_show_package.html', pkg=pkg)
+    pkg = dict(iter_query_result(query, RPMPackage))[pkg_id]
+    return my_render_template('rpm_show_package.html', pkg_id=pkg_id, pkg=pkg)
 
 @bp.route('/repository/<int:repo_id>')
 def show_repository(repo_id):
-    repo = g.db_session.query(RPMRepository).filter_by(id=repo_id).one()
-    return my_render_template('rpm_show_repository.html', repo=repo)
+    query = joined_query(RPMRepository).filter(RPMRepository.id==repo_id)
+    repo = dict(iter_query_result(query, RPMRepository))[repo_id]
+    return my_render_template(
+        'rpm_show_repository.html', repo_id=repo_id, repo=repo
+    )
 
 @bp.route('/packages')
 def show_packages():
-    pkgs = g.db_session.query(RPMPackage).all()
+    query = joined_query(RPMPackage)
+    pkgs = dict(iter_query_result(query, RPMPackage))
     return my_render_template('rpm_show_packages.html', pkgs=pkgs)
 
 @bp.route('/repositories')
 def show_repositories():
-    repos = g.db_session.query(RPMRepository).all()
+    query = joined_query(RPMRepository)
+    repos = dict(iter_query_result(query, RPMRepository))
     return my_render_template('rpm_show_repositories.html', repos=repos)
 
 @bp.route('/add', methods=['POST'])
