@@ -126,4 +126,5 @@ def iter_query_result(result, table=RPMComparison):
     # Add all differences and yield
     if table == RPMDifference:
         result_dict['differences'] = differences
-    yield (last_id, result_dict)
+    if last_id is not None:
+        yield (last_id, result_dict)
