@@ -42,7 +42,7 @@ def show_comparisons():
 
 @bp.route('/comparison/<int:id_comp>')
 def show_differences(id_comp):
-    query = joined_query(RPMDifference).filter(RPMComparison.id_comp==id_comp)
+    query = joined_query(RPMDifference).filter(RPMComparison.id==id_comp)
     comparison = dict(iter_query_result(query, RPMDifference))
     return my_render_template(
         'rpm_show_differences.html',

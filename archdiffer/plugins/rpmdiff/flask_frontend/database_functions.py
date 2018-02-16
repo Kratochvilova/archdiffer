@@ -39,7 +39,7 @@ def joined_query(table=RPMComparison):
     if table == RPMComparison or table == RPMDifference:
         tables = [Comparison, RPMComparison, pkg1, pkg2, repo1, repo2]
         conditions = [
-            RPMComparison.id_comp==Comparison.id,
+            RPMComparison.id==Comparison.id,
             RPMComparison.pkg1_id==pkg1.id,
             RPMComparison.pkg2_id==pkg2.id,
             pkg1.id_repo==repo1.id,
@@ -50,7 +50,7 @@ def joined_query(table=RPMComparison):
 
     if table == RPMDifference:
         query = query.add_entity(RPMDifference).outerjoin(
-            RPMDifference, RPMDifference.id_comp==RPMComparison.id_comp
+            RPMDifference, RPMDifference.id_comp==RPMComparison.id
         )
 
     return query
@@ -66,7 +66,7 @@ def iter_query_result(result, table=RPMComparison):
     """
     def get_id(line):
         if table == RPMComparison or table == RPMDifference:
-            return line.RPMComparison.id_comp
+            return line.RPMComparison.id
         elif table == RPMPackage:
             return line.RPMPackage.id
         else:

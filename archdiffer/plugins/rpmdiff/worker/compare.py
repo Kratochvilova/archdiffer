@@ -224,7 +224,7 @@ def compare(pkg1, pkg2):
         database.ComparisonType
     ).filter_by(name=COMPARISON_TYPE).one()
     comparison.rpm_comparison = RPMComparison(
-        id_comp=comparison.id,
+        id=comparison.id,
         pkg1_id=db_package1.id,
         pkg2_id=db_package2.id,
         state=constants.STATE_NEW,

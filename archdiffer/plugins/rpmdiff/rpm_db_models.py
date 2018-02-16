@@ -21,9 +21,9 @@ class BaseExported(object):
 class RPMComparison(BaseExported, database.Base):
     __tablename__ = 'rpm_comparisons'
 
-    to_export = ['id_comp', 'state']
+    to_export = ['id', 'state']
 
-    id_comp = Column(
+    id = Column(
         Integer, ForeignKey('comparisons.id'), primary_key=True, nullable=False
     )
     pkg1_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
@@ -46,9 +46,9 @@ class RPMComparison(BaseExported, database.Base):
     )
 
     def __repr__(self):
-        return ("<Comparison(id_comp='%s', pkg1_id='%s', pkg2_id='%s', "
+        return ("<Comparison(id='%s', pkg1_id='%s', pkg2_id='%s', "
                 "state='%s')>") % (
-                    self.id_comp,
+                    self.id,
                     self.pkg1_id,
                     self.pkg2_id,
                     self.state,
@@ -61,7 +61,7 @@ class RPMDifference(BaseExported, database.Base):
 
     id = Column(Integer, primary_key=True, nullable=False)
     id_comp = Column(
-        Integer, ForeignKey('rpm_comparisons.id_comp'), nullable=False
+        Integer, ForeignKey('rpm_comparisons.id'), nullable=False
     )
     category = Column(Integer)
     diff_type = Column(Integer, nullable=False)
