@@ -37,7 +37,7 @@ def joined_query(table=RPMComparison):
         tables = [RPMPackage, RPMRepository]
         conditions = [pkg1.id_repo==repo1.id]
     if table == RPMComparison or table == RPMDifference:
-        tables = [Comparison, RPMComparison, pkg1, pkg2, repo1, repo2]
+        tables = [RPMComparison, Comparison, pkg1, pkg2, repo1, repo2]
         conditions = [
             RPMComparison.id==Comparison.id,
             RPMComparison.pkg1_id==pkg1.id,
@@ -64,6 +64,7 @@ def iter_query_result(result, table=RPMComparison):
     :return: iterator of resulting dict
     :rtype: Iterator[dict]
     """
+    print(result)
     def get_id(line):
         if table == RPMComparison or table == RPMDifference:
             return line.RPMComparison.id
