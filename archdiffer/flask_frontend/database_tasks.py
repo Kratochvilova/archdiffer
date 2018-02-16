@@ -102,17 +102,6 @@ def iter_query_result(result, table=Comparison):
         result_dict = parse_line(line)
         yield (result_id, result_dict)
 
-def query_database_table(table):
-    """Query database table according to the request arguments.
-
-    :param table: table to query
-    :return list: list of query results
-    """
-    query = g.db_session.query(table)
-    modify_query_by_request(query)
-
-    return query.all()
-
 @flask_app.route('/')
 def index():
     comps = dict(iter_query_result(joined_query()))
