@@ -7,7 +7,7 @@ Created on Sat Sep 16 22:54:57 2017
 
 from flask import Blueprint, abort, request, flash, redirect, url_for
 from flask import session as flask_session
-from flask_restful import Api, Resource, fields, marshal_with
+from flask_restful import Api, Resource
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository)
@@ -15,8 +15,7 @@ from .. import constants
 from .database_functions import (COMPARISON_TYPE, joined_query,
                                  iter_query_result)
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.database_tasks import (query_database_table,
-                                               modify_query_by_request)
+from ....flask_frontend.database_tasks import modify_query_by_request
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
@@ -102,80 +101,22 @@ def add_entry():
     flash('New entry was successfully posted')
     return redirect(url_for('rpmdiff.show_comparisons'))
 
-# Marshalling sqlalchemy objects
-class StateItem(fields.Raw):
-    def format(self, value):
-        return constants.STATE_STRINGS[value]
-
-class CategoryItem(fields.Raw):
-    def format(self, value):
-        return constants.CATEGORY_STRINGS[value]
-
-class DiffTypeItem(fields.Raw):
-    def format(self, value):
-        return constants.DIFF_TYPE_STRINGS[value]
-
-RPM_COMPARISON_FIELDS = {
-    'id_comp': fields.Integer,
-    'pkg1_id': fields.Integer,
-    'pkg2_id': fields.Integer,
-    'state': StateItem,
-}
-
-RPM_DIFFERENCE_FIELDS = {
-    'id': fields.Integer,
-    'id_comp': fields.Integer,
-    'category': CategoryItem,
-    'diff_type': DiffTypeItem,
-    'diff_info': fields.String,
-    'diff': fields.String,
-}
-
-RPM_PACKAGE_FIELDS = {
-    'id': fields.Integer,
-    'name': fields.String,
-    'arch': fields.String,
-    'epoch': fields.String,
-    'version': fields.String,
-    'release': fields.String,
-    'id_repo': fields.Integer,
-}
-
-RPM_REPOSITORY_FIELDS = {
-    'id': fields.Integer,
-    'path': fields.String,
-}
-
 # Resources
-class ShowRPMComparisons(Resource):
-    @marshal_with(RPM_COMPARISON_FIELDS)
-    def get(self):
-        return query_database_table(RPMComparison)
+class ShowRPMTable(Resource):
+    def get_table_by_string(self, string_table):
+        if string_table == "comparisons":
+            return RPMComparison
+        if string_table == "differences":
+            return RPMDifference
+        if string_table == "packages":
+            return RPMPackage
+        if string_table == "repositories":
+            return RPMRepository
 
-class ShowRPMDifferences(Resource):
-    @marshal_with(RPM_DIFFERENCE_FIELDS)
-    def get(self):
-        return query_database_table(RPMDifference)
-
-class ShowRPMPackages(Resource):
-    @marshal_with(RPM_PACKAGE_FIELDS)
-    def get(self):
-        return query_database_table(RPMPackage)
-
-class ShowRPMRepositories(Resource):
-    @marshal_with(RPM_REPOSITORY_FIELDS)
-    def get(self):
-        return query_database_table(RPMRepository)
-
-flask_api.add_resource(ShowRPMComparisons, '/rest/comparisons')
-flask_api.add_resource(ShowRPMDifferences, '/rest/differences')
-flask_api.add_resource(ShowRPMPackages, '/rest/packages')
-flask_api.add_resource(ShowRPMRepositories, '/rest/repositories')
-
-class ShowJoinedData(Resource):    
-    def get(self):
+    def get(self, string_table):
+        table = self.get_table_by_string(string_table)
         return dict(iter_query_result(modify_query_by_request(
-            joined_query(RPMDifference)), RPMDifference
+            joined_query(table)), table
         ))
 
-flask_api.add_resource(ShowJoinedData, '/rest/joined')
+flask_api.add_resource(ShowRPMTable, '/rest/<string:string_table>/')
