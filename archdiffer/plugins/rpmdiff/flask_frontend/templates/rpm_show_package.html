@@ -16,7 +16,7 @@
 		<td>{{ pkg['epoch'] }}</td>
 		<td>{{ pkg['version'] }}</td>
 		<td>{{ pkg['release'] }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=pkg['repo']['id']) }}">{{ pkg['repo']['path'] }}</td>
+		<td><a href="{{ pkg['repo']['path'] }}">{{ pkg['repo']['path'] }}</a></td>
 	</tr>
 	</table>
   </ul>
