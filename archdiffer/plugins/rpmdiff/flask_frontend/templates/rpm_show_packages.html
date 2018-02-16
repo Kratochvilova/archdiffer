@@ -8,16 +8,16 @@
 		<th>Epoch</th>
 		<th>Version</th>
 		<th>Release</th>
-		<th>Repo ID</th>
+		<th>Repo path</th>
 	</tr>
 	{% for id, pkg in pkgs.items() %}
 	<tr>
-		<td>{{ id }}</a></td>
+		<td><a href="{{ url_for('rpmdiff.show_package', pkg_id=id) }}">{{ id }}</a></td>
 		<td>{{ pkg['name'] }}</td>
 		<td>{{ pkg['epoch'] }}</td>
 		<td>{{ pkg['version'] }}</td>
 		<td>{{ pkg['release'] }}</td>
-		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=pkg['repo']['id']) }}">{{ pkg['repo']['path'] }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=pkg['repo']['id']) }}">{{ pkg['repo']['path'] }}</a></td>
 	</tr>
 	{% endfor %}
 	</table>	

@@ -8,7 +8,7 @@
 	</tr>
 	{% for id, repo in repos.items() %}
 	<tr>
-		<td>{{ id }}</a></td>
+		<td><a href="{{ url_for('rpmdiff.show_repository', repo_id=id) }}">{{ id }}</a></td>
 		<td>{{ repo['path'] }}</td>
 	</tr>
 	{% endfor %}
