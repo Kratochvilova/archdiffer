@@ -82,7 +82,7 @@ def iter_query_result(result, table=Comparison):
     def get_id(line):
         if table == Comparison:
             return line.Comparison.id
-        return line.ComparisonType.id
+        return line.id
 
     def parse_line(line):
         result_dict = {}
@@ -136,4 +136,11 @@ class ShowTable(Resource):
             joined_query(table)), table
         ))
 
+class ShowTableItem(ShowTable):
+    def get(self, string_table, id):
+        table = self.table_by_string(string_table)
+        query = joined_query(table).filter(table.id == id)
+        return dict(iter_query_result(modify_query_by_request(query), table))
+
 flask_api.add_resource(ShowTable, '/rest/<string:string_table>')
+flask_api.add_resource(ShowTableItem, '/rest/<string:string_table>/<int:id>')
