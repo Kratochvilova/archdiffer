@@ -103,7 +103,7 @@ def add_entry():
 
 # Resources
 class ShowRPMTable(Resource):
-    def get_table_by_string(self, string_table):
+    def table_by_string(self, string_table):
         if string_table == "comparisons":
             return RPMComparison
         if string_table == "differences":
@@ -114,9 +114,23 @@ class ShowRPMTable(Resource):
             return RPMRepository
 
     def get(self, string_table):
-        table = self.get_table_by_string(string_table)
+        table = self.table_by_string(string_table)
         return dict(iter_query_result(modify_query_by_request(
             joined_query(table)), table
         ))
 
-flask_api.add_resource(ShowRPMTable, '/rest/<string:string_table>/')
+class ShowRPMTableItem(ShowRPMTable):
+    def shown_table(self, table):
+        if table == RPMDifference:
+            return RPMComparison
+        return table
+
+    def get(self, string_table, id):
+        table = self.table_by_string(string_table)
+        query = joined_query(table).filter(self.shown_table(table).id == id)
+        return dict(iter_query_result(modify_query_by_request(query), table))
+
+flask_api.add_resource(ShowRPMTable, '/rest/<string:string_table>/<int:id>')
+flask_api.add_resource(
+    ShowRPMTableItem, '/rest/<string:string_table>/<int:id>'
+)
