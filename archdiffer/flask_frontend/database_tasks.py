@@ -61,30 +61,38 @@ def modify_query_by_request(query):
 
 @flask_app.route('/')
 def index():
+    """Show all comparisons."""
     comps = dict(iter_query_result(joined_query(g.db_session)))
     return my_render_template('show_comparisons.html', comparisons=comps)
 
 @flask_app.route('/comparison_types')
 def show_comparison_types():
+    """Show all comparison types."""
     return my_render_template('show_comparison_types.html')
 
 # Resources
-class ShowTable(Resource):
-    def table_by_string(self, string_table):
-        if string_table == "comparisons":
-            return Comparison
-        if string_table == "comparison_types":
-            return ComparisonType
+def table_by_string(string_table):
+    """Convert string to corresponding class.
 
+    :param string_table string: name of the table
+    :return class: corresponding table
+    """
+    if string_table == "comparisons":
+        return Comparison
+    if string_table == "comparison_types":
+        return ComparisonType
+
+class ShowTable(Resource):
+    """Show dict of given table."""
     def get(self, string_table):
-        table = self.table_by_string(string_table)
-        return dict(iter_query_result(modify_query_by_request(
-            joined_query(g.db_session, table)), table
-        ))
+        table = table_by_string(string_table)
+        query = joined_query(g.db_session, table)
+        return dict(iter_query_result(modify_query_by_request(query), table))
 
 class ShowTableItem(ShowTable):
+    """Show dict of one item of given table by given id."""
     def get(self, string_table, id):
-        table = self.table_by_string(string_table)
+        table = table_by_string(string_table)
         query = joined_query(g.db_session, table).filter(table.id == id)
         return dict(iter_query_result(modify_query_by_request(query), table))
 

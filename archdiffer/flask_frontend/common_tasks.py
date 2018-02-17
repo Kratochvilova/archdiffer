@@ -48,6 +48,7 @@ def close_database_session(exception):
 @flask_app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
+    """Login user."""
     if g.user is not None:
         return redirect(oid.get_next_url())
     if request.method == 'POST':
@@ -63,6 +64,7 @@ def login():
 
 @oid.after_login
 def create_or_login(resp):
+    """check if user exists and finish login or redirect to create_profile."""
     flask_session['openid'] = resp.identity_url
     user = User.query_by_openid(g.db_session, resp.identity_url)
     if user is not None:
@@ -75,6 +77,7 @@ def create_or_login(resp):
 
 @flask_app.route('/create-profile', methods=['GET', 'POST'])
 def create_profile():
+    """Add new user."""
     if g.user is not None or 'openid' not in flask_session:
         return redirect(url_for('index'))
     if request.method == 'POST':
@@ -92,6 +95,7 @@ def create_profile():
 
 @flask_app.route('/logout')
 def logout():
+    """Logout user."""
     flask_session.pop('openid', None)
     flash(u'You were signed out')
     return redirect(oid.get_next_url())

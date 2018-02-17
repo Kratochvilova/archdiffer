@@ -23,6 +23,7 @@ flask_api = Api(bp)
 
 @bp.context_processor
 def inject_constants():
+    """Add all constants from constants module to the tamplate context."""
     return vars(constants)
 
 @bp.record
@@ -35,12 +36,15 @@ def record_params(setup_state):
 
 @bp.route('/')
 def show_comparisons():
+    """Show all rpm comparisons."""
     comps = dict(iter_query_result(joined_query(g.db_session)))
     return my_render_template('rpm_show_comparisons.html', comparisons=comps)
 
 @bp.route('/comparisons/<int:id_comp>')
 def show_differences(id_comp):
-    query = joined_query(g.db_session, RPMDifference).filter(RPMComparison.id==id_comp)
+    """Show all rpm differences for rpm comparison given by id_comp."""
+    query = joined_query(g.db_session, RPMDifference)
+    query = query.filter(RPMComparison.id == id_comp)
     comparison = dict(iter_query_result(query, RPMDifference))
     return my_render_template(
         'rpm_show_differences.html',
@@ -49,13 +53,17 @@ def show_differences(id_comp):
 
 @bp.route('/packages/<int:pkg_id>')
 def show_package(pkg_id):
-    query = joined_query(g.db_session, RPMPackage).filter(RPMPackage.id==pkg_id)
+    """Show rpm package given by pkg_id."""
+    query = joined_query(g.db_session, RPMPackage)
+    query = query.filter(RPMPackage.id == pkg_id)
     pkg = dict(iter_query_result(query, RPMPackage))[pkg_id]
     return my_render_template('rpm_show_package.html', pkg_id=pkg_id, pkg=pkg)
 
 @bp.route('/repositories/<int:repo_id>')
 def show_repository(repo_id):
-    query = joined_query(g.db_session, RPMRepository).filter(RPMRepository.id==repo_id)
+    """Show rpm repository given by repo_id."""
+    query = joined_query(g.db_session, RPMRepository)
+    query = query.filter(RPMRepository.id == repo_id)
     repo = dict(iter_query_result(query, RPMRepository))[repo_id]
     return my_render_template(
         'rpm_show_repository.html', repo_id=repo_id, repo=repo
@@ -63,18 +71,21 @@ def show_repository(repo_id):
 
 @bp.route('/packages')
 def show_packages():
+    """Show all rpm packages."""
     query = joined_query(g.db_session, RPMPackage)
     pkgs = dict(iter_query_result(query, RPMPackage))
     return my_render_template('rpm_show_packages.html', pkgs=pkgs)
 
 @bp.route('/repositories')
 def show_repositories():
+    """Show all rpm repositories."""
     query = joined_query(g.db_session, RPMRepository)
     repos = dict(iter_query_result(query, RPMRepository))
     return my_render_template('rpm_show_repositories.html', repos=repos)
 
 @bp.route('/add', methods=['POST'])
 def add_entry():
+    """Add request for comparison of two rpm packages."""
     if 'openid' not in flask_session:
         abort(401)
     pkg1 = {
@@ -100,32 +111,40 @@ def add_entry():
     return redirect(url_for('rpmdiff.show_comparisons'))
 
 # Resources
+def table_by_string(string_table):
+    """Convert string to corresponding class.
+
+    :param string_table string: shortened name of the table
+    :return class: corresponding table
+    """
+    if string_table == "comparisons":
+        return RPMComparison
+    if string_table == "differences":
+        return RPMDifference
+    if string_table == "packages":
+        return RPMPackage
+    if string_table == "repositories":
+        return RPMRepository
+
 class ShowRPMTable(Resource):
-    def table_by_string(self, string_table):
-        if string_table == "comparisons":
-            return RPMComparison
-        if string_table == "differences":
-            return RPMDifference
-        if string_table == "packages":
-            return RPMPackage
-        if string_table == "repositories":
-            return RPMRepository
-
+    """Show dict of given table."""
     def get(self, string_table):
-        table = self.table_by_string(string_table)
-        return dict(iter_query_result(modify_query_by_request(
-            joined_query(g.db_session, table)), table
-        ))
+        table = table_by_string(string_table)
+        query = joined_query(g.db_session, table)
+        return dict(iter_query_result(modify_query_by_request(query), table))
 
-class ShowRPMTableItem(ShowRPMTable):
+class ShowRPMTableItem(Resource):
+    """Show dict of one item of given table by given id."""
     def shown_table(self, table):
+        """Determine which table's id is filtered by."""
         if table == RPMDifference:
             return RPMComparison
         return table
 
     def get(self, string_table, id):
-        table = self.table_by_string(string_table)
-        query = joined_query(g.db_session, table).filter(self.shown_table(table).id == id)
+        table = table_by_string(string_table)
+        query = joined_query(g.db_session, table)
+        query = query.filter(self.shown_table(table).id == id)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
 flask_api.add_resource(ShowRPMTable, '/rest/<string:string_table>')

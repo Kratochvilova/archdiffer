@@ -78,7 +78,7 @@ def parse_rpmdiff(rpmdiff_output):
 
 def proces_differences(session, id_comp, differences):
     """Process differences from the rpmdiff output and add to the database.
-    
+
     :param session: session for communication with the database
     :type session: qlalchemy.orm.session.Session
     :param id_comp integer: id_comp of the corresponding RPMComparison
@@ -124,6 +124,12 @@ def proces_differences(session, id_comp, differences):
 
 @celery_app.task(name='rpmdiff.compare')
 def compare(pkg1, pkg2):
+    """Compare two packages and write results to the database.
+
+    :param pkg1 dict: first package dict with keys:
+        name, arch, epoch, version, release, repository
+    :param pkg2 dict: second package dict
+    """
     session = database.session()
 
     # Download packages
