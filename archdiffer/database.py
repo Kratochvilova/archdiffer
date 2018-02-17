@@ -11,6 +11,7 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
+from sqlalchemy.exc import IntegrityError
 from .config import config
 
 Base = declarative_base()
@@ -45,6 +46,11 @@ class ComparisonType(Base):
     def __repr__(self):
         return "<ComparisonType(id='%s', name='%s')>" % (self.id, self.name)
 
+    @staticmethod
+    def query(session):
+        """Query ComparisonType, ordered by id."""
+        return session.query(ComparisonType).order_by(ComparisonType.id)
+
 class User(Base):
     __tablename__ = 'users'
 
@@ -54,6 +60,32 @@ class User(Base):
 
     def __repr__(self):
         return "<User(name='%s')>" % (self.openid)
+
+    @staticmethod
+    def query_by_openid(session, openid):
+        """Query User by openid."""
+        return session.query(User).filter_by(openid=openid).first()
+
+    @staticmethod
+    def add(session, openid, name, email):
+        """Add user to the database if it doesn't already exist.
+
+        :param session: session for communication with the database
+        :type session: qlalchemy.orm.session.Session
+        :param openid string: openid
+        :param name string: name
+        :param email string: email
+        :return: user
+        :rtype: database.User
+        """
+        try:
+            user = User(openid=openid, name=name, email=email)
+            session.add(user)
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            user = User.query_by_openid(openid)
+        return user
 
 class SessionSingleton():
     """Singleton that provides sqlalchemy engine and creates sessions."""
@@ -86,3 +118,47 @@ def engine():
 def session(*args, **kwargs):
     """Get new session."""
     return SessionSingleton.get_session(*args, **kwargs)
+
+def joined_query(session, table=Comparison):
+    """Query database tables jointly.
+
+    :param table: table setting which tables to query
+    :type table: one of (Comparison, ComparisonType)
+    :return sqlalchemy.orm.query.Query: resulting query object
+    """
+    if table == Comparison:
+        return session.query(Comparison, ComparisonType).filter(
+            Comparison.comparison_type_id == ComparisonType.id
+        )
+    return session.query(ComparisonType)
+
+def iter_query_result(result, table=Comparison):
+    """Process result of the joined query.
+
+    :param table: table setting which tables were queried
+    :type table: one of (Comparison, ComparisonType)
+    :return: iterator of resulting dict
+    :rtype: Iterator[dict]
+    """
+    def get_id(line):
+        if table == Comparison:
+            return line.Comparison.id
+        return line.id
+
+    def parse_line(line):
+        result_dict = {}
+        if table == Comparison:
+            result_dict['time'] = str(line.Comparison.time)
+            result_dict['type'] = {
+                'id': line.ComparisonType.id,
+                'name': line.ComparisonType.name,
+            }
+        else:
+            result_dict = {'name': line.name}
+
+        return result_dict
+
+    for line in result:
+        result_id = get_id(line)
+        result_dict = parse_line(line)
+        yield (result_id, result_dict)

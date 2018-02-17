@@ -7,80 +7,10 @@ Created on Mon Sep  4 12:32:32 2017
 
 import subprocess
 import dnf
-from sqlalchemy.exc import IntegrityError
 from .... import database
-from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
-                             RPMRepository)
+from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage)
 from .. import constants
 from ....backend.celery_app import celery_app
-
-COMPARISON_TYPE = 'rpmdiff'
-
-TAGS = ('NAME', 'SUMMARY', 'DESCRIPTION', 'GROUP', 'LICENSE', 'URL',
-        'PREIN', 'POSTIN', 'PREUN', 'POSTUN', 'PRETRANS', 'POSTTRANS')
-
-PRCO = ('REQUIRES', 'PROVIDES', 'CONFLICTS', 'OBSOLETES',
-        'RECOMMENDS', 'SUGGESTS', 'ENHANCES', 'SUPPLEMENTS')
-
-def update_state(session, rpm_comparison, state):
-    rpm_comparison.state = state
-    session.add(rpm_comparison)
-    session.commit()
-
-def repository(session, repo_path):
-    """Get repository from the database; create new record if none exists.
-
-    :param session: session for communication with the database
-    :type session: qlalchemy.orm.session.Session
-    :param repo_path string: repository baseurl
-    :return: repository
-    :rtype: rpm_db_models.RPMRepository
-    """
-    try:
-        repo = RPMRepository(path=repo_path)
-        session.add(repo)
-        session.commit()
-    except IntegrityError:
-        session.rollback()
-        repo = session.query(RPMRepository).filter_by(path=repo_path).one()
-
-    return repo
-
-def package(session, pkg, repo_path):
-    """Get package from the database; create new record if none exists.
-
-    :param session: session for communication with the database
-    :type session: qlalchemy.orm.session.Session
-    :param package dnf.package.Package: corresponds to an RPM file
-    :param repo_path string: repository baseurl
-    :return: package
-    :rtype: rpm_db_models.RPMPackage
-    """
-    id_repo = repository(session, repo_path).id
-
-    try:
-        rpm_package = RPMPackage(
-            name=pkg.name,
-            arch=pkg.arch,
-            epoch=pkg.epoch,
-            version=pkg.version,
-            release=pkg.release,
-            id_repo=id_repo
-        )
-        session.add(rpm_package)
-        session.commit()
-    except IntegrityError:
-        session.rollback()
-        rpm_package = session.query(RPMPackage).filter_by(
-            name=pkg.name,
-            arch=pkg.arch,
-            epoch=pkg.epoch,
-            version=pkg.version,
-            release=pkg.release,
-            id_repo=id_repo
-        ).one()
-
-    return rpm_package
 
 def download_package(pkg):
     """Download package whose parameters match the arguments.
@@ -146,7 +76,7 @@ def parse_rpmdiff(rpmdiff_output):
             diffs.append(line.split(maxsplit=1))
     return diffs
 
-def proces_differences(session, id_comp, diffs):
+def proces_differences(session, id_comp, differences):
     """Process differences from the rpmdiff output and add to the database.
     
     :param session: session for communication with the database
@@ -157,47 +87,35 @@ def proces_differences(session, id_comp, diffs):
     # TODO: also check for renamed files
     # (diff_type='renamed', diff_info='name_of_new_file')
     bad_diffs = []
-    for diff in diffs:
-        if len(diff) != 2:
-            bad_diffs.append(diff)
+    category = ''
+    diff_type = ''
+    diff_info = ''
+
+    for difference in differences:
+        if len(difference) != 2:
+            bad_diffs.append(difference)
             continue
 
-        if diff[0] == 'removed':
+        if difference[0] == 'removed':
             diff_type = constants.DIFF_TYPE_REMOVED
             diff_info = None
-        elif diff[0] == 'added':
+        elif difference[0] == 'added':
             diff_type = constants.DIFF_TYPE_ADDED
             diff_info = None
         else:
             diff_type = constants.DIFF_TYPE_CHANGED
-            diff_info = diff[0]
+            diff_info = difference[0]
 
-        if diff[1] in TAGS:
-            difference = RPMDifference(
-                id_comp=int(id_comp),
-                category=constants.CATEGORY_TAGS,
-                diff_type=diff_type,
-                diff_info=diff_info,
-                diff=diff[1]
-            )
-        elif diff[1].startswith(PRCO):
-            difference = RPMDifference(
-                id_comp=int(id_comp),
-                category=constants.CATEGORY_PRCO,
-                diff_type=diff_type,
-                diff_info=diff_info,
-                diff=diff[1]
-            )
+        if difference[1] in constants.TAGS:
+            category = constants.CATEGORY_TAGS
+        elif difference[1].startswith(constants.PRCO):
+            category = constants.CATEGORY_PRCO
         else:
-            difference = RPMDifference(
-                id_comp=int(id_comp),
-                category=constants.CATEGORY_FILES,
-                diff_type=diff_type,
-                diff_info=diff_info,
-                diff=diff[1]
-            )
-        session.add(difference)
-        session.commit()
+            category = constants.CATEGORY_FILES
+
+        RPMDifference.add(
+            session, id_comp, category, diff_type, diff_info, difference[1]
+        )
 
     if bad_diffs != []:
         print('Unrecognized lines in rpmdiff output:')
@@ -215,33 +133,21 @@ def compare(pkg1, pkg2):
         return
 
     # Add packages to the database
-    db_package1 = package(session, dnf_package1, pkg1['repository'])
-    db_package2 = package(session, dnf_package2, pkg2['repository'])
+    db_package1 = RPMPackage.add(session, dnf_package1, pkg1['repository'])
+    db_package2 = RPMPackage.add(session, dnf_package2, pkg2['repository'])
 
     # Add comparison and rpm_comparison to the database
-    comparison = database.Comparison()
-    comparison.comparison_type = session.query(
-        database.ComparisonType
-    ).filter_by(name=COMPARISON_TYPE).one()
-    comparison.rpm_comparison = RPMComparison(
-        id=comparison.id,
-        pkg1_id=db_package1.id,
-        pkg2_id=db_package2.id,
-        state=constants.STATE_NEW,
-    )
-    session.add(comparison)
-    session.commit()
+    rpm_comparison = RPMComparison.add(session, db_package1, db_package2)
 
     # Compare packages
     completed_process = run_rpmdiff(
-        dnf_package1.localPkg(),
-        dnf_package2.localPkg()
+        dnf_package1.localPkg(), dnf_package2.localPkg()
     )
     rpmdiff_output = completed_process.stdout.decode('UTF-8')
     diffs = parse_rpmdiff(rpmdiff_output)
 
     # Process results
-    proces_differences(session, comparison.id, diffs)
+    proces_differences(session, int(rpm_comparison.id), diffs)
 
     # Update RPMComparison state
-    update_state(session, comparison.rpm_comparison, constants.STATE_DONE)
+    rpm_comparison.update_state(session, constants.STATE_DONE)

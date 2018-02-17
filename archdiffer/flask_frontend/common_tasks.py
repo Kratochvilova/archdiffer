@@ -17,8 +17,7 @@ oid = OpenID(flask_app, '/tmp', safe_roots=[])
 def my_render_template(html, **arguments):
     """Call render_template with comparison_types as one of the arguments."""
     arguments.setdefault(
-        'comparison_types',
-        g.db_session.query(ComparisonType).order_by(ComparisonType.id)
+        'comparison_types', ComparisonType.query(g.db_session)
     )
     return render_template(html, **arguments)
 
@@ -32,8 +31,7 @@ def lookup_current_user():
     """Get user for the request."""
     g.user = None
     if 'openid' in flask_session:
-        openid = flask_session['openid']
-        g.user = g.db_session.query(User).filter_by(openid=openid).first()
+        g.user = User.query_by_openid(g.db_session, flask_session['openid'])
 
 @flask_app.teardown_request
 def close_database_session(exception):
@@ -66,7 +64,7 @@ def login():
 @oid.after_login
 def create_or_login(resp):
     flask_session['openid'] = resp.identity_url
-    user = g.db_session.query(User).filter_by(openid=resp.identity_url).first()
+    user = User.query_by_openid(g.db_session, resp.identity_url)
     if user is not None:
         flash(u'Successfully signed in')
         g.user = user
@@ -88,10 +86,7 @@ def create_profile():
             flash(u'Error: you have to enter a valid email address')
         else:
             flash(u'Profile successfully created')
-            g.db_session.add(
-                User(openid=flask_session['openid'], name=name, email=email)
-            )
-            g.db_session.commit()
+            User.add(g.db_session, flask_session['openid'], name, email)
             return redirect(oid.get_next_url())
     return render_template('create_profile.html', next=oid.get_next_url())
 

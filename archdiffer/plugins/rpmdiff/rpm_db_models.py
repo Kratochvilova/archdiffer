@@ -6,9 +6,11 @@ Created on Tue Oct  3 10:56:53 2017
 """
 
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
+from sqlalchemy.exc import IntegrityError
 from ... import database
+from . import constants
 
 class BaseExported(object):
     to_export = []
@@ -54,6 +56,33 @@ class RPMComparison(BaseExported, database.Base):
                     self.state,
                 )
 
+    def update_state(self, session, state):
+        """Update state of the RPMComparison.
+        
+        :param session: session for communication with the database
+        :type session: qlalchemy.orm.session.Session
+        :param state int: new state
+        """
+        self.state = state
+        session.add(self)
+        session.commit()
+
+    @staticmethod
+    def add(session, rpm_package1, rpm_package2):
+        comparison = database.Comparison()
+        comparison.comparison_type = session.query(
+            database.ComparisonType
+        ).filter_by(name=constants.COMPARISON_TYPE).one()
+        comparison.rpm_comparison = RPMComparison(
+            id=comparison.id,
+            pkg1_id=rpm_package1.id,
+            pkg2_id=rpm_package2.id,
+            state=constants.STATE_NEW,
+        )
+        session.add(comparison)
+        session.commit()
+        return comparison.rpm_comparison
+
 class RPMDifference(BaseExported, database.Base):
     __tablename__ = 'rpm_differences'
 
@@ -82,6 +111,19 @@ class RPMDifference(BaseExported, database.Base):
                     self.diff_info,
                     self.diff,
                 )
+
+    @staticmethod
+    def add(session, id_comp, category, diff_type, diff_info, diff):
+        difference = RPMDifference(
+            id_comp=id_comp,
+            category=category,
+            diff_type=diff_type,
+            diff_info=diff_info,
+            diff=diff,
+        )
+        session.add(difference)
+        session.commit()
+        return difference
 
 class RPMPackage(BaseExported, database.Base):
     __tablename__ = 'rpm_packages'
@@ -139,6 +181,43 @@ class RPMPackage(BaseExported, database.Base):
             arch=self.arch,
         )
 
+    @staticmethod
+    def add(session, pkg, repo_path):
+        """Add package to the database if it doesn't already exist.
+
+        :param session: session for communication with the database
+        :type session: qlalchemy.orm.session.Session
+        :param package dnf.package.Package: corresponds to an RPM file
+        :param repo_path string: repository baseurl
+        :return: package
+        :rtype: rpm_db_models.RPMPackage
+        """
+        id_repo = RPMRepository.add(session, repo_path).id
+
+        try:
+            rpm_package = RPMPackage(
+                name=pkg.name,
+                arch=pkg.arch,
+                epoch=pkg.epoch,
+                version=pkg.version,
+                release=pkg.release,
+                id_repo=id_repo
+            )
+            session.add(rpm_package)
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            rpm_package = session.query(RPMPackage).filter_by(
+                name=pkg.name,
+                arch=pkg.arch,
+                epoch=pkg.epoch,
+                version=pkg.version,
+                release=pkg.release,
+                id_repo=id_repo
+            ).one()
+
+        return rpm_package
+
 class RPMRepository(BaseExported, database.Base):
     __tablename__ = 'rpm_repositories'
 
@@ -153,3 +232,137 @@ class RPMRepository(BaseExported, database.Base):
 
     def __repr__(self):
         return "<RPMRepository(id='%s', path='%s')>" % (self.id, self.path)
+
+    @staticmethod
+    def add(session, repo_path):
+        """Add repository to the database if it doesn't already exist.
+
+        :param session: session for communication with the database
+        :type session: qlalchemy.orm.session.Session
+        :param repo_path string: repository baseurl
+        :return: repository
+        :rtype: rpm_db_models.RPMRepository
+        """
+        try:
+            repo = RPMRepository(path=repo_path)
+            session.add(repo)
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            repo = session.query(RPMRepository).filter_by(path=repo_path).one()
+        return repo
+
+def joined_query(session, table=RPMComparison):
+    """Query database tables jointly.
+
+    :param table: table setting which tables to query
+    :type table: one of (RPMDifference, RPMComparison, RPMPackage,
+                         RPMRepository)
+    :return sqlalchemy.orm.query.Query: resulting query object
+    """
+    tables = []
+    conditions = []
+
+    pkg1 = aliased(RPMPackage, name='pkg1')
+    pkg2 = aliased(RPMPackage, name='pkg2')
+    repo1 = aliased(RPMRepository, name='repo1')
+    repo2 = aliased(RPMRepository, name='repo2')
+    
+    if table == RPMRepository:
+        tables = [RPMRepository]
+    if table == RPMPackage:
+        tables = [RPMPackage, RPMRepository]
+        conditions = [pkg1.id_repo==repo1.id]
+    if table == RPMComparison or table == RPMDifference:
+        tables = [RPMComparison, database.Comparison, pkg1, pkg2, repo1, repo2]
+        conditions = [
+            RPMComparison.id==database.Comparison.id,
+            RPMComparison.pkg1_id==pkg1.id,
+            RPMComparison.pkg2_id==pkg2.id,
+            pkg1.id_repo==repo1.id,
+            pkg2.id_repo==repo2.id,
+        ]
+
+    query = session.query(*tables).filter(*conditions)
+
+    if table == RPMDifference:
+        query = query.add_entity(RPMDifference).outerjoin(
+            RPMDifference, RPMDifference.id_comp==RPMComparison.id
+        )
+
+    return query
+
+def iter_query_result(result, table=RPMComparison):
+    """Process result of the joined query.
+
+    :param table: table setting which tables were queried
+    :type table: one of (RPMDifference, RPMComparison, RPMPackage,
+                         RPMRepository)
+    :return: iterator of resulting dict
+    :rtype: Iterator[dict]
+    """
+    print(result)
+    def get_id(line):
+        if table == RPMComparison or table == RPMDifference:
+            return line.RPMComparison.id
+        elif table == RPMPackage:
+            return line.RPMPackage.id
+        else:
+            return line.id
+
+    def parse_line(line):
+        if table == RPMComparison or table == RPMDifference:
+            result_dict = {
+                'time': str(line.Comparison.time),
+                'type': constants.COMPARISON_TYPE,
+                'pkg1': line.pkg1.exported(),
+                'pkg2': line.pkg2.exported(),
+                'state': constants.STATE_STRINGS[line.RPMComparison.state],
+            }
+            result_dict['pkg1']['repo'] = line.repo1.exported()
+            result_dict['pkg2']['repo'] = line.repo2.exported()
+            result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
+            result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
+        elif table == RPMPackage:
+            result_dict = line.RPMPackage.exported()
+            result_dict['repo'] = line.RPMRepository.exported()
+            result_dict['filename'] = line.RPMPackage.rpm_filename()
+        else:
+            result_dict = {'path': line.path}
+
+        return result_dict
+
+    def get_difference(line):
+        if table != RPMDifference or line.RPMDifference is None:
+            return
+        diff = line.RPMDifference.exported()
+        diff['category'] = constants.CATEGORY_STRINGS[diff['category']]
+        diff['diff_type'] = constants.DIFF_TYPE_STRINGS[diff['diff_type']]
+        return diff
+
+    last_id = None
+    result_dict = None
+    differences = []
+
+    for line in result:
+        if last_id is None:
+            # Save new id and comparison
+            last_id = get_id(line)
+            result_dict = parse_line(line)
+        if get_id(line) != last_id:
+            # Add all differences and yield
+            if table == RPMDifference:
+                result_dict['differences'] = differences
+            yield (last_id, result_dict)
+            # Save new id and comparison
+            last_id = get_id(line)
+            result_dict = parse_line(line)
+            differences = []
+        diff = get_difference(line)
+        if diff is not None:
+            differences.append(diff)
+    # Add all differences and yield
+    if table == RPMDifference:
+        result_dict['differences'] = differences
+    if last_id is not None:
+        yield (last_id, result_dict)

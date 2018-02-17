@@ -10,7 +10,8 @@ from flask import request, g
 from flask_restful import Resource
 from werkzeug.exceptions import BadRequest
 from .flask_app import flask_app, flask_api
-from ..database import Comparison, ComparisonType
+from ..database import (Comparison, ComparisonType, joined_query,
+                        iter_query_result)
 from .common_tasks import my_render_template
 
 # Transformation functions for parsing requests
@@ -58,53 +59,9 @@ def modify_query_by_request(query):
         query = query.limit(args_dict['limit'])
     return query
 
-def joined_query(table=Comparison):
-    """Query database tables jointly.
-
-    :param table: table setting which tables to query
-    :type table: one of (Comparison, ComparisonType)
-    :return sqlalchemy.orm.query.Query: resulting query object
-    """
-    if table == Comparison:
-        return g.db_session.query(Comparison, ComparisonType).filter(
-            Comparison.comparison_type_id == ComparisonType.id
-        )
-    return g.db_session.query(ComparisonType)
-
-def iter_query_result(result, table=Comparison):
-    """Process result of the joined query.
-
-    :param table: table setting which tables were queried
-    :type table: one of (Comparison, ComparisonType)
-    :return: iterator of resulting dict
-    :rtype: Iterator[dict]
-    """
-    def get_id(line):
-        if table == Comparison:
-            return line.Comparison.id
-        return line.id
-
-    def parse_line(line):
-        result_dict = {}
-        if table == Comparison:
-            result_dict['time'] = str(line.Comparison.time)
-            result_dict['type'] = {
-                'id': line.ComparisonType.id,
-                'name': line.ComparisonType.name,
-            }
-        else:
-            result_dict = {'name': line.name}
-
-        return result_dict
-
-    for line in result:
-        result_id = get_id(line)
-        result_dict = parse_line(line)
-        yield (result_id, result_dict)
-
 @flask_app.route('/')
 def index():
-    comps = dict(iter_query_result(joined_query()))
+    comps = dict(iter_query_result(joined_query(g.db_session)))
     return my_render_template('show_comparisons.html', comparisons=comps)
 
 @flask_app.route('/comparison_types')
@@ -122,13 +79,13 @@ class ShowTable(Resource):
     def get(self, string_table):
         table = self.table_by_string(string_table)
         return dict(iter_query_result(modify_query_by_request(
-            joined_query(table)), table
+            joined_query(g.db_session, table)), table
         ))
 
 class ShowTableItem(ShowTable):
     def get(self, string_table, id):
         table = self.table_by_string(string_table)
-        query = joined_query(table).filter(table.id == id)
+        query = joined_query(g.db_session, table).filter(table.id == id)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
 flask_api.add_resource(ShowTable, '/rest/<string:string_table>')
