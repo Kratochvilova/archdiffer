@@ -14,11 +14,18 @@ from ..database import ComparisonType, User
 
 oid = OpenID(flask_app, '/tmp', safe_roots=[])
 
+def get_comparison_types():
+    """Get all comparison types from the database."""
+    ses = db_session()
+    comparison_types = ComparisonType.query(ses).all()
+    ses.close()
+    return comparison_types
+
+comparison_types = get_comparison_types()
+
 def my_render_template(html, **arguments):
     """Call render_template with comparison_types as one of the arguments."""
-    arguments.setdefault(
-        'comparison_types', ComparisonType.query(g.db_session)
-    )
+    arguments.setdefault('comparison_types', comparison_types)
     return render_template(html, **arguments)
 
 @flask_app.before_request
