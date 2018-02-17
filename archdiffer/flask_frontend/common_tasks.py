@@ -17,7 +17,7 @@ oid = OpenID(flask_app, '/tmp', safe_roots=[])
 def get_comparison_types():
     """Get all comparison types from the database."""
     ses = db_session()
-    comparison_types = ComparisonType.query(ses).all()
+    comparison_types = ComparisonType.query(ses)
     ses.close()
     return comparison_types
 
@@ -32,13 +32,6 @@ def my_render_template(html, **arguments):
 def new_database_session():
     """Get new database session for each request."""
     g.db_session = db_session()
-
-@flask_app.before_request
-def lookup_current_user():
-    """Get user for the request."""
-    g.user = None
-    if 'openid' in flask_session:
-        g.user = User.query_by_openid(g.db_session, flask_session['openid'])
 
 @flask_app.teardown_request
 def close_database_session(exception):
@@ -56,7 +49,7 @@ def close_database_session(exception):
 @oid.loginhandler
 def login():
     """Login user."""
-    if g.user is not None:
+    if g.get('user', None) is not None:
         return redirect(oid.get_next_url())
     if request.method == 'POST':
         openid = request.form.get('openid')
@@ -85,7 +78,7 @@ def create_or_login(resp):
 @flask_app.route('/create-profile', methods=['GET', 'POST'])
 def create_profile():
     """Add new user."""
-    if g.user is not None or 'openid' not in flask_session:
+    if g.get('user', None) is not None or 'openid' not in flask_session:
         return redirect(url_for('index'))
     if request.method == 'POST':
         name = request.form['name']
@@ -96,7 +89,9 @@ def create_profile():
             flash(u'Error: you have to enter a valid email address')
         else:
             flash(u'Profile successfully created')
-            User.add(g.db_session, flask_session['openid'], name, email)
+            g.user = User.add(
+                g.db_session, flask_session['openid'], name, email
+            )
             return redirect(oid.get_next_url())
     return render_template('create_profile.html', next=oid.get_next_url())
 
@@ -104,5 +99,6 @@ def create_profile():
 def logout():
     """Logout user."""
     flask_session.pop('openid', None)
+    g.user = None
     flash(u'You were signed out')
     return redirect(oid.get_next_url())
