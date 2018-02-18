@@ -28,7 +28,7 @@ def download_package(pkg):
         base.repos[label].load()
     except:
         return None
-    base.fill_sack()
+    base.fill_sack(load_system_repo=False)
 
     # Query packages
     pkgs = base.sack.query().available().filter(name=pkg['name'])
