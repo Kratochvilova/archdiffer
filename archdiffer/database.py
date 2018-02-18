@@ -35,6 +35,13 @@ class Comparison(Base):
             self.id, self.time, self.comparison_type_id
         )
 
+    @staticmethod
+    def add(ses, comparison_type_id):
+        comparison = Comparison(comparison_type_id = comparison_type_id)
+        ses.add(comparison)
+        ses.commit()
+        return comparison
+
 class ComparisonType(Base):
     __tablename__ = 'comparison_types'
 

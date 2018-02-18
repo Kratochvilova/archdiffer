@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
 from ... import database
+from ... database import Base, Comparison, ComparisonType
 from . import constants
 
 class BaseExported(object):
@@ -27,13 +28,14 @@ class BaseExported(object):
             overwrite = self.to_export
         return {k:v for k, v in vars(self).items() if k in overwrite}
 
-class RPMComparison(BaseExported, database.Base):
+class RPMComparison(BaseExported, Base):
     __tablename__ = 'rpm_comparisons'
 
-    to_export = ['id', 'state']
+    to_export = ['id', 'id_group', 'state']
 
-    id = Column(
-        Integer, ForeignKey('comparisons.id'), primary_key=True, nullable=False
+    id = Column(Integer, primary_key=True, nullable=False)
+    id_group = Column(
+        Integer, ForeignKey('comparisons.id'), nullable=False
     )
     pkg1_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
     pkg2_id = Column(Integer, ForeignKey('rpm_packages.id'), nullable=False)
@@ -55,9 +57,10 @@ class RPMComparison(BaseExported, database.Base):
     )
 
     def __repr__(self):
-        return ("<Comparison(id='%s', pkg1_id='%s', pkg2_id='%s', "
+        return ("<Comparison(id='%s', id_group='%s', pkg1_id='%s', pkg2_id='%s', "
                 "state='%s')>") % (
                     self.id,
+                    self.id_group,
                     self.pkg1_id,
                     self.pkg2_id,
                     self.state,
@@ -75,7 +78,7 @@ class RPMComparison(BaseExported, database.Base):
         ses.commit()
 
     @staticmethod
-    def add(ses, rpm_package1, rpm_package2):
+    def add(ses, rpm_package1, rpm_package2, id_group=None):
         """Add new RPMComparison together with corresponding Comparison.
 
         :param ses: session for communication with the database
@@ -84,21 +87,87 @@ class RPMComparison(BaseExported, database.Base):
         :param rpm_package2 RPMPackage: second package
         :return RPMComparison: newly added RPMComparison
         """
-        comparison = database.Comparison()
-        comparison.comparison_type = ses.query(
-            database.ComparisonType
-        ).filter_by(name=constants.COMPARISON_TYPE).one()
-        comparison.rpm_comparison = RPMComparison(
-            id=comparison.id,
+        if id_group is None:
+            comparison_type_id = ses.query(ComparisonType).filter_by(
+                name=constants.COMPARISON_TYPE
+            ).one().id
+            comparison = Comparison.add(ses, comparison_type_id)
+            id_group = comparison.id
+
+        rpm_comparison = RPMComparison(
+            id_group = id_group,
             pkg1_id=rpm_package1.id,
             pkg2_id=rpm_package2.id,
             state=constants.STATE_NEW,
         )
-        ses.add(comparison)
+        ses.add(rpm_comparison)
         ses.commit()
-        return comparison.rpm_comparison
+        return rpm_comparison
 
-class RPMDifference(BaseExported, database.Base):
+    @staticmethod
+    def query(ses):
+        pkg1 = aliased(RPMPackage, name='pkg1')
+        pkg2 = aliased(RPMPackage, name='pkg2')
+        repo1 = aliased(RPMRepository, name='repo1')
+        repo2 = aliased(RPMRepository, name='repo2')
+
+        return ses.query(
+            RPMComparison, Comparison, pkg1, pkg2, repo1, repo2
+        ).filter(
+            RPMComparison.id_group == Comparison.id,
+            RPMComparison.pkg1_id == pkg1.id,
+            RPMComparison.pkg2_id == pkg2.id,
+            pkg1.id_repo == repo1.id,
+            pkg2.id_repo == repo2.id,
+        )
+
+    @staticmethod
+    def id_from_line(line):
+        return line.RPMComparison.id
+
+    @staticmethod
+    def dict_from_line(line):
+        result_dict = line.RPMComparison.exported()
+        result_dict['time'] = str(line.Comparison.time)
+        result_dict['type'] = constants.COMPARISON_TYPE
+        result_dict['pkg1'] = line.pkg1.exported()
+        result_dict['pkg2'] = line.pkg2.exported()
+        result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
+        result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
+        result_dict['pkg1']['repo'] = line.repo1.exported()
+        result_dict['pkg2']['repo'] = line.repo2.exported()
+        return result_dict
+
+    def comparisons_query(ses):
+        pkg1 = aliased(RPMPackage, name='pkg1')
+        pkg2 = aliased(RPMPackage, name='pkg2')
+        repo1 = aliased(RPMRepository, name='repo1')
+        repo2 = aliased(RPMRepository, name='repo2')
+    
+        query = ses.query(
+            Comparison, RPMComparison, pkg1, pkg2, repo1, repo2
+        ).outerjoin(
+            RPMComparison, RPMComparison.id_group == Comparison.id
+        ).filter(
+            RPMComparison.id_group == Comparison.id,
+            RPMComparison.pkg1_id == pkg1.id,
+            RPMComparison.pkg2_id == pkg2.id,
+            pkg1.id_repo == repo1.id,
+            pkg2.id_repo == repo2.id,
+        )
+
+        return query
+
+    def comparisons_id_from_line(line):
+        return line.Comparison.id
+
+    def comparisons_dict_from_line(line):
+        return {
+            'time': str(line.Comparison.time),
+            'type': constants.COMPARISON_TYPE,
+        }
+
+class RPMDifference(BaseExported, Base):
     __tablename__ = 'rpm_differences'
 
     to_export = ['id', 'category', 'diff_type', 'diff_info', 'diff']
@@ -151,7 +220,28 @@ class RPMDifference(BaseExported, database.Base):
         ses.commit()
         return difference
 
-class RPMPackage(BaseExported, database.Base):
+    @staticmethod
+    def query(ses):
+        return RPMComparison.query(ses).add_entity(RPMDifference).outerjoin(
+            RPMDifference, RPMDifference.id_comp == RPMComparison.id
+        )
+
+    @staticmethod
+    def id_from_line(line):
+        return RPMComparison.line_id(line)
+
+    @staticmethod
+    def dict_from_line(line):
+        result_dict = line.RPMDifference.exported()
+        result_dict['category'] = constants.CATEGORY_STRINGS[
+            result_dict['category']
+        ]
+        result_dict['diff_type'] = constants.DIFF_TYPE_STRINGS[
+            result_dict['diff_type']
+        ]
+        return result_dict
+
+class RPMPackage(BaseExported, Base):
     __tablename__ = 'rpm_packages'
 
     to_export = ['id', 'name', 'arch', 'epoch', 'version', 'release']
@@ -244,7 +334,24 @@ class RPMPackage(BaseExported, database.Base):
 
         return rpm_package
 
-class RPMRepository(BaseExported, database.Base):
+    @staticmethod
+    def query(ses):
+        return ses.query(RPMPackage, RPMRepository).filter(
+            RPMPackage.id_repo == RPMRepository.id
+        )
+
+    @staticmethod
+    def id_from_line(line):
+        return line.RPMPackage.id
+
+    @staticmethod
+    def dict_from_line(line):
+        result_dict = line.RPMPackage.exported()
+        result_dict['filename'] = line.RPMPackage.rpm_filename()
+        result_dict['repo'] = line.RPMRepository.exported()
+        return result_dict
+
+class RPMRepository(BaseExported, Base):
     __tablename__ = 'rpm_repositories'
 
     to_export = ['id', 'path']
@@ -278,119 +385,77 @@ class RPMRepository(BaseExported, database.Base):
             repo = ses.query(RPMRepository).filter_by(path=repo_path).one()
         return repo
 
-def joined_query(ses, table=RPMComparison):
-    """Query database tables jointly.
+    @staticmethod
+    def query(ses):
+        return ses.query(RPMRepository)
 
-    :param table: table setting which tables to query
-    :type table: one of (RPMDifference, RPMComparison, RPMPackage,
-                         RPMRepository)
-    :return sqlalchemy.orm.query.Query: resulting query object
-    """
-    tables = []
-    conditions = []
+    @staticmethod
+    def id_from_line(line):
+        return line.id
 
-    pkg1 = aliased(RPMPackage, name='pkg1')
-    pkg2 = aliased(RPMPackage, name='pkg2')
-    repo1 = aliased(RPMRepository, name='repo1')
-    repo2 = aliased(RPMRepository, name='repo2')
+    @staticmethod
+    def dict_from_line(line):
+        return {'path': line.path}
 
-    if table == RPMRepository:
-        tables = [RPMRepository]
-    if table == RPMPackage:
-        tables = [RPMPackage, RPMRepository]
-        conditions = [pkg1.id_repo == repo1.id]
-    if table == RPMComparison or table == RPMDifference:
-        tables = [RPMComparison, database.Comparison, pkg1, pkg2, repo1, repo2]
-        conditions = [
-            RPMComparison.id == database.Comparison.id,
-            RPMComparison.pkg1_id == pkg1.id,
-            RPMComparison.pkg2_id == pkg2.id,
-            pkg1.id_repo == repo1.id,
-            pkg2.id_repo == repo2.id,
-        ]
+def general_iter_query_result(result, group_id, group_dict,
+                              line_dict=None, name=None):
+    """Process query result.
 
-    query = ses.query(*tables).filter(*conditions)
-
-    if table == RPMDifference:
-        query = query.add_entity(RPMDifference).outerjoin(
-            RPMDifference, RPMDifference.id_comp == RPMComparison.id
-        )
-
-    return query
-
-def iter_query_result(result, table=RPMComparison):
-    """Process result of the joined query.
-
-    :param table: table setting which tables were queried
-    :type table: one of (RPMDifference, RPMComparison, RPMPackage,
-                         RPMRepository)
+    :param result sqlalchemy.orm.query.Query: query
+    :param group_id: function getting id from line of the result
+    :param group_dict: function getting dict from line of the result;
+        will be called each time id changes
+    :param line_dict: function for geting dict from line of the result;
+        will be called for every line and agregated into list
+    :param name: desired name of the list resulting from the aggregation
     :return: iterator of resulting dict
     :rtype: Iterator[dict]
     """
-    print(result)
-    def get_id(line):
-        """Get id based on table."""
-        if table == RPMComparison or table == RPMDifference:
-            return line.RPMComparison.id
-        elif table == RPMPackage:
-            return line.RPMPackage.id
-        return line.id
-
-    def parse_line(line):
-        """Parse line based on table."""
-        if table == RPMComparison or table == RPMDifference:
-            result_dict = {
-                'time': str(line.Comparison.time),
-                'type': constants.COMPARISON_TYPE,
-                'pkg1': line.pkg1.exported(),
-                'pkg2': line.pkg2.exported(),
-                'state': constants.STATE_STRINGS[line.RPMComparison.state],
-            }
-            result_dict['pkg1']['repo'] = line.repo1.exported()
-            result_dict['pkg2']['repo'] = line.repo2.exported()
-            result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
-            result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
-        elif table == RPMPackage:
-            result_dict = line.RPMPackage.exported()
-            result_dict['repo'] = line.RPMRepository.exported()
-            result_dict['filename'] = line.RPMPackage.rpm_filename()
-        else:
-            result_dict = {'path': line.path}
-
-        return result_dict
-
-    def get_difference(line):
-        """Get difference from the line if table is RPMDifference"""
-        if table != RPMDifference or line.RPMDifference is None:
-            return
-        diff = line.RPMDifference.exported()
-        diff['category'] = constants.CATEGORY_STRINGS[diff['category']]
-        diff['diff_type'] = constants.DIFF_TYPE_STRINGS[diff['diff_type']]
-        return diff
-
     last_id = None
     result_dict = None
-    differences = []
+    outerjoin_items = []
 
     for line in result:
         if last_id is None:
-            # Save new id and comparison
-            last_id = get_id(line)
-            result_dict = parse_line(line)
-        if get_id(line) != last_id:
-            # Add all differences and yield
-            if table == RPMDifference:
-                result_dict['differences'] = differences
+            # Save new id and dict
+            last_id = group_id(line)
+            result_dict = group_dict(line)
+        if group_id(line) != last_id:
+            # Add aggregated list and yield
+            if line_dict is not None:
+                result_dict[name] = outerjoin_items
             yield (last_id, result_dict)
-            # Save new id and comparison
-            last_id = get_id(line)
-            result_dict = parse_line(line)
-            differences = []
-        diff = get_difference(line)
-        if diff is not None:
-            differences.append(diff)
-    # Add all differences and yield
-    if table == RPMDifference:
-        result_dict['differences'] = differences
+            # Save new id and dict
+            last_id = group_id(line)
+            result_dict = group_dict(line)
+            outerjoin_items = []
+        if line_dict is not None:
+            item = line_dict(line)
+            if item is not None:
+                outerjoin_items.append(item)
+    # Add aggregated list and yield
+    if line_dict is not None:
+        result_dict[name] = outerjoin_items
     if last_id is not None:
         yield (last_id, result_dict)
+
+def iter_query_result(result, table):
+    if table == RPMDifference:
+        group_id = RPMComparison.id_from_line
+        group_dict = RPMComparison.dict_from_line
+        line_dict = table.dict_from_line
+        name = 'differences'
+    elif table == Comparison:
+        group_id = RPMComparison.comparisons_id_from_line
+        group_dict = RPMComparison.comparisons_dict_from_line
+        line_dict = RPMComparison.dict_from_line
+        name = 'subcomparisons'
+    else:
+        group_id = table.id_from_line
+        group_dict = table.dict_from_line
+        line_dict = None
+        name = None
+
+    return general_iter_query_result(
+        result, group_id, group_dict, line_dict=line_dict, name=name
+    )

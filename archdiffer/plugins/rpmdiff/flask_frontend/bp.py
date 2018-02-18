@@ -10,7 +10,7 @@ from flask import session as flask_session
 from flask_restful import Api, Resource
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
-                             RPMRepository, joined_query, iter_query_result)
+                             RPMRepository, iter_query_result)
 from .. import constants
 from ....flask_frontend.common_tasks import my_render_template
 from ....flask_frontend.database_tasks import modify_query_by_request
@@ -37,13 +37,14 @@ def record_params(setup_state):
 @bp.route('/')
 def show_comparisons():
     """Show all rpm comparisons."""
-    comps = dict(iter_query_result(joined_query(g.db_session)))
+    query = RPMComparison.query(g.db_session)
+    comps = dict(iter_query_result(query, RPMComparison))
     return my_render_template('rpm_show_comparisons.html', comparisons=comps)
 
 @bp.route('/comparisons/<int:id_comp>')
 def show_differences(id_comp):
     """Show all rpm differences for rpm comparison given by id_comp."""
-    query = joined_query(g.db_session, RPMDifference)
+    query = RPMDifference.query(g.db_session)
     query = query.filter(RPMComparison.id == id_comp)
     comparison = dict(iter_query_result(query, RPMDifference))
     return my_render_template(
@@ -54,7 +55,7 @@ def show_differences(id_comp):
 @bp.route('/packages/<int:pkg_id>')
 def show_package(pkg_id):
     """Show rpm package given by pkg_id."""
-    query = joined_query(g.db_session, RPMPackage)
+    query = RPMPackage.query(g.db_session)
     query = query.filter(RPMPackage.id == pkg_id)
     pkg = dict(iter_query_result(query, RPMPackage))[pkg_id]
     return my_render_template('rpm_show_package.html', pkg_id=pkg_id, pkg=pkg)
@@ -62,7 +63,7 @@ def show_package(pkg_id):
 @bp.route('/repositories/<int:repo_id>')
 def show_repository(repo_id):
     """Show rpm repository given by repo_id."""
-    query = joined_query(g.db_session, RPMRepository)
+    query = RPMRepository.query(g.db_session)
     query = query.filter(RPMRepository.id == repo_id)
     repo = dict(iter_query_result(query, RPMRepository))[repo_id]
     return my_render_template(
@@ -72,14 +73,14 @@ def show_repository(repo_id):
 @bp.route('/packages')
 def show_packages():
     """Show all rpm packages."""
-    query = joined_query(g.db_session, RPMPackage)
+    query = RPMPackage.query(g.db_session)
     pkgs = dict(iter_query_result(query, RPMPackage))
     return my_render_template('rpm_show_packages.html', pkgs=pkgs)
 
 @bp.route('/repositories')
 def show_repositories():
     """Show all rpm repositories."""
-    query = joined_query(g.db_session, RPMRepository)
+    query = RPMRepository.query(g.db_session)
     repos = dict(iter_query_result(query, RPMRepository))
     return my_render_template('rpm_show_repositories.html', repos=repos)
 
@@ -130,7 +131,7 @@ class ShowRPMTable(Resource):
     """Show dict of given table."""
     def get(self, string_table):
         table = table_by_string(string_table)
-        query = joined_query(g.db_session, table)
+        query = table.query(g.db_session)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
 class ShowRPMTableItem(Resource):
@@ -143,7 +144,7 @@ class ShowRPMTableItem(Resource):
 
     def get(self, string_table, id):
         table = table_by_string(string_table)
-        query = joined_query(g.db_session, table)
+        query = table.query(g.db_session)
         query = query.filter(self.shown_table(table).id == id)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
