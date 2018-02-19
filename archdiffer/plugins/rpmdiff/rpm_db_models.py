@@ -118,6 +118,8 @@ class RPMComparison(BaseExported, Base):
             RPMComparison.pkg2_id == pkg2.id,
             pkg1.id_repo == repo1.id,
             pkg2.id_repo == repo2.id,
+        ).order_by(
+            RPMComparison.id
         )
 
     @staticmethod
@@ -154,6 +156,8 @@ class RPMComparison(BaseExported, Base):
             RPMComparison.pkg2_id == pkg2.id,
             pkg1.id_repo == repo1.id,
             pkg2.id_repo == repo2.id,
+        ).order_by(
+            Comparison.id
         )
 
         return query
@@ -224,6 +228,8 @@ class RPMDifference(BaseExported, Base):
     def query(ses):
         return RPMComparison.query(ses).add_entity(RPMDifference).outerjoin(
             RPMDifference, RPMDifference.id_comp == RPMComparison.id
+        ).order_by(
+            RPMComparison.id
         )
 
     @staticmethod
@@ -338,7 +344,7 @@ class RPMPackage(BaseExported, Base):
     def query(ses):
         return ses.query(RPMPackage, RPMRepository).filter(
             RPMPackage.id_repo == RPMRepository.id
-        )
+        ).order_by(RPMPackage.id)
 
     @staticmethod
     def id_from_line(line):
@@ -387,7 +393,7 @@ class RPMRepository(BaseExported, Base):
 
     @staticmethod
     def query(ses):
-        return ses.query(RPMRepository)
+        return ses.query(RPMRepository).order_by(RPMRepository.id)
 
     @staticmethod
     def id_from_line(line):
