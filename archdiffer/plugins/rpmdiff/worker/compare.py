@@ -12,11 +12,11 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage)
 from .. import constants
 from ....backend.celery_app import celery_app
 
-def download_package(pkg):
-    """Download package whose parameters match the arguments.
+def download_packages(pkg):
+    """Download packages whose parameters match the arguments.
 
     :param pkg dict: dict containing package parameters
-    :return: package or None
+    :return list: packages
     """
     base = dnf.Base()
 
@@ -41,10 +41,6 @@ def download_package(pkg):
     if pkg['version'] != '':
         pkgs = pkgs.filter(version=pkg['version'])
 
-    # Not allowing more than one package
-    if len(pkgs) != 1:
-        return None
-
     # Download the package
     print('Started package download: %s' % pkgs[0].name)
     base.conf.destdir = '.'
@@ -52,7 +48,19 @@ def download_package(pkg):
     base.download_packages(list(pkgs))
     print('Finished package download: %s' % pkgs[0].name)
 
-    return pkgs[0]
+    return list(pkgs)
+
+def make_tuples(template1, template2, pkgs1, pkgs2):
+    tuples = []
+    for pkg1 in pkgs1:
+        for pkg2 in pkgs2:
+            if pkg1.arch == pkg2.arch:
+                tuples.append((pkg1, pkg2))
+    if tuples == []:
+        for pkg1 in pkgs1:
+            for pkg2 in pkgs2:
+                tuples.append((pkg1, pkg2))
+    return tuples
 
 def run_rpmdiff(pkg1, pkg2):
     """Run rpmdiff as subprocess.
@@ -133,27 +141,34 @@ def compare(pkg1, pkg2):
     session = database.session()
 
     # Download packages
-    dnf_package1 = download_package(pkg1)
-    dnf_package2 = download_package(pkg2)
-    if dnf_package1 is None or dnf_package2 is None:
+    dnf_packages1 = download_packages(pkg1)
+    dnf_packages2 = download_packages(pkg2)
+    if dnf_packages1 == [] or dnf_packages2 == []:
         return
 
-    # Add packages to the database
-    db_package1 = RPMPackage.add(session, dnf_package1, pkg1['repository'])
-    db_package2 = RPMPackage.add(session, dnf_package2, pkg2['repository'])
+    tuples = make_tuples(pkg1, pkg2, dnf_packages1, dnf_packages2)
 
-    # Add comparison and rpm_comparison to the database
-    rpm_comparison = RPMComparison.add(session, db_package1, db_package2)
+    id_group = None
+    for dnf_package1, dnf_package2 in tuples:
+        # Add packages to the database
+        db_package1 = RPMPackage.add(session, dnf_package1, pkg1['repository'])
+        db_package2 = RPMPackage.add(session, dnf_package2, pkg2['repository'])
 
-    # Compare packages
-    completed_process = run_rpmdiff(
-        dnf_package1.localPkg(), dnf_package2.localPkg()
-    )
-    rpmdiff_output = completed_process.stdout.decode('UTF-8')
-    diffs = parse_rpmdiff(rpmdiff_output)
+        # Add comparison and rpm_comparison to the database
+        rpm_comparison = RPMComparison.add(
+            session, db_package1, db_package2, id_group=id_group
+        )
+        id_group = rpm_comparison.id_group
 
-    # Process results
-    proces_differences(session, int(rpm_comparison.id), diffs)
+        # Compare packages
+        completed_process = run_rpmdiff(
+            dnf_package1.localPkg(), dnf_package2.localPkg()
+        )
+        rpmdiff_output = completed_process.stdout.decode('UTF-8')
+        diffs = parse_rpmdiff(rpmdiff_output)
 
-    # Update RPMComparison state
-    rpm_comparison.update_state(session, constants.STATE_DONE)
+        # Process results
+        proces_differences(session, int(rpm_comparison.id), diffs)
+
+        # Update RPMComparison state
+        rpm_comparison.update_state(session, constants.STATE_DONE)
