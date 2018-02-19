@@ -13,7 +13,7 @@
 	</tr>
 	<tr>
 		<td>{{ pkg_id }}</a></td>
-		<td>{{ pkg['name'] }}</td>
+		<td><a href="{{ url_for('rpmdiff.show_packages_name', name=pkg['name']) }}">{{ pkg['name'] }}</a></td>
 		<td>{{ pkg['arch'] }}</td>
 		<td>{{ pkg['epoch'] }}</td>
 		<td>{{ pkg['version'] }}</td>

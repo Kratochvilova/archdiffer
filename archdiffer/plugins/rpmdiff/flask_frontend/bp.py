@@ -51,6 +51,13 @@ def get_group_state_filter(comparisons):
     return state
 
 @bp.route('/')
+def index():
+    """Show index page."""
+    query = RPMComparison.comparisons_query(g.db_session)
+    comps = dict(iter_query_result(query, Comparison))
+    return my_render_template('rpm_show_index.html', comparisons=comps)
+
+@bp.route('/comparisons')
 def show_comparisons():
     """Show all comparisons."""
     query = RPMComparison.comparisons_query(g.db_session)
@@ -157,7 +164,7 @@ def add_entry():
         'rpmdiff.compare', args=(pkg1, pkg2)
     )
     flash('New entry was successfully posted')
-    return redirect(url_for('rpmdiff.show_comparisons'))
+    return redirect(url_for('rpmdiff.index'))
 
 # Resources
 def table_by_string(string_table):

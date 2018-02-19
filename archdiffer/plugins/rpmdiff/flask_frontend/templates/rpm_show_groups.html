@@ -1,6 +1,6 @@
 {% extends "rpm_layout.html" %}
 {% block body %}
-  <ul class=comparisons>
+  <ul class=groups>
     {% for id, comp in comparisons.items() %}
       <a href="{{ url_for('rpmdiff.show_group', id_group=id) }}"><h3>Comparison {{ id }}</h3></a>
       <p>{{ comp['time'] }}</p>

@@ -1,38 +1,4 @@
 {% extends "rpm_layout.html" %}
 {% block body %}
-  <ul class=comparisons>
-    <table>
-      <tr>
-        <th>Id</th>
-        <th>Group</th>
-        <th>Time</th>
-        <th>Pkg 1</th>
-        <th>Pkg 2</th>
-        <th>State</th>
-      </tr>
-      {% for id, comp in comparisons.items() %}
-	{% if comp['comparisons']|length > 1 %}
-          <tr>
-            <td><a href="{{ url_for('rpmdiff.show_group', id_group=id) }}">group</a></td>
-            <td><a href="{{ url_for('rpmdiff.show_group', id_group=id) }}">{{ id }}</a></td>
-            <td>{{ comp['time'] }}</td>
-            <td><a href="{{ url_for('rpmdiff.show_packages_name', name=comp['comparisons'][0]['pkg1']['name']) }}">{{ comp['comparisons'][0]['pkg1']['name'] }}</a></td>
-            <td><a href="{{ url_for('rpmdiff.show_packages_name', name=comp['comparisons'][0]['pkg2']['name']) }}">{{ comp['comparisons'][0]['pkg2']['name'] }}</a></td>
-            <td>{{ comp['comparisons']|get_state }}</td>
-          </tr>
-        {% else %}
-          {% for rpm_comp in comp['comparisons'] %}
-          <tr>
-            <td><a href="{{ url_for('rpmdiff.show_differences', id_comp=rpm_comp['id']) }}">{{ rpm_comp['id'] }}</a></td>
-            <td><a href="{{ url_for('rpmdiff.show_group', id_group=id) }}">{{ id }}</a></td>
-            <td>{{ comp['time'] }}</td>
-            <td><a href="{{ url_for('rpmdiff.show_package', pkg_id=rpm_comp['pkg1']['id']) }}">{{ rpm_comp['pkg1']['filename'] }}</a></td>
-            <td><a href="{{ url_for('rpmdiff.show_package', pkg_id=rpm_comp['pkg2']['id']) }}">{{ rpm_comp['pkg2']['filename'] }}</a></td>
-            <td>{{ rpm_comp['state'] }}</td>
-          </tr>
-          {% endfor %}
-        {% endif %}
-      {% endfor %}
-    </table>
-  </ul>
+    {% include 'comparisons.html' %}
 {% endblock %}

@@ -1,0 +1,48 @@
+  <ul class=form>
+  {% if session.openid %}
+    <form action="{{ url_for('rpmdiff.add_entry') }}" method=post class=add-entry>
+      <dl>
+
+    <div class="wrapper">
+    <div class="left">
+
+        <h3>First RPM package</h3>
+        <dt>Name:
+        <dd><input type=text size=30 name=name1>
+        <dt>Arch:
+        <dd><input type=text size=30 name=arch1>
+        <dt>Epoch:
+        <dd><input type=text size=30 name=epoch1>
+        <dt>Version:
+        <dd><input type=text size=30 name=version1>
+        <dt>Release:
+        <dd><input type=text size=30 name=release1>
+        <dt>Repository:
+        <dd><input type=text size=30 name=repo1>
+
+    </div>
+
+    <div class="right">
+
+        <h3>Second RPM package</h3>
+        <dt>Name:
+        <dd><input type=text size=30 name=name2>
+        <dt>Arch:
+        <dd><input type=text size=30 name=arch2>
+        <dt>Epoch:
+        <dd><input type=text size=30 name=epoch2>
+        <dt>Version:
+        <dd><input type=text size=30 name=version2>
+        <dt>Release:
+        <dd><input type=text size=30 name=release2>
+        <dt>Repository:
+        <dd><input type=text size=30 name=repo2>
+        <dd><input type=submit value=Submit>
+
+    </div>
+    </div>
+
+      </dl>
+    </form>
+  {% endif %}
+  </ul>
