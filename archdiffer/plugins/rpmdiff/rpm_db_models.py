@@ -9,7 +9,6 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
-from ... import database
 from ... database import Base, Comparison, ComparisonType
 from . import constants
 
@@ -57,8 +56,8 @@ class RPMComparison(BaseExported, Base):
     )
 
     def __repr__(self):
-        return ("<Comparison(id='%s', id_group='%s', pkg1_id='%s', pkg2_id='%s', "
-                "state='%s')>") % (
+        return ("<Comparison(id='%s', id_group='%s', pkg1_id='%s', "
+                "pkg2_id='%s', state='%s')>") % (
                     self.id,
                     self.id_group,
                     self.pkg1_id,
@@ -136,6 +135,7 @@ class RPMComparison(BaseExported, Base):
         result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
         result_dict['pkg1']['repo'] = line.repo1.exported()
         result_dict['pkg2']['repo'] = line.repo2.exported()
+        result_dict['state'] = constants.STATE_STRINGS[result_dict['state']]
         return result_dict
 
     def comparisons_query(ses):
@@ -449,7 +449,7 @@ def iter_query_result(result, table):
         group_id = RPMComparison.comparisons_id_from_line
         group_dict = RPMComparison.comparisons_dict_from_line
         line_dict = RPMComparison.dict_from_line
-        name = 'subcomparisons'
+        name = 'comparisons'
     else:
         group_id = table.id_from_line
         group_dict = table.dict_from_line

@@ -11,6 +11,10 @@
       <li><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></li>
       {% if type.name == 'rpmdiff' %}
       <ul>
+      {% if session.openid %}
+      <li><a href="{{ url_for('rpmdiff.show_new_comparison_form') }}">New Comparison</a></li>
+      {% endif %}
+      <li><a href="{{ url_for('rpmdiff.show_comparisons') }}">Comparisons</a></li>
       <li><a href="{{ url_for('rpmdiff.show_packages') }}">Packages</a></li>
       <li><a href="{{ url_for('rpmdiff.show_repositories') }}">Repositories</a></li>
       </ul>

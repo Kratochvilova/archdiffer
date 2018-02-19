@@ -12,12 +12,15 @@ from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository, iter_query_result)
 from .. import constants
+from ....database import Comparison, ComparisonType
 from ....flask_frontend.common_tasks import my_render_template
 from ....flask_frontend.database_tasks import modify_query_by_request
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
-bp = Blueprint(constants.COMPARISON_TYPE, __name__, template_folder='templates')
+bp = Blueprint(
+    constants.COMPARISON_TYPE, __name__, template_folder='templates'
+)
 bp.config = {}
 flask_api = Api(bp)
 
@@ -34,12 +37,49 @@ def record_params(setup_state):
         [(key, value) for (key, value) in app.config.items()]
     )
 
+@bp.app_template_filter ('get_state')
+def get_group_state_filter(comparisons):
+    """Gets resulting state from list of comparisons."""
+    state = None
+    for comp in comparisons:
+        if state is None:
+            state = comp['state']
+            continue
+        if comp['state'] != state:
+            state = 'mixed'
+            break
+    return state
+
 @bp.route('/')
 def show_comparisons():
-    """Show all rpm comparisons."""
-    query = RPMComparison.query(g.db_session)
-    comps = dict(iter_query_result(query, RPMComparison))
+    """Show all comparisons."""
+    query = RPMComparison.comparisons_query(g.db_session)
+    comps = dict(iter_query_result(query, Comparison))
     return my_render_template('rpm_show_comparisons.html', comparisons=comps)
+
+@bp.route('/new')
+def show_new_comparison_form():
+    """Show form for new comparison."""
+    return my_render_template('rpm_show_new_comparison_form.html')
+
+@bp.route('/groups/<int:id_group>')
+def show_group(id_group):
+    """Show all rpm comparisons."""
+    query = RPMComparison.comparisons_query(g.db_session)
+    query = query.filter(
+        ComparisonType.name == constants.COMPARISON_TYPE,
+        Comparison.id == id_group,
+    )
+    comps = dict(iter_query_result(query, Comparison))
+    return my_render_template('rpm_show_groups.html', comparisons=comps)
+
+@bp.route('/groups')
+def show_groups():
+    """Show all rpm comparisons."""
+    query = RPMComparison.comparisons_query(g.db_session)
+    query = query.filter(ComparisonType.name == constants.COMPARISON_TYPE)
+    comps = dict(iter_query_result(query, Comparison))
+    return my_render_template('rpm_show_groups.html', comparisons=comps)
 
 @bp.route('/comparisons/<int:id_comp>')
 def show_differences(id_comp):
@@ -59,6 +99,14 @@ def show_package(pkg_id):
     query = query.filter(RPMPackage.id == pkg_id)
     pkg = dict(iter_query_result(query, RPMPackage))[pkg_id]
     return my_render_template('rpm_show_package.html', pkg_id=pkg_id, pkg=pkg)
+
+@bp.route('/packages/<string:name>')
+def show_packages_name(name):
+    """Show rpm packages given by name."""
+    query = RPMPackage.query(g.db_session)
+    query = query.filter(RPMPackage.name == name)
+    pkgs = dict(iter_query_result(query, RPMPackage))
+    return my_render_template('rpm_show_packages.html', pkgs=pkgs)
 
 @bp.route('/repositories/<int:repo_id>')
 def show_repository(repo_id):
@@ -118,6 +166,8 @@ def table_by_string(string_table):
     :param string_table string: shortened name of the table
     :return class: corresponding table
     """
+    if string_table == "groups":
+        return Comparison
     if string_table == "comparisons":
         return RPMComparison
     if string_table == "differences":
@@ -131,7 +181,10 @@ class ShowRPMTable(Resource):
     """Show dict of given table."""
     def get(self, string_table):
         table = table_by_string(string_table)
-        query = table.query(g.db_session)
+        if table == Comparison:
+            query = RPMComparison.comparisons_query(g.db_session)
+        else:
+            query = table.query(g.db_session)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
 class ShowRPMTableItem(Resource):
@@ -144,7 +197,10 @@ class ShowRPMTableItem(Resource):
 
     def get(self, string_table, id):
         table = table_by_string(string_table)
-        query = table.query(g.db_session)
+        if table == Comparison:
+            query = RPMComparison.comparisons_query(g.db_session)
+        else:
+            query = table.query(g.db_session)
         query = query.filter(self.shown_table(table).id == id)
         return dict(iter_query_result(modify_query_by_request(query), table))
 

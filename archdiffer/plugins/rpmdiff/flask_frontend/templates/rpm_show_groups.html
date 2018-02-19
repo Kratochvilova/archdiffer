@@ -1,0 +1,25 @@
+{% extends "rpm_layout.html" %}
+{% block body %}
+  <ul class=comparisons>
+    {% for id, comp in comparisons.items() %}
+      <a href="{{ url_for('rpmdiff.show_group', id_group=id) }}"><h3>Comparison {{ id }}</h3></a>
+      <p>{{ comp['time'] }}</p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Pkg 1</th>
+          <th>Pkg 2</th>
+          <th>State</th>
+        </tr>
+        {% for rpm_comp in comp['comparisons'] %}
+        <tr>
+          <td><a href="{{ url_for('rpmdiff.show_differences', id_comp=rpm_comp['id']) }}">{{ rpm_comp['id'] }}</a></td>
+          <td><a href="{{ url_for('rpmdiff.show_package', pkg_id=rpm_comp['pkg1']['id']) }}">{{ rpm_comp['pkg1']['filename'] }}</a></td>
+          <td><a href="{{ url_for('rpmdiff.show_package', pkg_id=rpm_comp['pkg1']['id']) }}">{{ rpm_comp['pkg2']['filename'] }}</a></td>
+          <td>{{ rpm_comp['state'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
+  </ul>
+{% endblock %}
