@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from ... database import Base, Comparison, ComparisonType
 from . import constants
 from ... import constants as app_constants
+from ...flask_frontend.database_tasks import modify_query
 
 class BaseExported(object):
     """For exporting attributes from the models."""
@@ -163,22 +164,25 @@ class RPMComparison(BaseExported, Base):
         result_dict['state'] = constants.STATE_STRINGS[result_dict['state']]
         return result_dict
 
-    def comparisons_query(ses):
-        """Query Comparison outer-joined with RPMComparison and its packages and
-        their repositories.
+    def comparisons_query(ses, modifiers=None):
+        """Query Comparison outer-joined with RPMComparison and its packages
+        and their repositories.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
+        :param modifiers dict: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         pkg1 = aliased(RPMPackage, name='pkg1')
         pkg2 = aliased(RPMPackage, name='pkg2')
         repo1 = aliased(RPMRepository, name='repo1')
         repo2 = aliased(RPMRepository, name='repo2')
-    
-        query = ses.query(
-            Comparison, RPMComparison, pkg1, pkg2, repo1, repo2
-        ).outerjoin(
+
+        query = ses.query(Comparison)
+        query = modify_query(query, modifiers).from_self()
+        query = query.add_entity(RPMComparison).add_entity(pkg1)
+        query = query.add_entity(pkg2).add_entity(repo1).add_entity(repo2)
+        query = query.outerjoin(
             RPMComparison, RPMComparison.id_group == Comparison.id
         ).filter(
             RPMComparison.id_group == Comparison.id,

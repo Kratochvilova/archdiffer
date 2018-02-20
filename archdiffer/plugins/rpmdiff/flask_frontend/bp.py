@@ -14,7 +14,8 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
 from .. import constants
 from ....database import Comparison, ComparisonType
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.database_tasks import modify_query_by_request
+from ....flask_frontend.database_tasks import (modify_query_by_request,
+                                               parse_request)
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
@@ -37,17 +38,22 @@ def record_params(setup_state):
         [(key, value) for (key, value) in app.config.items()]
     )
 
+def get_request_arguments(*names):
+    return {k:v for k, v in parse_request().items() if k in names}
+
 @bp.route('/')
 def index():
     """Show index page."""
-    query = RPMComparison.comparisons_query(g.db_session)
+    modifiers = get_request_arguments('limit', 'offset')
+    query = RPMComparison.comparisons_query(g.db_session, modifiers)
     comps = dict(iter_query_result(query, Comparison))
     return my_render_template('rpm_show_index.html', comparisons=comps)
 
 @bp.route('/comparisons')
 def show_comparisons():
     """Show all comparisons."""
-    query = RPMComparison.comparisons_query(g.db_session)
+    modifiers = get_request_arguments('limit', 'offset')
+    query = RPMComparison.comparisons_query(g.db_session, modifiers)
     comps = dict(iter_query_result(query, Comparison))
     return my_render_template('rpm_show_comparisons.html', comparisons=comps)
 
@@ -70,7 +76,8 @@ def show_group(id_group):
 @bp.route('/groups')
 def show_groups():
     """Show all rpm comparisons."""
-    query = RPMComparison.comparisons_query(g.db_session)
+    modifiers = get_request_arguments('limit', 'offset')
+    query = RPMComparison.comparisons_query(g.db_session, modifiers)
     query = query.filter(ComparisonType.name == constants.COMPARISON_TYPE)
     comps = dict(iter_query_result(query, Comparison))
     return my_render_template('rpm_show_groups.html', comparisons=comps)

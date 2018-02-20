@@ -26,6 +26,7 @@ _TRANSFORMATIONS = {
     'filter' : _list_transform,
     'order_by' : _list_transform,
     'limit' : lambda x: int(x),
+    'offset' : lambda x: int(x),
 }
 
 def parse_request():
@@ -42,6 +43,27 @@ def parse_request():
             raise BadRequest()
     return args_dict
 
+def modify_query(query, modifiers):
+    """Modify query according to the modifiers.
+
+    :param query sqlalchemy.orm.query.Query: query to be modified
+    :param modifiers dict: dict of modifiers and their values
+    :return query sqlalchemy.orm.query.Query: modified query
+    """
+    if modifiers is None:
+        return query
+    if 'filter_by' in modifiers:
+        query = query.filter_by(**modifiers['filter_by'])
+    if 'filter' in modifiers:
+        query = query.filter(*modifiers['filter'])
+    if 'order_by' in modifiers:
+        query = query.order_by(*modifiers['order_by'])
+    if 'limit' in modifiers:
+        query = query.limit(modifiers['limit'])
+    if 'offset' in modifiers:
+        query = query.offset(modifiers['offset'])
+    return query
+
 def modify_query_by_request(query):
     """Modify query according to the request arguments.
 
@@ -49,15 +71,7 @@ def modify_query_by_request(query):
     :return query sqlalchemy.orm.query.Query: modified query
     """
     args_dict = parse_request()
-    if 'filter_by' in args_dict:
-        query = query.filter_by(**args_dict['filter_by'])
-    if 'filter' in args_dict:
-        query = query.filter(*args_dict['filter'])
-    if 'order_by' in args_dict:
-        query = query.order_by(*args_dict['order_by'])
-    if 'limit' in args_dict:
-        query = query.limit(args_dict['limit'])
-    return query
+    return modify_query(query, args_dict)
 
 @flask_app.route('/')
 def index():
