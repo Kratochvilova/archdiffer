@@ -50,7 +50,15 @@ def download_packages(pkg):
 
     return list(pkgs)
 
-def make_tuples(template1, template2, pkgs1, pkgs2):
+def make_tuples(original1, original2, pkgs1, pkgs2):
+    """Make list of tuples from two lists of packages.
+
+    :param original1 dict: dict describing original request for first package
+    :param original2 dict: dict describing original request for second package
+    :param pkgs1 list[dnf.package.Package]: first list of packages
+    :param pkgs2 list[dnf.package.Package]: second list of packages
+    :return list: list of package tuples
+    """
     tuples = []
     for pkg1 in pkgs1:
         for pkg2 in pkgs2:

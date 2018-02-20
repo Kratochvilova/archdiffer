@@ -105,6 +105,13 @@ class RPMComparison(BaseExported, Base):
 
     @staticmethod
     def query(ses):
+        """Query RPMComparison joined with its packages and their
+        repositories.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return sqlalchemy.orm.query.Query: query
+        """
         pkg1 = aliased(RPMPackage, name='pkg1')
         pkg2 = aliased(RPMPackage, name='pkg2')
         repo1 = aliased(RPMRepository, name='repo1')
@@ -124,10 +131,14 @@ class RPMComparison(BaseExported, Base):
 
     @staticmethod
     def id_from_line(line):
+        """Get RPMComparison id from line containing RPMComparison.
+        """
         return line.RPMComparison.id
 
     @staticmethod
     def dict_from_line(line):
+        """Get dict from line containing RPMComparison, its packages and their
+        repositories."""
         result_dict = line.RPMComparison.exported()
         result_dict['time'] = str(line.Comparison.time)
         result_dict['type'] = constants.COMPARISON_TYPE
@@ -141,6 +152,13 @@ class RPMComparison(BaseExported, Base):
         return result_dict
 
     def comparisons_query(ses):
+        """Query Comparison outer-joined with RPMComparison and its packages and
+        their repositories.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return sqlalchemy.orm.query.Query: query
+        """
         pkg1 = aliased(RPMPackage, name='pkg1')
         pkg2 = aliased(RPMPackage, name='pkg2')
         repo1 = aliased(RPMRepository, name='repo1')
@@ -163,9 +181,13 @@ class RPMComparison(BaseExported, Base):
         return query
 
     def comparisons_id_from_line(line):
+        """Get Comparison id from line containing Comparison.
+        """
         return line.Comparison.id
 
     def comparisons_dict_from_line(line):
+        """Get dict from line containing Comparison.
+        """
         return {
             'time': str(line.Comparison.time),
             'type': constants.COMPARISON_TYPE,
@@ -226,6 +248,13 @@ class RPMDifference(BaseExported, Base):
 
     @staticmethod
     def query(ses):
+        """Query RPMComparison joined with its packages and their repositories,
+        outer-joined with RPMDifference.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return sqlalchemy.orm.query.Query: query
+        """
         return RPMComparison.query(ses).add_entity(RPMDifference).outerjoin(
             RPMDifference, RPMDifference.id_comp == RPMComparison.id
         ).order_by(
@@ -234,10 +263,14 @@ class RPMDifference(BaseExported, Base):
 
     @staticmethod
     def id_from_line(line):
+        """Get RPMComparison id from line containing RPMComparison.
+        """
         return RPMComparison.line_id(line)
 
     @staticmethod
     def dict_from_line(line):
+        """Get dict from line containing RPMDifference.
+        """
         result_dict = line.RPMDifference.exported()
         result_dict['category'] = constants.CATEGORY_STRINGS[
             result_dict['category']
@@ -342,16 +375,26 @@ class RPMPackage(BaseExported, Base):
 
     @staticmethod
     def query(ses):
+        """Query RPMPackage joined with its repository.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return sqlalchemy.orm.query.Query: query
+        """
         return ses.query(RPMPackage, RPMRepository).filter(
             RPMPackage.id_repo == RPMRepository.id
         ).order_by(RPMPackage.id)
 
     @staticmethod
     def id_from_line(line):
+        """Get RPMPackage id from line containing RPMPackage.
+        """
         return line.RPMPackage.id
 
     @staticmethod
     def dict_from_line(line):
+        """Get dict from line containing RPMPackage and its repository.
+        """
         result_dict = line.RPMPackage.exported()
         result_dict['filename'] = line.RPMPackage.rpm_filename()
         result_dict['repo'] = line.RPMRepository.exported()
@@ -393,14 +436,24 @@ class RPMRepository(BaseExported, Base):
 
     @staticmethod
     def query(ses):
+        """Query RPMRepository.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return sqlalchemy.orm.query.Query: query
+        """
         return ses.query(RPMRepository).order_by(RPMRepository.id)
 
     @staticmethod
     def id_from_line(line):
+        """Get RPMRepository id from line containing only RPMRepository.
+        """
         return line.id
 
     @staticmethod
     def dict_from_line(line):
+        """Get dict from line containing only RPMRepository.
+        """
         return {'path': line.path}
 
 def general_iter_query_result(result, group_id, group_dict,
@@ -446,6 +499,14 @@ def general_iter_query_result(result, group_id, group_dict,
         yield (last_id, result_dict)
 
 def iter_query_result(result, table):
+    """Call general_iter_query_result based on given table.
+
+    :param result sqlalchemy.orm.query.Query: query
+    :param table: database model
+
+    :return: iterator of resulting dict from general_iter_query_result
+    :rtype: Iterator[dict]
+    """
     if table == RPMDifference:
         group_id = RPMComparison.id_from_line
         group_dict = RPMComparison.dict_from_line
