@@ -16,7 +16,7 @@
             <td>{{ comp['time'] }}</td>
             <td><a href="{{ url_for('rpmdiff.show_packages_name', name=comp['comparisons'][0]['pkg1']['name']) }}">{{ comp['comparisons'][0]['pkg1']['name'] }}</a></td>
             <td><a href="{{ url_for('rpmdiff.show_packages_name', name=comp['comparisons'][0]['pkg2']['name']) }}">{{ comp['comparisons'][0]['pkg2']['name'] }}</a></td>
-            <td>{{ comp['comparisons']|get_state }}</td>
+            <td>{{ comp['state'] }}</td>
           </tr>
         {% else %}
           {% for rpm_comp in comp['comparisons'] %}

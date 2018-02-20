@@ -37,19 +37,6 @@ def record_params(setup_state):
         [(key, value) for (key, value) in app.config.items()]
     )
 
-@bp.app_template_filter ('get_state')
-def get_group_state_filter(comparisons):
-    """Gets resulting state from list of comparisons."""
-    state = None
-    for comp in comparisons:
-        if state is None:
-            state = comp['state']
-            continue
-        if comp['state'] != state:
-            state = 'mixed'
-            break
-    return state
-
 @bp.route('/')
 def index():
     """Show index page."""

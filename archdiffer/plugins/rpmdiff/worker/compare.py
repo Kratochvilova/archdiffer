@@ -11,6 +11,7 @@ from .... import database
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage)
 from .. import constants
 from ....backend.celery_app import celery_app
+from .... import constants as app_constants
 
 def download_packages(pkg):
     """Download packages whose parameters match the arguments.
@@ -156,6 +157,7 @@ def compare(pkg1, pkg2):
 
     tuples = make_tuples(pkg1, pkg2, dnf_packages1, dnf_packages2)
 
+    rpm_comparison = None
     id_group = None
     for dnf_package1, dnf_package2 in tuples:
         # Add packages to the database
@@ -180,3 +182,5 @@ def compare(pkg1, pkg2):
 
         # Update RPMComparison state
         rpm_comparison.update_state(session, constants.STATE_DONE)
+
+    rpm_comparison.update_group_state(session, app_constants.STATE_DONE)

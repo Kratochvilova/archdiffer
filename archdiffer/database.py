@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
 from sqlalchemy.exc import IntegrityError
 from .config import config
+from .constants import STATE_NEW
 
 Base = declarative_base()
 
@@ -25,6 +26,7 @@ class Comparison(Base):
     comparison_type_id = Column(
         Integer, ForeignKey('comparison_types.id'), nullable=False
     )
+    state = Column(Integer, nullable=False, default=STATE_NEW)
 
     comparison_type = relationship(
         "ComparisonType", back_populates="comparisons"
@@ -36,8 +38,10 @@ class Comparison(Base):
         )
 
     @staticmethod
-    def add(ses, comparison_type_id):
-        comparison = Comparison(comparison_type_id = comparison_type_id)
+    def add(ses, comparison_type_id, state=STATE_NEW):
+        comparison = Comparison(
+            comparison_type_id = comparison_type_id, state=state
+        )
         ses.add(comparison)
         ses.commit()
         return comparison

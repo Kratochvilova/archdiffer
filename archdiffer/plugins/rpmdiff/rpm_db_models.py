@@ -11,6 +11,7 @@ from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
 from ... database import Base, Comparison, ComparisonType
 from . import constants
+from ... import constants as app_constants
 
 class BaseExported(object):
     """For exporting attributes from the models."""
@@ -74,6 +75,17 @@ class RPMComparison(BaseExported, Base):
         """
         self.state = state
         ses.add(self)
+        ses.commit()
+
+    def update_group_state(self, ses, state):
+        """Update state of the Comparison.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :param state int: new state
+        """
+        self.comparison.state = state
+        ses.add(self.comparison)
         ses.commit()
 
     @staticmethod
@@ -191,6 +203,7 @@ class RPMComparison(BaseExported, Base):
         return {
             'time': str(line.Comparison.time),
             'type': constants.COMPARISON_TYPE,
+            'state': app_constants.STATE_STRINGS[line.Comparison.state],
         }
 
 class RPMDifference(BaseExported, Base):
