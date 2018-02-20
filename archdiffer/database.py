@@ -46,6 +46,13 @@ class Comparison(Base):
         ses.commit()
         return comparison
 
+    @staticmethod
+    def query(ses):
+        """Query Comparison joined with its ComparisonType, ordered by id."""
+        return ses.query(Comparison, ComparisonType).filter(
+            Comparison.comparison_type_id==ComparisonType.id
+        ).order_by(Comparison.id)
+
 class ComparisonType(Base):
     __tablename__ = 'comparison_types'
 

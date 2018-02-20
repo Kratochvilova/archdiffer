@@ -41,21 +41,49 @@ def record_params(setup_state):
 def get_request_arguments(*names):
     return {k:v for k, v in parse_request().items() if k in names}
 
+def get_pagination_modifiers():
+    modifiers = get_request_arguments('limit', 'offset')
+    if 'offset' not in modifiers:
+        modifiers['offset'] = 0
+    if 'limit' not in modifiers:
+        modifiers['limit'] = 3
+    return modifiers
+
 @bp.route('/')
 def index():
     """Show index page."""
-    modifiers = get_request_arguments('limit', 'offset')
+    modifiers = get_pagination_modifiers()
     query = RPMComparison.comparisons_query(g.db_session, modifiers)
     comps = dict(iter_query_result(query, Comparison))
-    return my_render_template('rpm_show_index.html', comparisons=comps)
+    comps_count = Comparison.query(g.db_session).filter(
+        ComparisonType.name==constants.COMPARISON_TYPE
+    ).count()
+    return my_render_template(
+        'rpm_show_index.html', 
+        comparisons=comps,
+        comps_count=comps_count,
+        limit=modifiers['limit'],
+        offset=modifiers['offset'],
+        endpoint='rpmdiff.index',
+    )
 
 @bp.route('/comparisons')
 def show_comparisons():
     """Show all comparisons."""
-    modifiers = get_request_arguments('limit', 'offset')
+    modifiers = get_pagination_modifiers()
     query = RPMComparison.comparisons_query(g.db_session, modifiers)
     comps = dict(iter_query_result(query, Comparison))
-    return my_render_template('rpm_show_comparisons.html', comparisons=comps)
+    comps_count = Comparison.query(g.db_session).filter(
+        ComparisonType.name==constants.COMPARISON_TYPE
+    ).count()
+    return my_render_template(
+        'rpm_show_comparisons.html',
+        comparisons=comps,
+        comps_count=comps_count,
+        limit=modifiers['limit'],
+        offset=modifiers['offset'],
+        endpoint='rpmdiff.show_comparisons',
+    )
 
 @bp.route('/new')
 def show_new_comparison_form():
