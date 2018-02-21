@@ -1,6 +1,6 @@
 <!doctype html>
 <title>Archdiffer</title>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
 <div class="menu darktheme">
   <ul>
@@ -8,7 +8,7 @@
     <li><a href="{{ url_for('show_comparison_types') }}">Comparison Types</a></li>
     <ul>
       {% for type in comparison_types %}
-      <li><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></li>
+        <li><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></li>
       {% endfor %}
     </ul>
   </ul>
@@ -17,11 +17,11 @@
 <div class="header lighttheme">
   <h1>Archdiffer</h1>
   <div class="metanav middletheme">
-  {% if not session.openid %}
-    <a href="{{ url_for('login') }}">log in</a>
-  {% else %}
-    <a href="{{ url_for('logout') }}">log out</a>
-  {% endif %}
+    {% if not session.openid %}
+      <a href="{{ url_for('login') }}">log in</a>
+    {% else %}
+      <a href="{{ url_for('logout') }}">log out</a>
+    {% endif %}
   </div>
 </div>
 

@@ -1,18 +1,18 @@
 {% extends "layout.html" %}
 {% block body %}
-  <div class=all_comparisons>
+  <div class="comparisons">
     <table>
       <tr>
         <th>ID</th>
-	<th>Time</th>
+        <th>Time</th>
         <th>Comparison Type</th>
       </tr>
       {% for id, comp in comparisons.items() %}
-      <tr>
-        <td><a href="{{ url_for(comp['type']['name'] + '.show_group', id_group=id) }}">{{ id }}</a></td>
-	<td>{{ comp['time'] }}</td>
-        <td><a href="{{ url_for('index') + comp['type']['name'] }}">{{ comp['type']['name'] }}</td>
-      </tr>
+        <tr>
+          <td><a href="{{ url_for(comp['type']['name'] + '.show_group', id_group=id) }}">{{ id }}</a></td>
+          <td>{{ comp['time'] }}</td>
+          <td><a href="{{ url_for('index') + comp['type']['name'] }}">{{ comp['type']['name'] }}</td>
+        </tr>
       {% endfor %}
     </table>
   </div>

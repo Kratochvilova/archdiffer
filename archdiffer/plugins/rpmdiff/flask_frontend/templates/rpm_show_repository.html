@@ -1,15 +1,15 @@
 {% extends "rpm_layout.html" %}
 {% block body %}
-  <ul class=repositories>
-	<table>
-	<tr>
-		<th>ID</th>
-		<th>Path</th>
-	</tr>
-	<tr>
-		<td>{{ repo_id }}</a></td>
-		<td><a href="{{ repo['path'] }}">{{ repo['path'] }}</a></td>
-	</tr>
-	</table>
-  </ul>
+  <div class="repositories">
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Path</th>
+      </tr>
+      <tr>
+        <td>{{ repo_id }}</a></td>
+        <td><a href="{{ repo['path'] }}">{{ repo['path'] }}</a></td>
+      </tr>
+    </table>
+  </div>
 {% endblock %}

@@ -15,10 +15,10 @@ body {
 }
 
 .metanav {
-	text-align: right;
-	font-size: 0.8em;
-	padding: 0.3em;
-	margin-bottom: 1em;
+    text-align: right;
+    font-size: 0.8em;
+    padding: 0.3em;
+    margin-bottom: 1em;
 }
 
 h1 {
@@ -135,8 +135,37 @@ table td {
     border-bottom: 1px solid #ccc;
 }
 
-.add-entry dl {
+.package1 legend {
+    color: #283157;
+    font-size: 1.2em;
     font-weight: bold;
+}
+
+.package2 legend {
+    color: #283157;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.package1 input {
+    width: 26em;
+}
+
+.package2 input {
+    width: 26em;
+}
+
+.add-entry ul {
+    list-style-type: none;
+    padding-left:0;
+}
+
+.add-entry li {
+    padding: 0.4em;
+}
+
+.add-entry fieldset {
+    border: 0;
 }
 
 .flash {
@@ -151,17 +180,17 @@ table td {
 }
 
 .wrapper {
-    width:50em;
+    width:56em;
     overflow:hidden;
 }
 
 .left {
-    width:25em;
+    width:28em;
     float:left;
 }
 
 .right {
-    width:25em;
+    width:28em;
     float:right;
 }
 

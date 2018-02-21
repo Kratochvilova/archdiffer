@@ -1,48 +1,74 @@
-  <ul class=form>
+<div class="form">
   {% if session.openid %}
-    <form action="{{ url_for('rpmdiff.add_entry') }}" method=post class=add-entry>
-      <dl>
+    <form action="{{ url_for('rpmdiff.add_entry') }}" method="post" class="add-entry">
+        <div class="wrapper">
+          <div class="left">
+            <fieldset class="package1">
+              <legend>First RPM package</legend>
+              <ul>
+                <li>
+                  <label for="name1">Name: </label><br>
+                  <input id="name1" name="name1" type="text" />
+                </li>
+                <li>
+                  <label for="arch1">Arch: </label><br>
+                  <input id="arch1" name="arch1" type="text" />
+                </li>
+                <li>
+                  <label for="epoch1">Epoch: </label><br>
+                  <input id="epoch1" name="epoch1" type="text" />
+                </li>
+                <li>
+                  <label for="version1">Version: </label><br>
+                  <input id="version1" name="version1" type="text" />
+                </li>
+                <li>
+                  <label for="release1">Release: </label><br>
+                  <input id="release1" name="release1" type="text" />
+                </li>
+                <li>
+                  <label for="repo1">Repository: </label><br>
+                  <input id="repo1" name="repo1" type="text" />
+                </li>
+              </ul>
+            </fieldset>
+          </div>
 
-    <div class="wrapper">
-    <div class="left">
+          <div class="right">
+            <fieldset class="package2">
+              <legend>Second RPM package</legend>
+              <ul>
+                <li>
+                  <label for="name2">Name: </label><br>
+                  <input id="name2" name="name2" type="text" />
+                </li>
+                <li>
+                  <label for="arch2">Arch: </label><br>
+                  <input id="arch2" name="arch2" type="text" />
+                </li>
+                <li>
+                  <label for="epoch2">Epoch: </label><br>
+                  <input id="epoch2" name="epoch2" type="text" />
+                </li>
+                <li>
+                  <label for="version2">Version: </label><br>
+                  <input id="version2" name="version2" type="text" />
+                </li>
+                <li>
+                  <label for="release2">Release: </label><br>
+                  <input id="release2" name="release2" type="text" />
+                </li>
+                <li>
+                  <label for="repo2">Repository: </label><br>
+                  <input id="repo2" name="repo2" type="text" />
+                </li>
+              </ul>
+            </fieldset>
+          </div>
+        </div>
 
-        <h3>First RPM package</h3>
-        <dt>Name:
-        <dd><input type=text size=30 name=name1>
-        <dt>Arch:
-        <dd><input type=text size=30 name=arch1>
-        <dt>Epoch:
-        <dd><input type=text size=30 name=epoch1>
-        <dt>Version:
-        <dd><input type=text size=30 name=version1>
-        <dt>Release:
-        <dd><input type=text size=30 name=release1>
-        <dt>Repository:
-        <dd><input type=text size=30 name=repo1>
+        <input class="submit" type="submit" value="Submit" />
 
-    </div>
-
-    <div class="right">
-
-        <h3>Second RPM package</h3>
-        <dt>Name:
-        <dd><input type=text size=30 name=name2>
-        <dt>Arch:
-        <dd><input type=text size=30 name=arch2>
-        <dt>Epoch:
-        <dd><input type=text size=30 name=epoch2>
-        <dt>Version:
-        <dd><input type=text size=30 name=version2>
-        <dt>Release:
-        <dd><input type=text size=30 name=release2>
-        <dt>Repository:
-        <dd><input type=text size=30 name=repo2>
-        <dd><input type=submit value=Submit>
-
-    </div>
-    </div>
-
-      </dl>
     </form>
   {% endif %}
-  </ul>
+</div>
