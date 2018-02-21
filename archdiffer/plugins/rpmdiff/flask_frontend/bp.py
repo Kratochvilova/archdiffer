@@ -140,9 +140,9 @@ def show_packages_name(name):
     modifiers = get_pagination_modifiers()
     query = RPMPackage.query(g.db_session)
     query = query.filter(RPMPackage.name == name)
+    items_count = query.count()
     query = modify_query(query, modifiers)
     pkgs = dict(iter_query_result(query, RPMPackage))
-    items_count = RPMPackage.count(g.db_session)
     return my_render_template(
         'rpm_show_packages.html',
         pkgs=pkgs,
