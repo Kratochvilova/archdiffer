@@ -64,6 +64,7 @@ def index():
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.index',
+        arguments={},
     )
 
 @bp.route('/comparisons')
@@ -80,6 +81,7 @@ def show_comparisons():
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.show_comparisons',
+        arguments={},
     )
 
 @bp.route('/new')
@@ -113,6 +115,7 @@ def show_groups():
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.show_groups',
+        arguments={},
     )
 
 @bp.route('/comparisons/<int:id_comp>')
@@ -150,6 +153,7 @@ def show_packages_name(name):
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.show_packages_name',
+        arguments={'name': name},
     )
 
 @bp.route('/repositories/<int:repo_id>')
@@ -177,6 +181,7 @@ def show_packages():
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.show_packages',
+        arguments={},
     )
 
 @bp.route('/repositories')
@@ -194,6 +199,7 @@ def show_repositories():
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.show_repositories',
+        arguments={},
     )
 
 @bp.route('/add', methods=['POST'])
