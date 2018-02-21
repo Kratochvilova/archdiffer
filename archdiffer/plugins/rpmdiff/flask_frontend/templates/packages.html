@@ -1,0 +1,24 @@
+<div class="packages">
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Arch</th>
+      <th>Epoch</th>
+      <th>Version</th>
+      <th>Release</th>
+      <th>Repo path</th>
+    </tr>
+    {% for id, pkg in pkgs.items() %}
+      <tr>
+        <td><a href="{{ url_for('rpmdiff.show_package', pkg_id=id) }}">{{ id }}</a></td>
+        <td><a href="{{ url_for('rpmdiff.show_packages_name', name=pkg['name']) }}">{{ pkg['name'] }}</a></td>
+        <td>{{ pkg['arch'] }}</td>
+        <td>{{ pkg['epoch'] }}</td>
+        <td>{{ pkg['version'] }}</td>
+        <td>{{ pkg['release'] }}</td>
+        <td><a href="{{ pkg['repo']['path'] }}">{{ pkg['repo']['path'] }}</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
