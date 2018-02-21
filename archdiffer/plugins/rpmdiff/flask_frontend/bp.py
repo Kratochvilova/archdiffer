@@ -61,7 +61,7 @@ def index():
     return my_render_template(
         'rpm_show_index.html', 
         comparisons=comps,
-        comps_count=comps_count,
+        items_count=comps_count,
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.index',
@@ -79,7 +79,7 @@ def show_comparisons():
     return my_render_template(
         'rpm_show_comparisons.html',
         comparisons=comps,
-        comps_count=comps_count,
+        items_count=comps_count,
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.show_comparisons',

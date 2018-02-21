@@ -1,17 +1,17 @@
 <div class="center">
   <div class="pagination">
 
-    {% if comps_count>limit %}
+    {% if items_count>limit %}
 
       <a {% if offset == 0 %} class="disables" 
          {% elif offset <= limit %} href="{{ url_for(endpoint, limit=limit, offset=0) }}"
          {% else %}href="{{ url_for(endpoint, limit=limit, offset=offset-limit) }}"  {% endif %}>&laquo;</a>
 
-      {% for i in range((comps_count-1)//limit+1) %}
+      {% for i in range((items_count-1)//limit+1) %}
       <a {% if offset == i*limit %} class="active" {% endif %} href="{{ url_for(endpoint, limit=limit, offset=i*limit) }}">{{ i+1 }}</a>
       {% endfor %}
 
-      <a {% if comps_count-limit <= offset %} class="disables" 
+      <a {% if items_count-limit <= offset %} class="disables" 
          {% else %}href="{{ url_for(endpoint, limit=limit, offset=offset+limit) }}"  {% endif %}>&raquo;</a>
 
     {% endif %}
