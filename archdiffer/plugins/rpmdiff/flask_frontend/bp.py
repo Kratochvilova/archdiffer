@@ -14,7 +14,8 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
 from .. import constants
 from ....database import Comparison, ComparisonType
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.database_tasks import (modify_query_by_request,
+from ....flask_frontend.database_tasks import (modify_query,
+                                               modify_query_by_request,
                                                parse_request)
 
 celery_app = Celery(broker='pyamqp://localhost', )
@@ -46,7 +47,7 @@ def get_pagination_modifiers():
     if 'offset' not in modifiers:
         modifiers['offset'] = 0
     if 'limit' not in modifiers:
-        modifiers['limit'] = 3
+        modifiers['limit'] = 5
     return modifiers
 
 @bp.route('/')
@@ -55,13 +56,11 @@ def index():
     modifiers = get_pagination_modifiers()
     query = RPMComparison.comparisons_query(g.db_session, modifiers)
     comps = dict(iter_query_result(query, Comparison))
-    comps_count = Comparison.query(g.db_session).filter(
-        ComparisonType.name==constants.COMPARISON_TYPE
-    ).count()
+    items_count = RPMComparison.comparisons_count(g.db_session)
     return my_render_template(
         'rpm_show_index.html', 
         comparisons=comps,
-        items_count=comps_count,
+        items_count=items_count,
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.index',
@@ -73,13 +72,11 @@ def show_comparisons():
     modifiers = get_pagination_modifiers()
     query = RPMComparison.comparisons_query(g.db_session, modifiers)
     comps = dict(iter_query_result(query, Comparison))
-    comps_count = Comparison.query(g.db_session).filter(
-        ComparisonType.name==constants.COMPARISON_TYPE
-    ).count()
+    items_count = RPMComparison.comparisons_count(g.db_session)
     return my_render_template(
         'rpm_show_comparisons.html',
         comparisons=comps,
-        items_count=comps_count,
+        items_count=items_count,
         limit=modifiers['limit'],
         offset=modifiers['offset'],
         endpoint='rpmdiff.show_comparisons',
@@ -104,11 +101,19 @@ def show_group(id_group):
 @bp.route('/groups')
 def show_groups():
     """Show all rpm comparisons."""
-    modifiers = get_request_arguments('limit', 'offset')
+    modifiers = get_pagination_modifiers()
     query = RPMComparison.comparisons_query(g.db_session, modifiers)
     query = query.filter(ComparisonType.name == constants.COMPARISON_TYPE)
     comps = dict(iter_query_result(query, Comparison))
-    return my_render_template('rpm_show_groups.html', comparisons=comps)
+    items_count = RPMComparison.comparisons_count(g.db_session)
+    return my_render_template(
+        'rpm_show_groups.html',
+        comparisons=comps,
+        items_count=items_count,
+        limit=modifiers['limit'],
+        offset=modifiers['offset'],
+        endpoint='rpmdiff.show_groups',
+    )
 
 @bp.route('/comparisons/<int:id_comp>')
 def show_differences(id_comp):
@@ -132,10 +137,20 @@ def show_package(pkg_id):
 @bp.route('/packages/<string:name>')
 def show_packages_name(name):
     """Show rpm packages given by name."""
+    modifiers = get_pagination_modifiers()
     query = RPMPackage.query(g.db_session)
     query = query.filter(RPMPackage.name == name)
+    query = modify_query(query, modifiers)
     pkgs = dict(iter_query_result(query, RPMPackage))
-    return my_render_template('rpm_show_packages.html', pkgs=pkgs)
+    items_count = RPMPackage.count(g.db_session)
+    return my_render_template(
+        'rpm_show_packages.html',
+        pkgs=pkgs,
+        items_count=items_count,
+        limit=modifiers['limit'],
+        offset=modifiers['offset'],
+        endpoint='rpmdiff.show_packages_name',
+    )
 
 @bp.route('/repositories/<int:repo_id>')
 def show_repository(repo_id):
@@ -150,16 +165,36 @@ def show_repository(repo_id):
 @bp.route('/packages')
 def show_packages():
     """Show all rpm packages."""
+    modifiers = get_pagination_modifiers()
     query = RPMPackage.query(g.db_session)
+    query = modify_query(query, modifiers)
     pkgs = dict(iter_query_result(query, RPMPackage))
-    return my_render_template('rpm_show_packages.html', pkgs=pkgs)
+    items_count = RPMPackage.count(g.db_session)
+    return my_render_template(
+        'rpm_show_packages.html',
+        pkgs=pkgs,
+        items_count=items_count,
+        limit=modifiers['limit'],
+        offset=modifiers['offset'],
+        endpoint='rpmdiff.show_packages',
+    )
 
 @bp.route('/repositories')
 def show_repositories():
     """Show all rpm repositories."""
+    modifiers = get_pagination_modifiers()
     query = RPMRepository.query(g.db_session)
+    query = modify_query(query, modifiers)
     repos = dict(iter_query_result(query, RPMRepository))
-    return my_render_template('rpm_show_repositories.html', repos=repos)
+    items_count = RPMRepository.count(g.db_session)
+    return my_render_template(
+        'rpm_show_repositories.html',
+        repos=repos,
+        items_count=items_count,
+        limit=modifiers['limit'],
+        offset=modifiers['offset'],
+        endpoint='rpmdiff.show_repositories',
+    )
 
 @bp.route('/add', methods=['POST'])
 def add_entry():
