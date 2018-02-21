@@ -164,6 +164,10 @@ class RPMComparison(BaseExported, Base):
         result_dict['state'] = constants.STATE_STRINGS[result_dict['state']]
         return result_dict
 
+    def count(ses):
+        """Count rpm_comparisons."""
+        return RPMComparison.query(ses).count()
+
     def comparisons_query(ses, modifiers=None):
         """Query Comparison outer-joined with RPMComparison and its packages
         and their repositories.
@@ -211,6 +215,12 @@ class RPMComparison(BaseExported, Base):
             'type': line.ComparisonType.name,
             'state': app_constants.STATE_STRINGS[line.Comparison.state],
         }
+
+    def comparisons_count(ses):
+        """Count comparisons of COMPARISON_TYPE type."""
+        return Comparison.query(ses).filter(
+            ComparisonType.name==constants.COMPARISON_TYPE
+        ).count()
 
 class RPMDifference(BaseExported, Base):
     __tablename__ = 'rpm_differences'
@@ -298,6 +308,10 @@ class RPMDifference(BaseExported, Base):
             result_dict['diff_type']
         ]
         return result_dict
+
+    def count(ses, id_comp):
+        """Count rpm_differences that belong to rpm_comparison with set id."""
+        return RPMDifference.query(ses).filter(id_comp=id_comp).count()
 
 class RPMPackage(BaseExported, Base):
     __tablename__ = 'rpm_packages'
@@ -419,6 +433,10 @@ class RPMPackage(BaseExported, Base):
         result_dict['repo'] = line.RPMRepository.exported()
         return result_dict
 
+    def count(ses):
+        """Count rpm_packages."""
+        return RPMPackage.query(ses).count()
+
 class RPMRepository(BaseExported, Base):
     __tablename__ = 'rpm_repositories'
 
@@ -474,6 +492,10 @@ class RPMRepository(BaseExported, Base):
         """Get dict from line containing only RPMRepository.
         """
         return {'path': line.path}
+
+    def count(ses):
+        """Count rpm_repositories."""
+        return RPMRepository.query(ses).count()
 
 def general_iter_query_result(result, group_id, group_dict,
                               line_dict=None, name=None):
