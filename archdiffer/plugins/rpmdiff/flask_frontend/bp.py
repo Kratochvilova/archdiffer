@@ -134,8 +134,16 @@ def show_package(pkg_id):
     """Show rpm package given by pkg_id."""
     query = RPMPackage.query(g.db_session)
     query = query.filter(RPMPackage.id == pkg_id)
-    pkg = dict(iter_query_result(query, RPMPackage))[pkg_id]
-    return my_render_template('rpm_show_package.html', pkg_id=pkg_id, pkg=pkg)
+    pkgs = dict(iter_query_result(query, RPMPackage))
+    return my_render_template(
+        'rpm_show_packages.html',
+        pkgs=pkgs,
+        items_count=1,
+        limit=1,
+        offset=0,
+        endpoint='rpmdiff.show_package',
+        arguments={'pkg_id': pkg_id},
+    )
 
 @bp.route('/packages/<string:name>')
 def show_packages_name(name):
@@ -156,16 +164,6 @@ def show_packages_name(name):
         arguments={'name': name},
     )
 
-@bp.route('/repositories/<int:repo_id>')
-def show_repository(repo_id):
-    """Show rpm repository given by repo_id."""
-    query = RPMRepository.query(g.db_session)
-    query = query.filter(RPMRepository.id == repo_id)
-    repo = dict(iter_query_result(query, RPMRepository))[repo_id]
-    return my_render_template(
-        'rpm_show_repository.html', repo_id=repo_id, repo=repo
-    )
-
 @bp.route('/packages')
 def show_packages():
     """Show all rpm packages."""
@@ -182,6 +180,22 @@ def show_packages():
         offset=modifiers['offset'],
         endpoint='rpmdiff.show_packages',
         arguments={},
+    )
+
+@bp.route('/repositories/<int:repo_id>')
+def show_repository(repo_id):
+    """Show rpm repository given by repo_id."""
+    query = RPMRepository.query(g.db_session)
+    query = query.filter(RPMRepository.id == repo_id)
+    repos = dict(iter_query_result(query, RPMRepository))
+    return my_render_template(
+        'rpm_show_repositories.html',
+        repos=repos,
+        items_count=1,
+        limit=1,
+        offset=0,
+        endpoint='rpmdiff.show_repository',
+        arguments={'repo_id': repo_id},
     )
 
 @bp.route('/repositories')
