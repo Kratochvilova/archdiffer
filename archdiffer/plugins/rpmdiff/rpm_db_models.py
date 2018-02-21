@@ -178,7 +178,9 @@ class RPMComparison(BaseExported, Base):
         repo1 = aliased(RPMRepository, name='repo1')
         repo2 = aliased(RPMRepository, name='repo2')
 
-        query = ses.query(Comparison)
+        query = ses.query(Comparison, ComparisonType).filter(
+            ComparisonType.name == constants.COMPARISON_TYPE
+        )
         query = modify_query(query, modifiers).from_self()
         query = query.add_entity(RPMComparison).add_entity(pkg1)
         query = query.add_entity(pkg2).add_entity(repo1).add_entity(repo2)
@@ -206,7 +208,7 @@ class RPMComparison(BaseExported, Base):
         """
         return {
             'time': str(line.Comparison.time),
-            'type': constants.COMPARISON_TYPE,
+            'type': line.ComparisonType.name,
             'state': app_constants.STATE_STRINGS[line.Comparison.state],
         }
 
