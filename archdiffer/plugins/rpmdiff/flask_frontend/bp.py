@@ -92,13 +92,22 @@ def show_new_comparison_form():
 @bp.route('/groups/<int:id_group>')
 def show_group(id_group):
     """Show all rpm comparisons."""
+    modifiers = get_pagination_modifiers()
     query = RPMComparison.comparisons_query(g.db_session)
     query = query.filter(
         ComparisonType.name == constants.COMPARISON_TYPE,
         Comparison.id == id_group,
     )
     comps = dict(iter_query_result(query, Comparison))
-    return my_render_template('rpm_show_groups.html', comparisons=comps)
+    return my_render_template(
+        'rpm_show_groups.html',
+        comparisons=comps,
+        items_count=1,
+        limit=modifiers['limit'],
+        offset=modifiers['offset'],
+        endpoint='rpmdiff.show_group',
+        arguments={},
+    )
 
 @bp.route('/groups')
 def show_groups():
