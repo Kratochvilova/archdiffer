@@ -7,6 +7,8 @@ Created on Mon Sep  4 12:32:32 2017
 
 import subprocess
 import dnf
+import rpm
+from collections import defaultdict
 from .... import database
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage)
 from .. import constants
@@ -28,7 +30,7 @@ def download_packages(pkg):
     try:
         base.repos[label].load()
     except:
-        return None
+        return []
     base.fill_sack(load_system_repo=False)
 
     # Query packages
@@ -51,6 +53,31 @@ def download_packages(pkg):
 
     return list(pkgs)
 
+def group_by_arch(pkgs):
+    arch_groups = defaultdict(list)
+    for pkg in pkgs:
+        arch_groups[pkg.arch].append(pkg)
+    return arch_groups
+
+def remove_old_versions(pkgs):
+    """Remove older packages for each architecture."""
+    arch_groups = defaultdict(list)
+    for pkg in pkgs:
+        arch_groups[pkg.arch].append(pkg)
+
+    pkg_list = []
+    for key in arch_groups.keys():
+        newest_label = None
+        newest_pkg = None
+        for pkg in arch_groups[key]:
+            pkg_label = (str(pkg.epoch), str(pkg.version), str(pkg.release))
+            if newest_label is None or rpm.labelCompare(newest_label, pkg_label):
+                newest_label = pkg_label
+                newest_pkg = pkg
+        pkg_list.append(newest_pkg)
+
+    return pkg_list    
+
 def make_tuples(original1, original2, pkgs1, pkgs2):
     """Make list of tuples from two lists of packages.
 
@@ -61,6 +88,10 @@ def make_tuples(original1, original2, pkgs1, pkgs2):
     :return list: list of package tuples
     """
     tuples = []
+
+    pkgs1 = remove_old_versions(pkgs1)
+    pkgs2 = remove_old_versions(pkgs2)
+
     for pkg1 in pkgs1:
         for pkg2 in pkgs2:
             if pkg1.arch == pkg2.arch:
