@@ -45,11 +45,12 @@ def download_packages(pkg):
         pkgs = pkgs.filter(version=pkg['version'])
 
     # Download the package
-    print('Started package download: %s' % pkgs[0].name)
-    base.conf.destdir = '.'
-    base.repos.all().pkgdir = base.conf.destdir
-    base.download_packages(list(pkgs))
-    print('Finished package download: %s' % pkgs[0].name)
+    if len(pkgs) > 0:
+        print('Started package download: %s' % pkgs[0].name)
+        base.conf.destdir = '.'
+        base.repos.all().pkgdir = base.conf.destdir
+        base.download_packages(list(pkgs))
+        print('Finished package download: %s' % pkgs[0].name)
 
     return list(pkgs)
 
