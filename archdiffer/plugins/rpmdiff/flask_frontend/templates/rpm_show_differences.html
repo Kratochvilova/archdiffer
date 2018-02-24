@@ -32,7 +32,7 @@
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_TAGS] %}
           <tr>
             <td>{{ diff['id'] }}</td>
-            <td>{{ diff['diff_type'] }}</td>
+            <td class={{diff['diff_type']}}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
           </tr>
         {% endfor %}
@@ -48,7 +48,7 @@
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_PRCO] %}
           <tr>
             <td>{{ diff['id'] }}</td>
-            <td>{{ diff['diff_type'] }}</td>
+            <td class={{diff['diff_type']}}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
           </tr>
         {% endfor %}
@@ -65,7 +65,7 @@
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_FILES] %}
           <tr>
             <td>{{ diff['id'] }}</td>
-            <td>{{ diff['diff_type'] }}</td>
+            <td class={{diff['diff_type']}}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
             <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
           </tr>

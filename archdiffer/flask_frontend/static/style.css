@@ -219,3 +219,14 @@ table td {
     background-color: #e0e1e4;
 }
 
+.removed {
+    background-color: #FD9886;
+}
+
+.added {
+    background-color: #9DCEFC;
+}
+
+.changed {
+    background-color: #F7FD7F;
+}
