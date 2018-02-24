@@ -12,7 +12,7 @@ from .flask_app import flask_app
 from ..database import session as db_session
 from ..database import ComparisonType, User
 
-oid = OpenID(flask_app, '/tmp', safe_roots=[])
+oid = OpenID(flask_app, safe_roots=[])
 
 def get_comparison_types():
     """Get all comparison types from the database."""
