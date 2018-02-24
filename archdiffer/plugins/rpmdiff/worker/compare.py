@@ -5,15 +5,30 @@ Created on Mon Sep  4 12:32:32 2017
 @author: pavla
 """
 
+import os
+from tempfile import mkdtemp
+from shutil import rmtree
 import subprocess
 import dnf
 import rpm
 from collections import defaultdict
+from celery.signals import worker_process_init, worker_process_shutdown
 from .... import database
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage)
 from .. import constants
 from ....backend.celery_app import celery_app
 from .... import constants as app_constants
+
+@worker_process_init.connect()
+def setup_tmps(**kwargs):
+    tmpdir = mkdtemp()
+    os.chdir(tmpdir)
+
+@worker_process_shutdown.connect()
+def cleanup_tmps(**kwargs):
+    tmpdir = os.getcwd()
+    os.chdir('/')
+    rmtree(tmpdir)
 
 def download_packages(pkg):
     """Download packages whose parameters match the arguments.
@@ -47,7 +62,7 @@ def download_packages(pkg):
     # Download the package
     if len(pkgs) > 0:
         print('Started package download: %s' % pkgs[0].name)
-        base.conf.destdir = '.'
+        base.conf.destdir = os.getcwd()
         base.repos.all().pkgdir = base.conf.destdir
         base.download_packages(list(pkgs))
         print('Finished package download: %s' % pkgs[0].name)
@@ -110,6 +125,8 @@ def run_rpmdiff(pkg1, pkg2):
     :param pkg2 string: name of the second package
     :return: CompletedProcess instance
     """
+    pkg1 = os.path.join(os.getcwd(), pkg1)
+    pkg2 = os.path.join(os.getcwd(), pkg2)
     return subprocess.run(["rpmdiff", pkg1, pkg2], stdout=subprocess.PIPE)
 
 def parse_rpmdiff(rpmdiff_output):
