@@ -20,12 +20,15 @@ from ....backend.celery_app import celery_app
 from .... import constants as app_constants
 
 @worker_process_init.connect()
-def setup_tmps(**kwargs):
+def setup_tmps():
+    """Make temporal directory to store downloaded packages and set current
+    woring directory there."""
     tmpdir = mkdtemp()
     os.chdir(tmpdir)
 
 @worker_process_shutdown.connect()
-def cleanup_tmps(**kwargs):
+def cleanup_tmps():
+    """Remove the temporal directory."""
     tmpdir = os.getcwd()
     os.chdir('/')
     rmtree(tmpdir)
@@ -34,7 +37,7 @@ def download_packages(pkg):
     """Download packages whose parameters match the arguments.
 
     :param pkg dict: dict containing package parameters
-    :return list: packages
+    :return list[dnf.package.Package]: packages
     """
     base = dnf.Base()
 
@@ -70,13 +73,22 @@ def download_packages(pkg):
     return list(pkgs)
 
 def group_by_arch(pkgs):
+    """Make dict of groups of packagase sorted by the architectures.
+
+    :param pkgs list[dnf.package.Package]: packages
+    :return dict: dict of groups
+    """
     arch_groups = defaultdict(list)
     for pkg in pkgs:
         arch_groups[pkg.arch].append(pkg)
     return arch_groups
 
 def remove_old_versions(pkgs):
-    """Remove older packages for each architecture."""
+    """Remove older packages for each architecture.
+
+    :param pkgs list[dnf.package.Package]: packages
+    :return list[dnf.package.Package]: new list of packages
+    """
     arch_groups = defaultdict(list)
     for pkg in pkgs:
         arch_groups[pkg.arch].append(pkg)

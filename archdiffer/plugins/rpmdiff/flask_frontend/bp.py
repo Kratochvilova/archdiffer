@@ -40,9 +40,18 @@ def record_params(setup_state):
     )
 
 def get_request_arguments(*names):
+    """Get arguments from request if they match given names.
+
+    :param *names: names of arguments
+    :return dict: dict of arguments
+    """
     return {k:v for k, v in parse_request().items() if k in names}
 
 def get_pagination_modifiers():
+    """Get arguments neccesary for pagination.
+
+    :return dict: dict of arguments
+    """
     modifiers = get_request_arguments('limit', 'offset')
     if 'offset' not in modifiers:
         modifiers['offset'] = 0
@@ -91,7 +100,10 @@ def show_new_comparison_form():
 
 @bp.route('/groups/<int:id_group>')
 def show_group(id_group):
-    """Show all rpm comparisons."""
+    """Show rpm comparisons in given group.
+    
+    :param id_group int: id of the group
+    """
     modifiers = get_pagination_modifiers()
     query = RPMComparison.comparisons_query(g.db_session)
     query = query.filter(
@@ -129,7 +141,10 @@ def show_groups():
 
 @bp.route('/comparisons/<int:id_comp>')
 def show_differences(id_comp):
-    """Show all rpm differences for rpm comparison given by id_comp."""
+    """Show all rpm differences of one rpm comparison.
+
+    :param id_comp int: id of the comparison
+    """
     query = RPMDifference.query(g.db_session)
     query = query.filter(RPMComparison.id == id_comp)
     comparison = dict(iter_query_result(query, RPMDifference))
@@ -140,7 +155,10 @@ def show_differences(id_comp):
 
 @bp.route('/packages/<int:pkg_id>')
 def show_package(pkg_id):
-    """Show rpm package given by pkg_id."""
+    """Show rpm package.
+
+    :param pkg_id int: id of the package
+    """
     query = RPMPackage.query(g.db_session)
     query = query.filter(RPMPackage.id == pkg_id)
     pkgs = dict(iter_query_result(query, RPMPackage))
@@ -156,7 +174,10 @@ def show_package(pkg_id):
 
 @bp.route('/packages/<string:name>')
 def show_packages_name(name):
-    """Show rpm packages given by name."""
+    """Show rpm packages given by name.
+
+    :param name string: package name
+    """
     modifiers = get_pagination_modifiers()
     query = RPMPackage.query(g.db_session)
     query = query.filter(RPMPackage.name == name)
@@ -193,7 +214,10 @@ def show_packages():
 
 @bp.route('/repositories/<int:repo_id>')
 def show_repository(repo_id):
-    """Show rpm repository given by repo_id."""
+    """Show rpm repository.
+
+    :param repo_id int: id of the repository
+    """
     query = RPMRepository.query(g.db_session)
     query = query.filter(RPMRepository.id == repo_id)
     repos = dict(iter_query_result(query, RPMRepository))
@@ -257,7 +281,7 @@ def table_by_string(string_table):
     """Convert string to corresponding class.
 
     :param string_table string: shortened name of the table
-    :return class: corresponding table
+    :return: class of the corresponding table
     """
     if string_table == "groups":
         return Comparison
@@ -273,6 +297,11 @@ def table_by_string(string_table):
 class ShowRPMTable(Resource):
     """Show dict of given table."""
     def get(self, string_table):
+        """Get dict.
+
+        :param string_table string: shortened name of the table
+        :return dict: dict of the resulting query
+        """
         table = table_by_string(string_table)
         if table == Comparison:
             query = RPMComparison.comparisons_query(g.db_session)
@@ -281,14 +310,22 @@ class ShowRPMTable(Resource):
         return dict(iter_query_result(modify_query_by_request(query), table))
 
 class ShowRPMTableItem(Resource):
-    """Show dict of one item of given table by given id."""
+    """Show dict of one item of given table."""
     def shown_table(self, table):
-        """Determine which table's id is filtered by."""
+        """Determine which table's id is filtered by.
+
+        :param table: class of the table"""
         if table == RPMDifference:
             return RPMComparison
         return table
 
     def get(self, string_table, id):
+        """Get dict.
+
+        :param string_table string: shortened name of the table
+        :param id int: id of item from the table
+        :return dict: dict of the resulting query
+        """
         table = table_by_string(string_table)
         if table == Comparison:
             query = RPMComparison.comparisons_query(g.db_session)

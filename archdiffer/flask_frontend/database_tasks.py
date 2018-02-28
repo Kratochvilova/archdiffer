@@ -89,7 +89,7 @@ def table_by_string(string_table):
     """Convert string to corresponding class.
 
     :param string_table string: name of the table
-    :return class: corresponding table
+    :return: class of the corresponding table
     """
     if string_table == "comparisons":
         return Comparison
@@ -99,13 +99,24 @@ def table_by_string(string_table):
 class ShowTable(Resource):
     """Show dict of given table."""
     def get(self, string_table):
+        """Get dict.
+
+        :param string_table string: name of the table
+        :return dict: dict of the resulting query
+        """
         table = table_by_string(string_table)
         query = joined_query(g.db_session, table)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
 class ShowTableItem(ShowTable):
-    """Show dict of one item of given table by given id."""
+    """Show dict of one item of given table."""
     def get(self, string_table, id):
+        """Get dict.
+
+        :param string_table string: name of the table
+        :param id int: id of item from the table
+        :return dict: dict of the resulting query
+        """
         table = table_by_string(string_table)
         query = joined_query(g.db_session, table).filter(table.id == id)
         return dict(iter_query_result(modify_query_by_request(query), table))

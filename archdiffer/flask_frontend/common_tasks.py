@@ -24,7 +24,11 @@ def get_comparison_types():
 comparison_types = get_comparison_types()
 
 def my_render_template(html, **arguments):
-    """Call render_template with comparison_types as one of the arguments."""
+    """Call render_template with comparison_types as one of the arguments.
+
+    :param html string: name of the template
+    :param **arguments: other arguments to be passed while rendering template
+    """
     arguments.setdefault('comparison_types', comparison_types)
     return render_template(html, **arguments)
 
