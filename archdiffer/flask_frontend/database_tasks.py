@@ -72,11 +72,43 @@ def modify_query_by_request(query):
     args_dict = parse_request()
     return modify_query(query, args_dict)
 
+def get_request_arguments(*names):
+    """Get arguments from request if they match given names.
+
+    :param *names: names of arguments
+    :return dict: dict of arguments
+    """
+    return {k:v for k, v in parse_request().items() if k in names}
+
+def get_pagination_modifiers():
+    """Get arguments neccesary for pagination.
+
+    :return dict: dict of arguments
+    """
+    modifiers = get_request_arguments('limit', 'offset')
+    if 'offset' not in modifiers:
+        modifiers['offset'] = 0
+    if 'limit' not in modifiers:
+        modifiers['limit'] = 5
+    return modifiers
+
 @flask_app.route('/')
 def index():
     """Show all comparisons."""
-    comps = dict(iter_query_result(Comparison.query(g.db_session), Comparison))
-    return my_render_template('show_comparisons.html', comparisons=comps)
+    modifiers = get_pagination_modifiers()
+    query = Comparison.query(g.db_session)
+    items_count = query.count()
+    query = modify_query(query, modifiers)
+    comps = dict(iter_query_result(query, Comparison))
+    return my_render_template(
+        'show_comparisons.html', 
+        comparisons=comps,
+        items_count=items_count,
+        limit=modifiers['limit'],
+        offset=modifiers['offset'],
+        endpoint='index',
+        arguments={},
+    )
 
 @flask_app.route('/comparison_types')
 def show_comparison_types():

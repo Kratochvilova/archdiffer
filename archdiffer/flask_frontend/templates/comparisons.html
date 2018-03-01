@@ -1,0 +1,16 @@
+<div class="comparisons">
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Time</th>
+      <th>Comparison Type</th>
+    </tr>
+    {% for id, comp in comparisons.items() %}
+      <tr>
+        <td><a href="{{ url_for(comp['comparison_type']['name'] + '.show_group', id_group=id) }}">{{ id }}</a></td>
+        <td>{{ comp['time'] }}</td>
+        <td><a href="{{ url_for('index') + comp['comparison_type']['name'] }}">{{ comp['comparison_type']['name'] }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>

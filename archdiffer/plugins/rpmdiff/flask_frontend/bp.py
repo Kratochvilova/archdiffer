@@ -16,7 +16,7 @@ from ....database import Comparison, ComparisonType
 from ....flask_frontend.common_tasks import my_render_template
 from ....flask_frontend.database_tasks import (modify_query,
                                                modify_query_by_request,
-                                               parse_request)
+                                               get_pagination_modifiers)
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
@@ -38,26 +38,6 @@ def record_params(setup_state):
     bp.config = dict(
         [(key, value) for (key, value) in app.config.items()]
     )
-
-def get_request_arguments(*names):
-    """Get arguments from request if they match given names.
-
-    :param *names: names of arguments
-    :return dict: dict of arguments
-    """
-    return {k:v for k, v in parse_request().items() if k in names}
-
-def get_pagination_modifiers():
-    """Get arguments neccesary for pagination.
-
-    :return dict: dict of arguments
-    """
-    modifiers = get_request_arguments('limit', 'offset')
-    if 'offset' not in modifiers:
-        modifiers['offset'] = 0
-    if 'limit' not in modifiers:
-        modifiers['limit'] = 5
-    return modifiers
 
 @bp.route('/')
 def index():
