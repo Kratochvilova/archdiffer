@@ -32,7 +32,7 @@ class BaseExported(object):
 class RPMComparison(BaseExported, Base):
     __tablename__ = 'rpm_comparisons'
 
-    to_export = ['id', 'id_group', 'state']
+    to_export = ['id', 'state']
 
     id = Column(Integer, primary_key=True, nullable=False)
     id_group = Column(
