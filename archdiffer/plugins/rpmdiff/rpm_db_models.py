@@ -164,6 +164,7 @@ class RPMComparison(BaseExported, Base):
         result_dict['state'] = constants.STATE_STRINGS[result_dict['state']]
         return result_dict
 
+    @staticmethod
     def count(ses):
         """Count rpm_comparisons."""
         return RPMComparison.query(ses).count()
@@ -216,6 +217,7 @@ class RPMComparison(BaseExported, Base):
             'state': app_constants.STATE_STRINGS[line.Comparison.state],
         }
 
+    @staticmethod
     def comparisons_count(ses):
         """Count comparisons of COMPARISON_TYPE type."""
         return Comparison.query(ses).filter(
@@ -309,6 +311,7 @@ class RPMDifference(BaseExported, Base):
         ]
         return result_dict
 
+    @staticmethod
     def count(ses, id_comp):
         """Count rpm_differences that belong to rpm_comparison with set id."""
         return RPMDifference.query(ses).filter(id_comp=id_comp).count()
@@ -433,6 +436,7 @@ class RPMPackage(BaseExported, Base):
         result_dict['repo'] = line.RPMRepository.exported()
         return result_dict
 
+    @staticmethod
     def count(ses):
         """Count rpm_packages."""
         return RPMPackage.query(ses).count()
@@ -493,6 +497,7 @@ class RPMRepository(BaseExported, Base):
         """
         return {'path': line.path}
 
+    @staticmethod
     def count(ses):
         """Count rpm_repositories."""
         return RPMRepository.query(ses).count()
