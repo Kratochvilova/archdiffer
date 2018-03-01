@@ -39,6 +39,14 @@ class Comparison(Base):
 
     @staticmethod
     def add(ses, comparison_type_id, state=STATE_NEW):
+        """Add new Comparison.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :param comparison_type_id int: id of its comparison_type
+        :param state string: state
+        :return Comparison: newly added Comparison
+        """
         comparison = Comparison(
             comparison_type_id = comparison_type_id, state=state
         )
@@ -48,7 +56,12 @@ class Comparison(Base):
 
     @staticmethod
     def query(ses):
-        """Query Comparison joined with its ComparisonType, ordered by id."""
+        """Query Comparison joined with its ComparisonType.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return sqlalchemy.orm.query.Query: query
+        """
         return ses.query(Comparison, ComparisonType).filter(
             Comparison.comparison_type_id==ComparisonType.id
         ).order_by(Comparison.id)
@@ -91,7 +104,12 @@ class ComparisonType(Base):
 
     @staticmethod
     def query(ses):
-        """Query ComparisonType, ordered by id."""
+        """Query ComparisonType.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return sqlalchemy.orm.query.Query: query
+        """
         return ses.query(ComparisonType).order_by(ComparisonType.id)
 
     @staticmethod
@@ -127,7 +145,13 @@ class User(Base):
 
     @staticmethod
     def query_by_openid(ses, openid):
-        """Query User by openid."""
+        """Query User by openid.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :param openid string: openid
+        :return sqlalchemy.orm.query.Query: query
+        """
         return ses.query(User).filter_by(openid=openid).first()
 
     @staticmethod
@@ -153,7 +177,6 @@ class User(Base):
 
 class SessionSingleton():
     """Singleton that provides sqlalchemy engine and creates sessions."""
-
     engine = None
 
     @staticmethod
@@ -166,21 +189,33 @@ class SessionSingleton():
 
     @staticmethod
     def get_engine():
-        """Get the engine."""
+        """Get the engine.
+
+        :return sqlalchemy.engine.Engine: engine
+        """
         SessionSingleton.init()
         return SessionSingleton.engine
 
     @staticmethod
     def get_session(*args, **kwargs):
-        """Create new session."""
+        """Create new session.
+
+        :param *args: arguments to be passed when creating session
+        :param **kwargs: keyword arguments to be passed when creating session
+        :return sqlalchemy.orm.session.Session: session
+        """
         return Session(*args, bind=SessionSingleton.get_engine(), **kwargs)
 
 def engine():
-    """Get the engine."""
+    """Get the engine.
+
+    :return sqlalchemy.engine.Engine: engine
+    """
     return SessionSingleton.get_engine()
 
 def session(*args, **kwargs):
-    """Get new session."""
+    """Get new session.
+    """
     return SessionSingleton.get_session(*args, **kwargs)
 
 
