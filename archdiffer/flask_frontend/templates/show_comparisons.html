@@ -9,9 +9,9 @@
       </tr>
       {% for id, comp in comparisons.items() %}
         <tr>
-          <td><a href="{{ url_for(comp['type']['name'] + '.show_group', id_group=id) }}">{{ id }}</a></td>
+          <td><a href="{{ url_for(comp['comparison_type']['name'] + '.show_group', id_group=id) }}">{{ id }}</a></td>
           <td>{{ comp['time'] }}</td>
-          <td><a href="{{ url_for('index') + comp['type']['name'] }}">{{ comp['type']['name'] }}</td>
+          <td><a href="{{ url_for('index') + comp['comparison_type']['name'] }}">{{ comp['comparison_type']['name'] }}</td>
         </tr>
       {% endfor %}
     </table>
