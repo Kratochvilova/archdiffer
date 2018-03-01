@@ -10,8 +10,7 @@ from flask import request, g
 from flask_restful import Resource
 from werkzeug.exceptions import BadRequest
 from .flask_app import flask_app, flask_api
-from ..database import (Comparison, ComparisonType, joined_query,
-                        iter_query_result)
+from ..database import Comparison, ComparisonType, iter_query_result
 from .common_tasks import my_render_template
 
 # Transformation functions for parsing requests
@@ -76,7 +75,7 @@ def modify_query_by_request(query):
 @flask_app.route('/')
 def index():
     """Show all comparisons."""
-    comps = dict(iter_query_result(joined_query(g.db_session)))
+    comps = dict(iter_query_result(Comparison.query(g.db_session), Comparison))
     return my_render_template('show_comparisons.html', comparisons=comps)
 
 @flask_app.route('/comparison_types')
@@ -105,7 +104,7 @@ class ShowTable(Resource):
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
-        query = joined_query(g.db_session, table)
+        query = table.query(g.db_session)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
 class ShowTableItem(ShowTable):
@@ -118,7 +117,7 @@ class ShowTableItem(ShowTable):
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
-        query = joined_query(g.db_session, table).filter(table.id == id)
+        query = table.query(g.db_session).filter(table.id == id)
         return dict(iter_query_result(modify_query_by_request(query), table))
 
 flask_api.add_resource(ShowTable, '/rest/<string:string_table>')

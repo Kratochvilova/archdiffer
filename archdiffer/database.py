@@ -53,6 +53,31 @@ class Comparison(Base):
             Comparison.comparison_type_id==ComparisonType.id
         ).order_by(Comparison.id)
 
+    @staticmethod
+    def id_from_line(line):
+        """Get Comparison id from line containing Comparison.
+        """
+        return line.Comparison.id
+
+    @staticmethod
+    def dict_from_line(line):
+        """Get dict from line containing Comparison and its ComparisonType.
+        """
+        result_dict = {
+            'time': str(line.Comparison.time),
+            'state': line.Comparison.state,
+        }
+        result_dict['comparison_type'] = {
+            'id': line.ComparisonType.id,
+            'name': line.ComparisonType.name,
+        }
+        return result_dict
+
+    @staticmethod
+    def count(ses):
+        """Count comparisons."""
+        return Comparison.query(ses).count()
+
 class ComparisonType(Base):
     __tablename__ = 'comparison_types'
 
@@ -68,6 +93,27 @@ class ComparisonType(Base):
     def query(ses):
         """Query ComparisonType, ordered by id."""
         return ses.query(ComparisonType).order_by(ComparisonType.id)
+
+    @staticmethod
+    def id_from_line(line):
+        """Get ComparisonType id from line containing only ComparisonType.
+        """
+        return line.id
+
+    @staticmethod
+    def dict_from_line(line):
+        """Get dict from line containing only ComparisonType.
+        """
+        result_dict = {
+            'id': line.id,
+            'name': line.name,
+        }
+        return result_dict
+
+    @staticmethod
+    def count(ses):
+        """Count comparison_types."""
+        return ComparisonType.query(ses).count()
 
 class User(Base):
     __tablename__ = 'users'
@@ -137,51 +183,63 @@ def session(*args, **kwargs):
     """Get new session."""
     return SessionSingleton.get_session(*args, **kwargs)
 
-def joined_query(ses, table=Comparison):
-    """Query database tables jointly.
 
-    :param ses: session for communication with the database
-    :type ses: qlalchemy.orm.session.Session
-    :param table: table setting which tables to query
-    :type table: one of (Comparison, ComparisonType)
-    :return sqlalchemy.orm.query.Query: resulting query object
-    """
-    if table == Comparison:
-        return ses.query(Comparison, ComparisonType).filter(
-            Comparison.comparison_type_id == ComparisonType.id
-        )
-    return ses.query(ComparisonType)
+def general_iter_query_result(result, group_id, group_dict,
+                              line_dict=None, name=None):
+    """Process query result.
 
-def iter_query_result(result, table=Comparison):
-    """Process result of the joined query.
-
-    :param result list: query result
-    :param table: table setting which tables were queried
-    :type table: one of (Comparison, ComparisonType)
+    :param result sqlalchemy.orm.query.Query: query
+    :param group_id: function getting id from line of the result
+    :param group_dict: function getting dict from line of the result;
+        will be called each time id changes
+    :param line_dict: function for geting dict from line of the result;
+        will be called for every line and agregated into list
+    :param name: desired name of the list resulting from the aggregation
     :return: iterator of resulting dict
     :rtype: Iterator[dict]
     """
-    def get_id(line):
-        """Get id based on table."""
-        if table == Comparison:
-            return line.Comparison.id
-        return line.id
-
-    def parse_line(line):
-        """Parse line based on table."""
-        result_dict = {}
-        if table == Comparison:
-            result_dict['time'] = str(line.Comparison.time)
-            result_dict['type'] = {
-                'id': line.ComparisonType.id,
-                'name': line.ComparisonType.name,
-            }
-        else:
-            result_dict = {'name': line.name}
-
-        return result_dict
+    last_id = None
+    result_dict = None
+    outerjoin_items = []
 
     for line in result:
-        result_id = get_id(line)
-        result_dict = parse_line(line)
-        yield (result_id, result_dict)
+        if last_id is None:
+            # Save new id and dict
+            last_id = group_id(line)
+            result_dict = group_dict(line)
+        if group_id(line) != last_id:
+            # Add aggregated list and yield
+            if line_dict is not None and result_dict is not None:
+                result_dict[name] = outerjoin_items
+            yield (last_id, result_dict)
+            # Save new id and dict
+            last_id = group_id(line)
+            result_dict = group_dict(line)
+            outerjoin_items = []
+        if line_dict is not None:
+            item = line_dict(line)
+            if item is not None:
+                outerjoin_items.append(item)
+    # Add aggregated list and yield
+    if line_dict is not None and result_dict is not None:
+        result_dict[name] = outerjoin_items
+    if last_id is not None:
+        yield (last_id, result_dict)
+
+def iter_query_result(result, table):
+    """Call general_iter_query_result based on given table.
+
+    :param result sqlalchemy.orm.query.Query: query
+    :param table: database model
+
+    :return: iterator of resulting dict from general_iter_query_result
+    :rtype: Iterator[dict]
+    """
+    group_id = table.id_from_line
+    group_dict = table.dict_from_line
+    line_dict = None
+    name = None
+
+    return general_iter_query_result(
+        result, group_id, group_dict, line_dict=line_dict, name=name
+    )
