@@ -58,7 +58,7 @@ class RPMComparison(BaseExported, Base):
     )
 
     def __repr__(self):
-        return ("<Comparison(id='%s', id_group='%s', pkg1_id='%s', "
+        return ("<RPMComparison(id='%s', id_group='%s', pkg1_id='%s', "
                 "pkg2_id='%s', state='%s')>") % (
                     self.id,
                     self.id_group,
@@ -250,7 +250,7 @@ class RPMDifference(BaseExported, Base):
     )
 
     def __repr__(self):
-        return ("<Difference(id='%s', id_comp='%s', category='%s', "
+        return ("<RPMDifference(id='%s', id_comp='%s', category='%s', "
                 "diff_type='%s', diff_info='%s', diff='%s')>") % (
                     self.id,
                     self.id_comp,
@@ -362,7 +362,7 @@ class RPMPackage(BaseExported, Base):
     )
 
     def __repr__(self):
-        return ("<Package(id='%s', name='%s', arch='%s', epoch='%s', "
+        return ("<RPMPackage(id='%s', name='%s', arch='%s', epoch='%s', "
                 "version='%s', release='%s', id_repo='%s')>") % (
                     self.id,
                     self.name,
