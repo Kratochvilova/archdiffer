@@ -88,7 +88,7 @@ def get_pagination_modifiers():
     modifiers = get_request_arguments('limit', 'offset')
     if 'offset' not in modifiers:
         modifiers['offset'] = 0
-    if 'limit' not in modifiers:
+    if 'limit' not in modifiers or modifiers['limit'] <= 0:
         modifiers['limit'] = 5
     return modifiers
 
