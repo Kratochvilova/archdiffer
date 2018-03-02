@@ -314,8 +314,8 @@ class RPMDifference(BaseExported, Base):
     def dict_from_line(line):
         """Get dict from line containing RPMDifference.
         """
-        result_dict = {}
-        if RPMDifference in line:
+        result_dict = None
+        if line.RPMDifference is not None:
             result_dict = line.RPMDifference.exported()
             result_dict['category'] = constants.CATEGORY_STRINGS[
                 result_dict['category']
