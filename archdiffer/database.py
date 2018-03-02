@@ -13,7 +13,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
 from sqlalchemy.exc import IntegrityError
 from .config import config
-from .constants import STATE_NEW
+from .constants import STATE_NEW, STATE_STRINGS
 
 Base = declarative_base()
 
@@ -78,7 +78,7 @@ class Comparison(Base):
         """
         result_dict = {
             'time': str(line.Comparison.time),
-            'state': line.Comparison.state,
+            'state': STATE_STRINGS[line.Comparison.state],
         }
         result_dict['comparison_type'] = {
             'id': line.ComparisonType.id,
