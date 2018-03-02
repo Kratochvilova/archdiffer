@@ -305,13 +305,15 @@ class RPMDifference(BaseExported, Base):
     def dict_from_line(line):
         """Get dict from line containing RPMDifference.
         """
-        result_dict = line.RPMDifference.exported()
-        result_dict['category'] = constants.CATEGORY_STRINGS[
-            result_dict['category']
-        ]
-        result_dict['diff_type'] = constants.DIFF_TYPE_STRINGS[
-            result_dict['diff_type']
-        ]
+        result_dict = {}
+        if RPMDifference in line:
+            result_dict = line.RPMDifference.exported()
+            result_dict['category'] = constants.CATEGORY_STRINGS[
+                result_dict['category']
+            ]
+            result_dict['diff_type'] = constants.DIFF_TYPE_STRINGS[
+                result_dict['diff_type']
+            ]
         return result_dict
 
     @staticmethod
