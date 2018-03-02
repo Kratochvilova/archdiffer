@@ -294,9 +294,7 @@ class RPMDifference(BaseExported, Base):
         :param modifiers dict: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
-        query = RPMComparison.query(ses)
-        if modifiers is not None:
-            query = modify_query(query, modifiers).from_self()
+        query = RPMComparison.query(ses, modifiers=modifiers)
         query = query.add_entity(RPMDifference).outerjoin(
             RPMDifference, RPMDifference.id_comp == RPMComparison.id
         ).order_by(
