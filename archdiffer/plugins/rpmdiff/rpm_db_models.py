@@ -153,6 +153,7 @@ class RPMComparison(BaseExported, Base):
         """Get dict from line containing RPMComparison, its packages and their
         repositories."""
         result_dict = {
+            'id': line.RPMComparison.id,
             'id_group': line.RPMComparison.id_group,
             'state': constants.STATE_STRINGS[line.RPMComparison.state],
             'time': str(line.Comparison.time),
