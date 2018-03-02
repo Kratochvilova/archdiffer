@@ -152,16 +152,18 @@ class RPMComparison(BaseExported, Base):
     def dict_from_line(line):
         """Get dict from line containing RPMComparison, its packages and their
         repositories."""
-        result_dict = line.RPMComparison.exported()
-        result_dict['time'] = str(line.Comparison.time)
-        result_dict['type'] = constants.COMPARISON_TYPE
-        result_dict['pkg1'] = line.pkg1.exported()
-        result_dict['pkg2'] = line.pkg2.exported()
+        result_dict = {
+            'id_group': line.RPMComparison.id_group,
+            'state': constants.STATE_STRINGS[line.RPMComparison.state],
+            'time': str(line.Comparison.time),
+            'type': constants.COMPARISON_TYPE,
+            'pkg1': line.pkg1.exported(),
+            'pkg2': line.pkg2.exported(),
+        }
         result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
         result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
         result_dict['pkg1']['repo'] = line.repo1.exported()
         result_dict['pkg2']['repo'] = line.repo2.exported()
-        result_dict['state'] = constants.STATE_STRINGS[result_dict['state']]
         return result_dict
 
     @staticmethod
