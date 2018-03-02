@@ -60,6 +60,7 @@ class Comparison(Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
+        :param modifiers dict: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(Comparison, ComparisonType).filter(
@@ -111,6 +112,7 @@ class ComparisonType(Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
+        :param modifiers dict: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(ComparisonType).order_by(ComparisonType.id)

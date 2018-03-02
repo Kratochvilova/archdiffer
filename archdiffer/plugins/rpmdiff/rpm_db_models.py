@@ -123,6 +123,7 @@ class RPMComparison(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
+        :param modifiers dict: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         pkg1 = aliased(RPMPackage, name='pkg1')
@@ -427,6 +428,7 @@ class RPMPackage(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
+        :param modifiers dict: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(RPMPackage, RPMRepository).filter(
@@ -478,8 +480,7 @@ class RPMRepository(BaseExported, Base):
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
         :param repo_path string: repository baseurl
-        :return: repository
-        :rtype: rpm_db_models.RPMRepository
+        :return rpm_db_models.RPMRepository: repository
         """
         try:
             repo = RPMRepository(path=repo_path)
@@ -496,6 +497,7 @@ class RPMRepository(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
+        :param modifiers dict: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(RPMRepository).order_by(RPMRepository.id)
