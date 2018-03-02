@@ -55,16 +55,19 @@ class Comparison(Base):
         return comparison
 
     @staticmethod
-    def query(ses):
+    def query(ses, modifiers=None):
         """Query Comparison joined with its ComparisonType.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
         :return sqlalchemy.orm.query.Query: query
         """
-        return ses.query(Comparison, ComparisonType).filter(
+        query = ses.query(Comparison, ComparisonType).filter(
             Comparison.comparison_type_id==ComparisonType.id
         ).order_by(Comparison.id)
+        if modifiers is not None:
+            query = modify_query(query, modifiers)
+        return query
 
     @staticmethod
     def id_from_line(line):
@@ -103,14 +106,17 @@ class ComparisonType(Base):
         return "<ComparisonType(id='%s', name='%s')>" % (self.id, self.name)
 
     @staticmethod
-    def query(ses):
+    def query(ses, modifiers=None):
         """Query ComparisonType.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
         :return sqlalchemy.orm.query.Query: query
         """
-        return ses.query(ComparisonType).order_by(ComparisonType.id)
+        query = ses.query(ComparisonType).order_by(ComparisonType.id)
+        if modifiers is not None:
+            query = modify_query(query, modifiers)
+        return query
 
     @staticmethod
     def id_from_line(line):
@@ -260,6 +266,27 @@ def general_iter_query_result(result, group_id, group_dict,
         result_dict[name] = outerjoin_items
     if last_id is not None:
         yield (last_id, result_dict)
+
+def modify_query(query, modifiers):
+    """Modify query according to the modifiers.
+
+    :param query sqlalchemy.orm.query.Query: query to be modified
+    :param modifiers dict: dict of modifiers and their values
+    :return query sqlalchemy.orm.query.Query: modified query
+    """
+    if modifiers is None:
+        return query
+    if 'filter_by' in modifiers:
+        query = query.filter_by(**modifiers['filter_by'])
+    if 'filter' in modifiers:
+        query = query.filter(*modifiers['filter'])
+    if 'order_by' in modifiers:
+        query = query.order_by(*modifiers['order_by'])
+    if 'limit' in modifiers:
+        query = query.limit(modifiers['limit'])
+    if 'offset' in modifiers:
+        query = query.offset(modifiers['offset'])
+    return query
 
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.

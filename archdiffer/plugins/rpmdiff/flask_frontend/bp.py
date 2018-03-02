@@ -12,10 +12,9 @@ from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository, iter_query_result)
 from .. import constants
-from ....database import Comparison, ComparisonType
+from ....database import Comparison, ComparisonType, modify_query
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.database_tasks import (modify_query,
-                                               modify_query_by_request,
+from ....flask_frontend.database_tasks import (parse_request,
                                                get_pagination_modifiers)
 
 celery_app = Celery(broker='pyamqp://localhost', )
@@ -283,11 +282,14 @@ class ShowRPMTable(Resource):
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
+        modifiers = parse_request()
         if table == Comparison:
-            query = RPMComparison.comparisons_query(g.db_session)
+            query = RPMComparison.comparisons_query(
+                g.db_session, modifiers=modifiers
+            )
         else:
-            query = table.query(g.db_session)
-        return dict(iter_query_result(modify_query_by_request(query), table))
+            query = table.query(g.db_session, modifiers=modifiers)
+        return dict(iter_query_result(query, table))
 
 class ShowRPMTableItem(Resource):
     """Show dict of one item of given table."""
@@ -307,12 +309,15 @@ class ShowRPMTableItem(Resource):
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
+        modifiers = parse_request()
         if table == Comparison:
-            query = RPMComparison.comparisons_query(g.db_session)
+            query = RPMComparison.comparisons_query(
+                g.db_session, modifiers=modifiers
+            )
         else:
-            query = table.query(g.db_session)
+            query = table.query(g.db_session, modifiers=modifiers)
         query = query.filter(self.shown_table(table).id == id)
-        return dict(iter_query_result(modify_query_by_request(query), table))
+        return dict(iter_query_result(query, table))
 
 flask_api.add_resource(ShowRPMTable, '/rest/<string:string_table>')
 flask_api.add_resource(

@@ -10,7 +10,8 @@ from flask import request, g
 from flask_restful import Resource
 from werkzeug.exceptions import BadRequest
 from .flask_app import flask_app, flask_api
-from ..database import Comparison, ComparisonType, iter_query_result
+from ..database import (Comparison, ComparisonType, modify_query,
+                        iter_query_result)
 from .common_tasks import my_render_template
 
 # Transformation functions for parsing requests
@@ -41,36 +42,6 @@ def parse_request():
         except:
             raise BadRequest()
     return args_dict
-
-def modify_query(query, modifiers):
-    """Modify query according to the modifiers.
-
-    :param query sqlalchemy.orm.query.Query: query to be modified
-    :param modifiers dict: dict of modifiers and their values
-    :return query sqlalchemy.orm.query.Query: modified query
-    """
-    if modifiers is None:
-        return query
-    if 'filter_by' in modifiers:
-        query = query.filter_by(**modifiers['filter_by'])
-    if 'filter' in modifiers:
-        query = query.filter(*modifiers['filter'])
-    if 'order_by' in modifiers:
-        query = query.order_by(*modifiers['order_by'])
-    if 'limit' in modifiers:
-        query = query.limit(modifiers['limit'])
-    if 'offset' in modifiers:
-        query = query.offset(modifiers['offset'])
-    return query
-
-def modify_query_by_request(query):
-    """Modify query according to the request arguments.
-
-    :param query sqlalchemy.orm.query.Query: query to be modified
-    :return query sqlalchemy.orm.query.Query: modified query
-    """
-    args_dict = parse_request()
-    return modify_query(query, args_dict)
 
 def get_request_arguments(*names):
     """Get arguments from request if they match given names.
@@ -136,8 +107,8 @@ class ShowTable(Resource):
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
-        query = table.query(g.db_session)
-        return dict(iter_query_result(modify_query_by_request(query), table))
+        query = table.query(g.db_session, modifiers=parse_request())
+        return dict(iter_query_result(query, table))
 
 class ShowTableItem(ShowTable):
     """Show dict of one item of given table."""
@@ -149,8 +120,9 @@ class ShowTableItem(ShowTable):
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
-        query = table.query(g.db_session).filter(table.id == id)
-        return dict(iter_query_result(modify_query_by_request(query), table))
+        query = table.query(g.db_session, modifiers=parse_request())
+        query = query.filter(table.id == id)
+        return dict(iter_query_result(query, table))
 
 flask_api.add_resource(ShowTable, '/rest/<string:string_table>')
 flask_api.add_resource(ShowTableItem, '/rest/<string:string_table>/<int:id>')
