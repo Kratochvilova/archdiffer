@@ -20,14 +20,14 @@ from ....backend.celery_app import celery_app
 from .... import constants as app_constants
 
 @worker_process_init.connect()
-def setup_tmps():
+def setup_tmps(**kwargs):
     """Make temporal directory to store downloaded packages and set current
     woring directory there."""
     tmpdir = mkdtemp()
     os.chdir(tmpdir)
 
 @worker_process_shutdown.connect()
-def cleanup_tmps():
+def cleanup_tmps(**kwargs):
     """Remove the temporal directory."""
     tmpdir = os.getcwd()
     os.chdir('/')
