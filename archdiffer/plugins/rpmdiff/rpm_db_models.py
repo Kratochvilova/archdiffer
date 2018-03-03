@@ -21,7 +21,7 @@ class BaseExported(object):
     def exported(self, overwrite=None):
         """Export attributes.
 
-        :param overwrite list: list of attribute strings to be exported instead
+        :param list overwrite: list of attribute strings to be exported instead
             of the default ones
         :return dict: {attribute string: attribute value}
         """
@@ -72,7 +72,7 @@ class RPMComparison(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param state int: new state
+        :param int state: new state
         """
         self.state = state
         ses.add(self)
@@ -83,7 +83,7 @@ class RPMComparison(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param state int: new state
+        :param int state: new state
         """
         self.comparison.state = state
         ses.add(self.comparison)
@@ -95,8 +95,8 @@ class RPMComparison(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param rpm_package1 RPMPackage: first package
-        :param rpm_package2 RPMPackage: second package
+        :param RPMPackage rpm_package1: first package
+        :param RPMPackage rpm_package2: second package
         :return RPMComparison: newly added RPMComparison
         """
         if id_group is None:
@@ -123,7 +123,7 @@ class RPMComparison(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param modifiers dict: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         pkg1 = aliased(RPMPackage, name='pkg1')
@@ -148,14 +148,23 @@ class RPMComparison(BaseExported, Base):
 
     @staticmethod
     def id_from_line(line):
-        """Get RPMComparison id from line containing RPMComparison.
+        """Get RPMComparison id from line.
+
+        :param line: named tuple (one item of query result) containing
+            RPMComparison 
+        :return int: RPMComparison id
         """
         return line.RPMComparison.id
 
     @staticmethod
     def dict_from_line(line):
-        """Get dict from line containing RPMComparison, its packages and their
-        repositories."""
+        """Get dict from line.
+
+        :param line: named tuple (one item of query result) containing
+            RPMComparison its packages and their repositories.
+        :return dict: dict with RPMComparison, packages and repositories
+            column values
+        """
         result_dict = {
             'id': line.RPMComparison.id,
             'id_group': line.RPMComparison.id_group,
@@ -173,7 +182,12 @@ class RPMComparison(BaseExported, Base):
 
     @staticmethod
     def count(ses):
-        """Count rpm_comparisons."""
+        """Count rpm_comparisons.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return int: number of rpm_comparisons
+        """
         return RPMComparison.query(ses).count()
 
     def comparisons_query(ses, modifiers=None):
@@ -182,7 +196,7 @@ class RPMComparison(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param modifiers dict: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         pkg1 = aliased(RPMPackage, name='pkg1')
@@ -212,12 +226,20 @@ class RPMComparison(BaseExported, Base):
         return query
 
     def comparisons_id_from_line(line):
-        """Get Comparison id from line containing Comparison.
+        """Get Comparison id from line.
+
+        :param line: named tuple (one item of query result) containing
+            Comparison
+        :return int: Comparison id
         """
         return line.Comparison.id
 
     def comparisons_dict_from_line(line):
-        """Get dict from line containing Comparison.
+        """Get dict from line.
+
+        :param line: named tuple (one item of query result) containing
+            Comparison.
+        :return dict: dict with Comparison column values
         """
         return {
             'time': str(line.Comparison.time),
@@ -227,7 +249,12 @@ class RPMComparison(BaseExported, Base):
 
     @staticmethod
     def comparisons_count(ses):
-        """Count comparisons of COMPARISON_TYPE type."""
+        """Count comparisons of COMPARISON_TYPE type.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return int: number of comparisons of COMPARISON_TYPE type
+        """
         return Comparison.query(ses).filter(
             ComparisonType.name==constants.COMPARISON_TYPE
         ).count()
@@ -267,11 +294,11 @@ class RPMDifference(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param id_comp int: id of corresponding comparison
-        :param category int: category
-        :param diff_type int: diff type
-        :param diff_info string: diff_info
-        :param diff string: diff
+        :param int id_comp: id of corresponding comparison
+        :param int category: category
+        :param int diff_type: diff type
+        :param string diff_info: diff_info
+        :param string diff: diff
         :return RPMDifference: newly added RPMDifference
         """
         difference = RPMDifference(
@@ -292,7 +319,7 @@ class RPMDifference(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param modifiers dict: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = RPMComparison.query(ses, modifiers=modifiers)
@@ -306,12 +333,20 @@ class RPMDifference(BaseExported, Base):
     @staticmethod
     def id_from_line(line):
         """Get RPMComparison id from line containing RPMComparison.
+
+        :param line: named tuple (one item of query result) containing
+            RPMComparison
+        :return int: RPMComparison id
         """
         return RPMComparison.line_id(line)
 
     @staticmethod
     def dict_from_line(line):
-        """Get dict from line containing RPMDifference.
+        """Get dict from line.
+
+        :param line: named tuple (one item of query result) containing
+            RPMDifference.
+        :return dict: dict with RPMDifference column values
         """
         result_dict = None
         if line.RPMDifference is not None:
@@ -326,7 +361,12 @@ class RPMDifference(BaseExported, Base):
 
     @staticmethod
     def count(ses, id_comp):
-        """Count rpm_differences that belong to rpm_comparison with set id."""
+        """Count rpm_differences that belong to rpm_comparison with set id.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return int: number of rpm_differences of given rpm_comparison
+        """
         return RPMDifference.query(ses).filter(id_comp=id_comp).count()
 
 class RPMPackage(BaseExported, Base):
@@ -375,8 +415,8 @@ class RPMPackage(BaseExported, Base):
     def rpm_filename(self):
         """Get RPM filename based on the package atributes.
 
-        :param package dnf.package.Package: corresponds to an RPM file
-        :return: RPM filename string
+        :param dnf.package.Package package: corresponds to an RPM file
+        :return string: RPM filename
         """
         return '{name}-{version}-{release}.{arch}.rpm'.format(
             name=self.name,
@@ -391,10 +431,9 @@ class RPMPackage(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param package dnf.package.Package: corresponds to an RPM file
-        :param repo_path string: repository baseurl
-        :return: package
-        :rtype: rpm_db_models.RPMPackage
+        :param dnf.package.Package package: corresponds to an RPM file
+        :param string repo_path: repository baseurl
+        :return rpm_db_models.RPMPackage: package
         """
         id_repo = RPMRepository.add(ses, repo_path).id
 
@@ -428,7 +467,7 @@ class RPMPackage(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param modifiers dict: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(RPMPackage, RPMRepository).filter(
@@ -440,13 +479,21 @@ class RPMPackage(BaseExported, Base):
 
     @staticmethod
     def id_from_line(line):
-        """Get RPMPackage id from line containing RPMPackage.
+        """Get RPMPackage id from line.
+
+        :param line: named tuple (one item of query result) containing
+            RPMPackage
+        :return int: RPMPackage id
         """
         return line.RPMPackage.id
 
     @staticmethod
     def dict_from_line(line):
-        """Get dict from line containing RPMPackage and its repository.
+        """Get dict from line.
+
+        :param line: named tuple (one item of query result) containing
+            RPMPackage and its RPMRepository
+        :return dict: dict of RPMPackage and RPMRepository column values
         """
         result_dict = line.RPMPackage.exported()
         result_dict['filename'] = line.RPMPackage.rpm_filename()
@@ -455,7 +502,12 @@ class RPMPackage(BaseExported, Base):
 
     @staticmethod
     def count(ses):
-        """Count rpm_packages."""
+        """Count rpm_packages.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return int: number of rpm_packages
+        """
         return RPMPackage.query(ses).count()
 
 class RPMRepository(BaseExported, Base):
@@ -479,7 +531,7 @@ class RPMRepository(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param repo_path string: repository baseurl
+        :param string repo_path: repository baseurl
         :return rpm_db_models.RPMRepository: repository
         """
         try:
@@ -497,7 +549,7 @@ class RPMRepository(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param modifiers dict: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(RPMRepository).order_by(RPMRepository.id)
@@ -507,34 +559,44 @@ class RPMRepository(BaseExported, Base):
 
     @staticmethod
     def id_from_line(line):
-        """Get RPMRepository id from line containing only RPMRepository.
+        """Get RPMRepository id from line.
+
+        :param RPMRepository line: RPMRepository
+        :return int: RPMRepository id
         """
         return line.id
 
     @staticmethod
     def dict_from_line(line):
-        """Get dict from line containing only RPMRepository.
+        """Get dict from line.
+
+        :param RPMRepository line: RPMRepository
+        :return dict: dict of RPMRepository column values
         """
         return {'path': line.path}
 
     @staticmethod
     def count(ses):
-        """Count rpm_repositories."""
+        """Count rpm_repositories.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return int: number of rpm_repositories
+        """
         return RPMRepository.query(ses).count()
 
 def general_iter_query_result(result, group_id, group_dict,
                               line_dict=None, name=None):
     """Process query result.
 
-    :param result sqlalchemy.orm.query.Query: query
-    :param group_id: function getting id from line of the result
-    :param group_dict: function getting dict from line of the result;
+    :param sqlalchemy.orm.query.Query result: query
+    :param callable group_id: function getting id from line of the result
+    :param callable group_dict: function getting dict from line of the result;
         will be called each time id changes
-    :param line_dict: function for geting dict from line of the result;
-        will be called for every line and agregated into list
-    :param name: desired name of the list resulting from the aggregation
-    :return: iterator of resulting dict
-    :rtype: Iterator[dict]
+    :param callable line_dict: function for geting dict from line of the
+        result; will be called for every line and agregated into list
+    :param string name: desired name of the list resulting from the aggregation
+    :return Iterator[dict]: iterator of resulting dict
     """
     last_id = None
     result_dict = None
@@ -567,7 +629,7 @@ def general_iter_query_result(result, group_id, group_dict,
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
 
-    :param result sqlalchemy.orm.query.Query: query
+    :param sqlalchemy.orm.query.Query result: query
     :param table: database model
 
     :return: iterator of resulting dict from general_iter_query_result

@@ -33,9 +33,10 @@ class Comparison(Base):
     )
 
     def __repr__(self):
-        return "<Comparison(id='%s', time='%s', comparison_type_id='%s')>" % (
-            self.id, self.time, self.comparison_type_id
-        )
+        return ("<Comparison(id='%s', time='%s', comparison_type_id='%s', "
+                "state='%s')>") % (
+                    self.id, self.time, self.comparison_type_id, self.state,
+                )
 
     @staticmethod
     def add(ses, comparison_type_id, state=STATE_NEW):
@@ -43,8 +44,8 @@ class Comparison(Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param comparison_type_id int: id of its comparison_type
-        :param state string: state
+        :param int comparison_type_id: id of its comparison_type
+        :param string state: state
         :return Comparison: newly added Comparison
         """
         comparison = Comparison(
@@ -60,7 +61,7 @@ class Comparison(Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param modifiers dict: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(Comparison, ComparisonType).filter(
@@ -72,13 +73,21 @@ class Comparison(Base):
 
     @staticmethod
     def id_from_line(line):
-        """Get Comparison id from line containing Comparison.
+        """Get Comparison id from line.
+
+        :param line: named tuple (one item of query result) containing
+            Comparison 
+        :return int: Comparison id
         """
         return line.Comparison.id
 
     @staticmethod
     def dict_from_line(line):
-        """Get dict from line containing Comparison and its ComparisonType.
+        """Get dict from line.
+
+        :param line: named tuple (one item of query result) containing
+            Comparison and its ComparisonType.
+        :return dict: dict with Comparison and ComparisonType column values
         """
         result_dict = {
             'time': str(line.Comparison.time),
@@ -92,7 +101,12 @@ class Comparison(Base):
 
     @staticmethod
     def count(ses):
-        """Count comparisons."""
+        """Count comparisons.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return int: number of comparisons
+        """
         return Comparison.query(ses).count()
 
 class ComparisonType(Base):
@@ -112,7 +126,7 @@ class ComparisonType(Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param modifiers dict: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(ComparisonType).order_by(ComparisonType.id)
@@ -122,13 +136,19 @@ class ComparisonType(Base):
 
     @staticmethod
     def id_from_line(line):
-        """Get ComparisonType id from line containing only ComparisonType.
+        """Get ComparisonType id from line.
+
+        :param ComparisonType line: ComparisonType
+        :return int: ComparisonType id
         """
         return line.id
 
     @staticmethod
     def dict_from_line(line):
-        """Get dict from line containing only ComparisonType.
+        """Get dict from line.
+
+        :param ComparisonType line: ComparisonType
+        :return dict: dict with ComparisonType column values
         """
         result_dict = {
             'id': line.id,
@@ -138,7 +158,12 @@ class ComparisonType(Base):
 
     @staticmethod
     def count(ses):
-        """Count comparison_types."""
+        """Count comparison_types.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return int: number of comparison_types
+        """
         return ComparisonType.query(ses).count()
 
 class User(Base):
@@ -157,7 +182,7 @@ class User(Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param openid string: openid
+        :param string openid: openid
         :return sqlalchemy.orm.query.Query: query
         """
         return ses.query(User).filter_by(openid=openid).first()
@@ -168,11 +193,10 @@ class User(Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param openid string: openid
-        :param name string: name
-        :param email string: email
-        :return: user
-        :rtype: database.User
+        :param string openid: openid
+        :param string name: name
+        :param string email: email
+        :return User: user
         """
         try:
             user = User(openid=openid, name=name, email=email)
@@ -223,23 +247,46 @@ def engine():
 
 def session(*args, **kwargs):
     """Get new session.
+
+    :param *args: arguments to be passed when creating session
+    :param **kwargs: keyword arguments to be passed when creating session
+    :return sqlalchemy.orm.session.Session: session
     """
     return SessionSingleton.get_session(*args, **kwargs)
 
+def modify_query(query, modifiers):
+    """Modify query according to the modifiers.
+
+    :param sqlalchemy.orm.query.Query query: query to be modified
+    :param dict modifiers: dict of modifiers and their values
+    :return sqlalchemy.orm.query.Query: modified query
+    """
+    if modifiers is None:
+        return query
+    if 'filter_by' in modifiers:
+        query = query.filter_by(**modifiers['filter_by'])
+    if 'filter' in modifiers:
+        query = query.filter(*modifiers['filter'])
+    if 'order_by' in modifiers:
+        query = query.order_by(*modifiers['order_by'])
+    if 'limit' in modifiers:
+        query = query.limit(modifiers['limit'])
+    if 'offset' in modifiers:
+        query = query.offset(modifiers['offset'])
+    return query
 
 def general_iter_query_result(result, group_id, group_dict,
                               line_dict=None, name=None):
     """Process query result.
 
-    :param result sqlalchemy.orm.query.Query: query
-    :param group_id: function getting id from line of the result
-    :param group_dict: function getting dict from line of the result;
+    :param sqlalchemy.orm.query.Query result: query
+    :param callable group_id: function getting id from line of the result
+    :param callable group_dict: function getting dict from line of the result;
         will be called each time id changes
-    :param line_dict: function for geting dict from line of the result;
-        will be called for every line and agregated into list
-    :param name: desired name of the list resulting from the aggregation
-    :return: iterator of resulting dict
-    :rtype: Iterator[dict]
+    :param callable line_dict: function for geting dict from line of the
+        result; will be called for every line and agregated into list
+    :param string name: desired name of the list resulting from the aggregation
+    :return Iterator[dict]: iterator of resulting dict
     """
     last_id = None
     result_dict = None
@@ -269,31 +316,10 @@ def general_iter_query_result(result, group_id, group_dict,
     if last_id is not None:
         yield (last_id, result_dict)
 
-def modify_query(query, modifiers):
-    """Modify query according to the modifiers.
-
-    :param query sqlalchemy.orm.query.Query: query to be modified
-    :param modifiers dict: dict of modifiers and their values
-    :return query sqlalchemy.orm.query.Query: modified query
-    """
-    if modifiers is None:
-        return query
-    if 'filter_by' in modifiers:
-        query = query.filter_by(**modifiers['filter_by'])
-    if 'filter' in modifiers:
-        query = query.filter(*modifiers['filter'])
-    if 'order_by' in modifiers:
-        query = query.order_by(*modifiers['order_by'])
-    if 'limit' in modifiers:
-        query = query.limit(modifiers['limit'])
-    if 'offset' in modifiers:
-        query = query.offset(modifiers['offset'])
-    return query
-
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
 
-    :param result sqlalchemy.orm.query.Query: query
+    :param sqlalchemy.orm.query.Query result: query
     :param table: database model
 
     :return: iterator of resulting dict from general_iter_query_result

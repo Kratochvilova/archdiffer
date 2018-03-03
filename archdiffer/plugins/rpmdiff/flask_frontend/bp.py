@@ -81,7 +81,7 @@ def show_new_comparison_form():
 def show_group(id_group):
     """Show rpm comparisons in given group.
     
-    :param id_group int: id of the group
+    :param int id_group: id of the group
     """
     modifiers = get_pagination_modifiers()
     query = RPMComparison.comparisons_query(g.db_session)
@@ -122,7 +122,7 @@ def show_groups():
 def show_differences(id_comp):
     """Show all rpm differences of one rpm comparison.
 
-    :param id_comp int: id of the comparison
+    :param int id_comp: id of the comparison
     """
     query = RPMDifference.query(g.db_session)
     query = query.filter(RPMComparison.id == id_comp)
@@ -136,7 +136,7 @@ def show_differences(id_comp):
 def show_package(pkg_id):
     """Show rpm package.
 
-    :param pkg_id int: id of the package
+    :param int pkg_id: id of the package
     """
     query = RPMPackage.query(g.db_session)
     query = query.filter(RPMPackage.id == pkg_id)
@@ -155,7 +155,7 @@ def show_package(pkg_id):
 def show_packages_name(name):
     """Show rpm packages given by name.
 
-    :param name string: package name
+    :param string name: package name
     """
     modifiers = get_pagination_modifiers()
     query = RPMPackage.query(g.db_session)
@@ -195,7 +195,7 @@ def show_packages():
 def show_repository(repo_id):
     """Show rpm repository.
 
-    :param repo_id int: id of the repository
+    :param int repo_id: id of the repository
     """
     query = RPMRepository.query(g.db_session)
     query = query.filter(RPMRepository.id == repo_id)
@@ -259,7 +259,7 @@ def add_entry():
 def table_by_string(string_table):
     """Convert string to corresponding class.
 
-    :param string_table string: shortened name of the table
+    :param string string_table: shortened name of the table
     :return: class of the corresponding table
     """
     if string_table == "groups":
@@ -278,7 +278,7 @@ class ShowRPMTable(Resource):
     def get(self, string_table):
         """Get dict.
 
-        :param string_table string: shortened name of the table
+        :param string string_table: shortened name of the table
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
@@ -304,8 +304,8 @@ class ShowRPMTableItem(Resource):
     def get(self, string_table, id):
         """Get dict.
 
-        :param string_table string: shortened name of the table
-        :param id int: id of item from the table
+        :param string string_table: shortened name of the table
+        :param int id: id of item from the table
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)

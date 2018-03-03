@@ -36,7 +36,7 @@ def cleanup_tmps():
 def download_packages(pkg):
     """Download packages whose parameters match the arguments.
 
-    :param pkg dict: dict containing package parameters
+    :param dict pkg: dict containing package parameters
     :return list[dnf.package.Package]: packages
     """
     base = dnf.Base()
@@ -75,7 +75,7 @@ def download_packages(pkg):
 def group_by_arch(pkgs):
     """Make dict of groups of packagase sorted by the architectures.
 
-    :param pkgs list[dnf.package.Package]: packages
+    :param list[dnf.package.Package] pkgs: packages
     :return dict: dict of groups
     """
     arch_groups = defaultdict(list)
@@ -86,7 +86,7 @@ def group_by_arch(pkgs):
 def remove_old_versions(pkgs):
     """Remove older packages for each architecture.
 
-    :param pkgs list[dnf.package.Package]: packages
+    :param list[dnf.package.Package] pkgs: packages
     :return list[dnf.package.Package]: new list of packages
     """
     arch_groups = defaultdict(list)
@@ -109,10 +109,10 @@ def remove_old_versions(pkgs):
 def make_tuples(original1, original2, pkgs1, pkgs2):
     """Make list of tuples from two lists of packages.
 
-    :param original1 dict: dict describing original request for first package
-    :param original2 dict: dict describing original request for second package
-    :param pkgs1 list[dnf.package.Package]: first list of packages
-    :param pkgs2 list[dnf.package.Package]: second list of packages
+    :param dict original1: dict describing original request for first package
+    :param dict original2: dict describing original request for second package
+    :param list[dnf.package.Package] pkgs1: first list of packages
+    :param list[dnf.package.Package] pkgs2: second list of packages
     :return list: list of package tuples
     """
     tuples = []
@@ -133,8 +133,8 @@ def make_tuples(original1, original2, pkgs1, pkgs2):
 def run_rpmdiff(pkg1, pkg2):
     """Run rpmdiff as subprocess.
 
-    :param pkg1 string: name of the first package
-    :param pkg2 string: name of the second package
+    :param string pkg1: name of the first package
+    :param string pkg2: name of the second package
     :return: CompletedProcess instance
     """
     pkg1 = os.path.join(os.getcwd(), pkg1)
@@ -144,7 +144,7 @@ def run_rpmdiff(pkg1, pkg2):
 def parse_rpmdiff(rpmdiff_output):
     """Parse output from rpmdiff.
 
-    :param rpmdiff_output string: rpmdiff output
+    :param string rpmdiff_output: rpmdiff output
     :return list: list of diffs
     """
     diffs = []
@@ -159,8 +159,8 @@ def proces_differences(session, id_comp, differences):
 
     :param session: session for communication with the database
     :type session: qlalchemy.orm.session.Session
-    :param id_comp integer: id_comp of the corresponding RPMComparison
-    :param diffs list: list of parsed differences from rpmdiff output
+    :param int id_comp: id_comp of the corresponding RPMComparison
+    :param list diffs: list of parsed differences from rpmdiff output
     """
     # TODO: also check for renamed files
     # (diff_type='renamed', diff_info='name_of_new_file')
@@ -204,9 +204,9 @@ def proces_differences(session, id_comp, differences):
 def compare(pkg1, pkg2):
     """Compare two packages and write results to the database.
 
-    :param pkg1 dict: first package dict with keys:
+    :param dict pkg1: first package dict with keys:
         name, arch, epoch, version, release, repository
-    :param pkg2 dict: second package dict
+    :param dict pkg2: second package dict
     """
     session = database.session()
 

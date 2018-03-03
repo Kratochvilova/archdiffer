@@ -15,7 +15,10 @@ from ..database import ComparisonType, User
 oid = OpenID(flask_app, safe_roots=[])
 
 def get_comparison_types():
-    """Get all comparison types from the database."""
+    """Get all comparison types from the database.
+
+    :return sqlalchemy.orm.query.Query: resulting query
+    """
     ses = db_session()
     comparison_types = ComparisonType.query(ses)
     ses.close()
@@ -26,7 +29,7 @@ comparison_types = get_comparison_types()
 def my_render_template(html, **arguments):
     """Call render_template with comparison_types as one of the arguments.
 
-    :param html string: name of the template
+    :param string html: name of the template
     :param **arguments: other arguments to be passed while rendering template
     """
     arguments.setdefault('comparison_types', comparison_types)

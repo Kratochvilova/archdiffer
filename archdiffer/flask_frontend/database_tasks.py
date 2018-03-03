@@ -90,7 +90,7 @@ def show_comparison_types():
 def table_by_string(string_table):
     """Convert string to corresponding class.
 
-    :param string_table string: name of the table
+    :param string string_table: name of the table
     :return: class of the corresponding table
     """
     if string_table == "comparisons":
@@ -103,7 +103,7 @@ class ShowTable(Resource):
     def get(self, string_table):
         """Get dict.
 
-        :param string_table string: name of the table
+        :param string string_table: name of the table
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
@@ -115,8 +115,8 @@ class ShowTableItem(ShowTable):
     def get(self, string_table, id):
         """Get dict.
 
-        :param string_table string: name of the table
-        :param id int: id of item from the table
+        :param string string_table: name of the table
+        :param int id: id of item from the table
         :return dict: dict of the resulting query
         """
         table = table_by_string(string_table)
