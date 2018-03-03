@@ -262,7 +262,7 @@ class RPMComparison(BaseExported, Base):
 class RPMDifference(BaseExported, Base):
     __tablename__ = 'rpm_differences'
 
-    to_export = ['id', 'category', 'diff_type', 'diff_info', 'diff']
+    to_export = ['id', 'category', 'diff_type', 'diff_info', 'diff', 'state']
 
     id = Column(Integer, primary_key=True, nullable=False)
     id_comp = Column(
@@ -272,6 +272,7 @@ class RPMDifference(BaseExported, Base):
     diff_type = Column(Integer, nullable=False)
     diff_info = Column(String)
     diff = Column(String, nullable=False)
+    state = Column(Integer, nullable=False)
 
     rpm_comparison = relationship(
         "RPMComparison", back_populates="rpm_differences"
@@ -279,17 +280,30 @@ class RPMDifference(BaseExported, Base):
 
     def __repr__(self):
         return ("<RPMDifference(id='%s', id_comp='%s', category='%s', "
-                "diff_type='%s', diff_info='%s', diff='%s')>") % (
+                "diff_type='%s', diff_info='%s', diff='%s', state='%s')>") % (
                     self.id,
                     self.id_comp,
                     self.category,
                     self.diff_type,
                     self.diff_info,
                     self.diff,
+                    self.state,
                 )
 
+    def update_state(self, ses, state):
+        """Update state of the RPMDifference.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :param int state: new state
+        """
+        self.state = state
+        ses.add(self)
+        ses.commit()
+
     @staticmethod
-    def add(ses, id_comp, category, diff_type, diff_info, diff):
+    def add(ses, id_comp, category, diff_type, diff_info, diff,
+            state=constants.DIFF_STATE_NORMAL):
         """Add new RPMDifference.
 
         :param ses: session for communication with the database
@@ -299,6 +313,7 @@ class RPMDifference(BaseExported, Base):
         :param int diff_type: diff type
         :param string diff_info: diff_info
         :param string diff: diff
+        :param int state: state
         :return RPMDifference: newly added RPMDifference
         """
         difference = RPMDifference(
@@ -307,6 +322,7 @@ class RPMDifference(BaseExported, Base):
             diff_type=diff_type,
             diff_info=diff_info,
             diff=diff,
+            state=state,
         )
         ses.add(difference)
         ses.commit()
@@ -356,6 +372,9 @@ class RPMDifference(BaseExported, Base):
             ]
             result_dict['diff_type'] = constants.DIFF_TYPE_STRINGS[
                 result_dict['diff_type']
+            ]
+            result_dict['state'] = constants.DIFF_STATE_STRINGS[
+                result_dict['state']
             ]
         return result_dict
 

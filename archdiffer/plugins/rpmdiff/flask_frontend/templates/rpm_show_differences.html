@@ -28,12 +28,14 @@
           <th>Id</th>
           <th>Type</th>
           <th>Diff</th>
+          <th>State</th>
         </tr>
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_TAGS] %}
           <tr>
             <td>{{ diff['id'] }}</td>
-            <td class={{diff['diff_type']}}>{{ diff['diff_type'] }}</td>
+            <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
+            <td class={{ 'state_' + diff['state'] }}>{{ diff['state'] }}</td>
           </tr>
         {% endfor %}
       </table>
@@ -44,12 +46,14 @@
           <th>Id</th>
           <th>Type</th>
           <th>Diff</th>
+          <th>State</th>
         </tr>
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_PRCO] %}
           <tr>
             <td>{{ diff['id'] }}</td>
-            <td class={{diff['diff_type']}}>{{ diff['diff_type'] }}</td>
+            <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
+            <td class={{ 'state_' + diff['state'] }}>{{ diff['state'] }}</td>
           </tr>
         {% endfor %}
       </table>
@@ -61,13 +65,15 @@
           <th>Type</th>
           <th>Diff</th>
           <th>Info</th>
+          <th>State</th>
         </tr>
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_FILES] %}
           <tr>
             <td>{{ diff['id'] }}</td>
-            <td class={{diff['diff_type']}}>{{ diff['diff_type'] }}</td>
+            <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
             <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
+            <td class={{ 'state_' + diff['state'] }}>{{ diff['state'] }}</td>
           </tr>
         {% endfor %}
       </table>

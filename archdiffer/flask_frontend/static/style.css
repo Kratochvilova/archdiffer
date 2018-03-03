@@ -219,14 +219,30 @@ table td {
     background-color: #e0e1e4;
 }
 
-.removed {
+.diff_type_removed {
     background-color: #FD9886;
 }
 
-.added {
+.diff_type_added {
     background-color: #9DCEFC;
 }
 
-.changed {
+.diff_type_changed {
     background-color: #F7FD7F;
+}
+
+.state_normal {
+    background-color: #F7FD7F;
+}
+
+.state_hidden {
+    background-color: #9DCEFC;
+}
+
+.state_ok {
+    background-color: #9DCEFC;
+}
+
+.state_nok {
+    background-color: #FD9886;
 }
