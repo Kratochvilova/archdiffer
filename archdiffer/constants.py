@@ -11,6 +11,9 @@ STATE_DONE = 1
 STATE_ERROR = -1
 STATE_STRINGS = {
     STATE_NEW: 'new',
+    'new': STATE_NEW,
     STATE_DONE: 'done',
-    STATE_ERROR: 'error'
+    'done': STATE_DONE,
+    STATE_ERROR: 'error',
+    'error': STATE_ERROR,
 }

@@ -9,10 +9,9 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
-from ... database import Base, Comparison, ComparisonType
+from ... database import Base, Comparison, ComparisonType, modify_query
 from . import constants
 from ... import constants as app_constants
-from ...flask_frontend.database_tasks import modify_query
 
 class BaseExported(object):
     """For exporting attributes from the models."""

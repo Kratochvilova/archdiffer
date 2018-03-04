@@ -6,123 +6,131 @@ Created on Fri Feb  9 22:32:02 2018
 @author: pavla
 """
 
-from flask import request, g
+from flask import g
 from flask_restful import Resource
-from werkzeug.exceptions import BadRequest
 from .flask_app import flask_app, flask_api
-from ..database import (Comparison, ComparisonType, modify_query,
-                        iter_query_result)
+from ..database import Comparison, ComparisonType, iter_query_result
+from .. import constants
 from .common_tasks import my_render_template
-
-# Transformation functions for parsing requests
-def _dict_transform(string):
-    return dict([item.split(':', 1) for item in string.split(';')])
-
-def _list_transform(string):
-    return string.split(',')
-
-_TRANSFORMATIONS = {
-    'filter_by' : _dict_transform,
-    'filter' : _list_transform,
-    'order_by' : _list_transform,
-    'limit' : lambda x: int(x),
-    'offset' : lambda x: int(x),
-}
-
-def parse_request():
-    """Parse arguments in request according to the _TRANSFORMATIONS.
-    Requests containing other keys are considered invalid.
-
-    :return dict: dict of parsed arguments
-    """
-    args_dict = {}
-    for key, value in request.args.items():
-        try:
-            args_dict[key] = _TRANSFORMATIONS[key](value)
-        except:
-            raise BadRequest()
-    return args_dict
-
-def get_request_arguments(*names):
-    """Get arguments from request if they match given names.
-
-    :param *names: names of arguments
-    :return dict: dict of arguments
-    """
-    return {k:v for k, v in parse_request().items() if k in names}
+from . import request_parser
 
 def get_pagination_modifiers():
-    """Get arguments neccesary for pagination.
+    args_dict = request_parser.parse_request(defaults={'limit':5, 'offset':0})
+    return request_parser.get_request_arguments('limit', 'offset', args_dict=args_dict)
 
-    :return dict: dict of arguments
-    """
-    modifiers = get_request_arguments('limit', 'offset')
-    if 'offset' not in modifiers:
-        modifiers['offset'] = 0
-    if 'limit' not in modifiers or modifiers['limit'] <= 0:
-        modifiers['limit'] = 5
-    return modifiers
-
-@flask_app.route('/')
-def index():
-    """Show all comparisons."""
-    modifiers = get_pagination_modifiers()
-    query = Comparison.query(g.db_session)
-    items_count = query.count()
-    query = modify_query(query, modifiers)
-    comps = dict(iter_query_result(query, Comparison))
-    return my_render_template(
-        'show_comparisons.html', 
-        comparisons=comps,
-        items_count=items_count,
-        limit=modifiers['limit'],
-        offset=modifiers['offset'],
-        endpoint='index',
-        arguments={},
-    )
-
-@flask_app.route('/comparison_types')
-def show_comparison_types():
-    """Show all comparison types."""
-    return my_render_template('show_comparison_types.html')
-
-# Resources
-def table_by_string(string_table):
-    """Convert string to corresponding class.
-
-    :param string string_table: name of the table
-    :return: class of the corresponding table
-    """
-    if string_table == "comparisons":
-        return Comparison
-    if string_table == "comparison_types":
-        return ComparisonType
-
-class ShowTable(Resource):
+class TableDict(Resource):
     """Show dict of given table."""
-    def get(self, string_table):
+    def table(self):
+        raise NotImplemented
+
+    def modifiers(self):
+        return request_parser.parse_request()
+
+    def make_query(self):
+        return self.table().query(g.db_session, modifiers=self.modifiers())
+
+    def get(self):
         """Get dict.
 
-        :param string string_table: name of the table
         :return dict: dict of the resulting query
         """
-        table = table_by_string(string_table)
-        query = table.query(g.db_session, modifiers=parse_request())
-        return dict(iter_query_result(query, table))
+        return dict(iter_query_result(self.make_query(), self.table()))
 
-class ShowTableItem(ShowTable):
-    """Show dict of one item of given table."""
-    def get(self, string_table, id):
+class TableDictItem(TableDict):
+    """Show dict of one item of given table."""    
+    def get(self, id):
         """Get dict.
 
-        :param string string_table: name of the table
         :param int id: id of item from the table
         :return dict: dict of the resulting query
         """
-        table = table_by_string(string_table)
-        query = table.query(g.db_session, modifiers=parse_request())
-        query = query.filter(table.id == id)
-        return dict(iter_query_result(query, table))
+        query = self.make_query().filter(self.table().id == id)
+        return dict(iter_query_result(query, self.table()))
 
-flask_api.add_resource(ShowTable, '/rest/<string:string_table>')
-flask_api.add_resource(ShowTableItem, '/rest/<string:string_table>/<int:id>')
+class ComparisonsDict(TableDict):
+    """Show dict of comparisons."""
+    filters = dict(
+        **request_parser.equals(
+            Comparison.id,
+            function=(lambda x: int(x))
+        ),
+        **request_parser.equals(
+            Comparison.state,
+            name='state',
+            function=(lambda x: constants.STATE_STRINGS.get(x))
+        ),
+        **request_parser.equals(
+            ComparisonType.id,
+            name='comparison_type_id',
+            function=(lambda x: int(x))
+        ),
+        **request_parser.equals(
+            ComparisonType.name, name='comparison_type_name'
+        ),
+        **request_parser.time(Comparison.time),
+        **request_parser.before(Comparison.time),
+        **request_parser.after(Comparison.time),
+    )
+
+    def modifiers(self):
+        return request_parser.parse_request(filters=self.filters)
+
+    def table(self):
+        return Comparison
+
+class ComparisonsDictItem(ComparisonsDict, TableDictItem):
+    """Show dict of one item of comparisons."""
+
+class ComparisonTypesDict(TableDict):
+    """Show dict of comparisons."""
+    filters = dict(
+        **request_parser.equals(ComparisonType.id),
+        **request_parser.equals(ComparisonType.name, name='name'),
+    )
+
+    def modifiers(self):
+        return request_parser.parse_request(filters=self.filters)
+
+    def table(self):
+        return ComparisonType
+
+class ComparisonTypesDictItem(ComparisonTypesDict, TableDictItem):
+    """Show dict of one item of comparisons."""
+
+flask_api.add_resource(ComparisonsDict, '/rest/comparisons')
+flask_api.add_resource(ComparisonsDictItem, '/rest/comparisons/<int:id>')
+flask_api.add_resource(ComparisonTypesDict, '/rest/comparison_types')
+flask_api.add_resource(
+    ComparisonTypesDictItem, '/rest/comparison_types/<int:id>'
+)
+
+class Index(ComparisonsDict):
+    """Show comparisons."""
+    def modifiers(self):
+        return request_parser.parse_request(
+            filters=self.filters, defaults={'limit': 5, 'offset': 0}
+        )
+
+    def dispatch_request(self):
+        query = self.make_query()
+        items_count = query.count()
+        comps = dict(iter_query_result(query, Comparison))
+
+        return my_render_template(
+            'show_comparisons.html', 
+            comparisons=comps,
+            items_count=items_count,
+            limit=self.modifiers()['limit'],
+            offset=self.modifiers()['offset'],
+            endpoint='index',
+            arguments={},
+        )
+
+flask_app.add_url_rule('/', view_func=Index.as_view('index'))
+
+class IndexTypes(ComparisonTypesDict):
+    """Show comparisons."""
+    def dispatch_request(self):
+        return my_render_template('show_comparison_types.html')
+
+flask_app.add_url_rule('/comparison_types', view_func=IndexTypes.as_view('show_comparison_types'))

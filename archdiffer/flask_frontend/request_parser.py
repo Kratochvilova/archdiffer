@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Mar  4 10:23:41 2018
+
+@author: pavla
+"""
+
+
+import operator
+import datetime
+from flask import request
+from werkzeug.exceptions import BadRequest
+
+def make_datetime(time_string, formats=None):
+    """Makes datetime from string based on one of the formats.
+
+    :param string time_string: time in string
+    :param list formats: list of accepted formats
+    :return datetime.datetime: datetime or None if no format is matched
+    """
+    if formats is None:
+        formats = [
+            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d',
+        ]
+    for fmt in formats:
+        try:
+            return datetime.datetime.strptime(time_string, fmt)
+        except ValueError:
+            pass
+    return None
+
+# Transformation functions
+def _dict_transform(string):
+    return dict([item.split(':', 1) for item in string.split(';')])
+
+def _list_transform(string):
+    return string.split(',')
+
+# Transformations of common arguments
+_TRANSFORMATIONS = {
+    'filter_by' : _dict_transform,
+    'filter' : _list_transform,
+    'order_by' : _list_transform,
+    'limit' : lambda x: int(x),
+    'offset' : lambda x: int(x),
+}
+
+# Filters creators
+def before(column, name='before'):
+    """Make filter template for filtering column values less or equal to
+    datetime.
+
+    :param column: database model
+    :param string name: name used in the filter template
+    :return dict: resulting template
+    """
+    return {name: (column, operator.le, make_datetime)}
+
+def after(column, name='after'):
+    """Make filter template for filtering column values greater or equal to
+    datetime.
+
+    :param column: database model
+    :param string name: name used in the filter template
+    :return dict: resulting template
+    """
+    return {name: (column, operator.ge, make_datetime)}
+
+def time(column, name='time'):
+    """Make filter template for filtering column values equal to datetime.
+
+    :param column: database model
+    :param string name: name used in the filter template
+    :return dict: resulting template
+    """
+    return {name: (column, operator.eq, make_datetime)}
+
+def equals(column, name='id', function=(lambda x: x)):
+    """Make filter template for filtering column values equal to value
+    transformed by given function.
+
+    :param column: database model
+    :param string name: name used in the filter template
+    :param callable function: function for transforming the value
+    :return dict: resulting template
+    """
+    return {name: (column, operator.eq, function)}
+
+# Request parser
+def parse_request(filters={}, defaults={}):
+    """Parse arguments in request according to the _TRANSFORMATIONS or given
+    filters.
+    Requests containing other keys are considered invalid.
+
+    :param dict filters: dict of filter templates containing for each key
+        (column, operator, function transforming value from request argument)
+    :param bool pagination: if True pagination modifiers are used even if not
+        specified in request
+    :return dict: dict of parsed arguments
+    """
+    args_dict = defaults
+    filters_list = []
+
+    for key, value in request.args.items():
+        if key in _TRANSFORMATIONS:
+            args_dict[key] = _TRANSFORMATIONS[key](value)
+        elif key in filters.keys():
+            filters_list.append(
+                filters[key][1](filters[key][0], filters[key][2](value))
+            )
+        else:
+            raise BadRequest()
+    if 'filter' not in args_dict.keys():
+        args_dict['filter'] = []
+    args_dict['filter'] += filters_list
+
+    return args_dict
+
+def get_request_arguments(*names, args_dict=None):
+    """Get arguments from request if they match given names.
+
+    :param *names: names of arguments
+    :return dict: dict of arguments
+    """
+    if args_dict is None:
+        return {k:v for k, v in parse_request().items() if k in names}
+    else:
+        return {k:v for k, v in args_dict.items() if k in names}

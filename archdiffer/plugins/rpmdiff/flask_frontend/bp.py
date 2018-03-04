@@ -14,8 +14,8 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
 from .. import constants
 from ....database import Comparison, ComparisonType, modify_query
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.database_tasks import (parse_request,
-                                               get_pagination_modifiers)
+from ....flask_frontend.request_parser import parse_request
+from ....flask_frontend.database_tasks import get_pagination_modifiers
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
