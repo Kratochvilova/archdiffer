@@ -30,6 +30,7 @@ class BaseExported(object):
         return {k:v for k, v in vars(self).items() if k in overwrite}
 
 class RPMComparison(BaseExported, Base):
+    """Database model of rpm comparisons."""
     __tablename__ = 'rpm_comparisons'
 
     to_export = ['id', 'state']
@@ -260,6 +261,7 @@ class RPMComparison(BaseExported, Base):
         ).count()
 
 class RPMDifference(BaseExported, Base):
+    """Database model of rpm differences."""
     __tablename__ = 'rpm_differences'
 
     to_export = ['id', 'category', 'diff_type', 'diff_info', 'diff', 'state']
@@ -389,6 +391,7 @@ class RPMDifference(BaseExported, Base):
         return RPMDifference.query(ses).filter(id_comp=id_comp).count()
 
 class RPMPackage(BaseExported, Base):
+    """Database model of rpm packages."""
     __tablename__ = 'rpm_packages'
 
     to_export = ['id', 'name', 'arch', 'epoch', 'version', 'release']
@@ -530,6 +533,7 @@ class RPMPackage(BaseExported, Base):
         return RPMPackage.query(ses).count()
 
 class RPMRepository(BaseExported, Base):
+    """Database model of rpm repositories."""
     __tablename__ = 'rpm_repositories'
 
     to_export = ['id', 'path']
@@ -608,7 +612,7 @@ def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
 
     :param sqlalchemy.orm.query.Query result: query
-    :param table: database model
+    :param sqlalchemy.ext.declarative.api.declarativemeta table: database model
 
     :return: iterator of resulting dict from general_iter_query_result
     :rtype: Iterator[dict]

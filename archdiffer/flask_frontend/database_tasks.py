@@ -21,12 +21,24 @@ def get_pagination_modifiers():
 class TableDict(Resource):
     """Show dict of given table."""
     def table(self):
-        raise NotImplemented
+        """Get table.
+
+        :raises NotImplementedError: this method must be overridden
+        """
+        raise NotImplementedError
 
     def modifiers(self):
+        """Get modifiers from request arguments.
+
+        :return dict: modifiers
+        """
         return request_parser.parse_request()
 
     def make_query(self):
+        """Call query method on the table with modifiers as argument.
+
+        :return sqlalchemy.orm.query.Query result: query
+        """
         return self.table().query(g.db_session, modifiers=self.modifiers())
 
     def get(self):
@@ -72,46 +84,62 @@ class ComparisonsDict(TableDict):
         **request_parser.after(Comparison.time),
     )
 
-    def modifiers(self):
-        return request_parser.parse_request(filters=self.filters)
-
     def table(self):
+        """Get Comparison table.
+
+        :return sqlalchemy.ext.declarative.api.declarativemeta: Comparison
+        """
         return Comparison
+
+    def modifiers(self):
+        """Get modifiers from request arguments.
+
+        :return dict: modifiers
+        """
+        return request_parser.parse_request(filters=self.filters)
 
 class ComparisonsDictItem(ComparisonsDict, TableDictItem):
     """Show dict of one item of comparisons."""
 
 class ComparisonTypesDict(TableDict):
-    """Show dict of comparisons."""
+    """Show dict of comparison_types."""
     filters = dict(
         **request_parser.equals(ComparisonType.id),
         **request_parser.equals(ComparisonType.name, name='name'),
     )
 
-    def modifiers(self):
-        return request_parser.parse_request(filters=self.filters)
-
     def table(self):
+        """Get ComparisonType table.
+
+        :return sqlalchemy.ext.declarative.api.declarativemeta: ComparisonType
+        """
         return ComparisonType
 
-class ComparisonTypesDictItem(ComparisonTypesDict, TableDictItem):
-    """Show dict of one item of comparisons."""
+    def modifiers(self):
+        """Get modifiers from request arguments.
 
-flask_api.add_resource(ComparisonsDict, '/rest/comparisons')
-flask_api.add_resource(ComparisonsDictItem, '/rest/comparisons/<int:id>')
-flask_api.add_resource(ComparisonTypesDict, '/rest/comparison_types')
-flask_api.add_resource(
-    ComparisonTypesDictItem, '/rest/comparison_types/<int:id>'
-)
+        :return dict: modifiers
+        """
+        return request_parser.parse_request(filters=self.filters)
+
+class ComparisonTypesDictItem(ComparisonTypesDict, TableDictItem):
+    """Show dict of one item of comparison_types."""
 
 class Index(ComparisonsDict):
     """Show comparisons."""
-    def modifiers(self):
+    def modifiers(self, limit=5, offset=0):
+        """Get modifiers from request arguments.
+
+        :param int limit: default value for limit
+        :param int offset: default value for offset
+        :return dict: modifiers
+        """
         return request_parser.parse_request(
-            filters=self.filters, defaults={'limit': 5, 'offset': 0}
+            filters=self.filters, defaults={'limit': limit, 'offset': offset}
         )
 
     def dispatch_request(self):
+        """Render template."""
         query = self.make_query()
         items_count = query.count()
         comps = dict(iter_query_result(query, Comparison))
@@ -126,11 +154,30 @@ class Index(ComparisonsDict):
             arguments={},
         )
 
-flask_app.add_url_rule('/', view_func=Index.as_view('index'))
-
 class IndexTypes(ComparisonTypesDict):
-    """Show comparisons."""
+    """Show comparison types."""
+    def modifiers(self, limit=5, offset=0):
+        """Get modifiers from request arguments.
+
+        :param int limit: default value for limit
+        :param int offset: default value for offset
+        :return dict: modifiers
+        """
+        return request_parser.parse_request(
+            filters=self.filters, defaults={'limit': limit, 'offset': offset}
+        )
+
     def dispatch_request(self):
+        """Render template."""
         return my_render_template('show_comparison_types.html')
 
-flask_app.add_url_rule('/comparison_types', view_func=IndexTypes.as_view('show_comparison_types'))
+flask_api.add_resource(ComparisonsDict, '/rest/comparisons')
+flask_api.add_resource(ComparisonsDictItem, '/rest/comparisons/<int:id>')
+flask_api.add_resource(ComparisonTypesDict, '/rest/comparison_types')
+flask_api.add_resource(
+    ComparisonTypesDictItem, '/rest/comparison_types/<int:id>'
+)
+flask_app.add_url_rule('/', view_func=Index.as_view('index'))
+flask_app.add_url_rule(
+    '/comparison_types', view_func=IndexTypes.as_view('show_comparison_types')
+)

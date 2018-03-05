@@ -99,6 +99,8 @@ def parse_request(filters={}, defaults={}):
     :param bool pagination: if True pagination modifiers are used even if not
         specified in request
     :return dict: dict of parsed arguments
+    :raises werkzeug.exceptions.BadRequest: if one of the request arguments is
+        not recognized
     """
     args_dict = defaults
     filters_list = []
@@ -119,12 +121,12 @@ def parse_request(filters={}, defaults={}):
     return args_dict
 
 def get_request_arguments(*names, args_dict=None):
-    """Get arguments from request if they match given names.
+    """Get arguments from args_dict or request if they match given names.
 
     :param *names: names of arguments
+    :param dict args_dict: dict of arguments
     :return dict: dict of arguments
     """
     if args_dict is None:
-        return {k:v for k, v in parse_request().items() if k in names}
-    else:
-        return {k:v for k, v in args_dict.items() if k in names}
+        args_dict = parse_request()
+    return {k:v for k, v in args_dict.items() if k in names}

@@ -71,7 +71,7 @@ def login():
 
 @oid.after_login
 def create_or_login(resp):
-    """check if user exists and finish login or redirect to create_profile."""
+    """Check if user exists and finish login or redirect to create_profile."""
     flask_session['openid'] = resp.identity_url
     user = User.query_by_openid(g.db_session, resp.identity_url)
     if user is not None:

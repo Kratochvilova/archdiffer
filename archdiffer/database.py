@@ -18,6 +18,7 @@ from .constants import STATE_NEW, STATE_STRINGS
 Base = declarative_base()
 
 class Comparison(Base):
+    """Database model of comparisons."""
     __tablename__ = 'comparisons'
 
     id = Column(Integer, primary_key=True, nullable=False)
@@ -110,6 +111,7 @@ class Comparison(Base):
         return Comparison.query(ses).count()
 
 class ComparisonType(Base):
+    """Database model of comparison types."""
     __tablename__ = 'comparison_types'
 
     id = Column(Integer, primary_key=True, nullable=False)
@@ -167,6 +169,7 @@ class ComparisonType(Base):
         return ComparisonType.query(ses).count()
 
 class User(Base):
+    """Database model of users."""
     __tablename__ = 'users'
 
     openid = Column(String, primary_key=True, nullable=False)
@@ -320,7 +323,7 @@ def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
 
     :param sqlalchemy.orm.query.Query result: query
-    :param table: database model
+    :param sqlalchemy.ext.declarative.api.declarativemeta table: database model
 
     :return: iterator of resulting dict from general_iter_query_result
     :rtype: Iterator[dict]
