@@ -125,7 +125,7 @@ class ComparisonTypesDict(TableDict):
 class ComparisonTypesDictItem(ComparisonTypesDict, TableDictItem):
     """Show dict of one item of comparison_types."""
 
-class Index(ComparisonsDict):
+class ComparisonsView(ComparisonsDict):
     """Show comparisons."""
     def modifiers(self, limit=5, offset=0):
         """Get modifiers from request arguments.
@@ -154,7 +154,7 @@ class Index(ComparisonsDict):
             arguments={},
         )
 
-class IndexTypes(ComparisonTypesDict):
+class ComparisonTypesView(ComparisonTypesDict):
     """Show comparison types."""
     def modifiers(self, limit=5, offset=0):
         """Get modifiers from request arguments.
@@ -177,7 +177,8 @@ flask_api.add_resource(ComparisonTypesDict, '/rest/comparison_types')
 flask_api.add_resource(
     ComparisonTypesDictItem, '/rest/comparison_types/<int:id>'
 )
-flask_app.add_url_rule('/', view_func=Index.as_view('index'))
+flask_app.add_url_rule('/', view_func=ComparisonsView.as_view('index'))
 flask_app.add_url_rule(
-    '/comparison_types', view_func=IndexTypes.as_view('show_comparison_types')
+    '/comparison_types',
+    view_func=ComparisonTypesView.as_view('show_comparison_types')
 )
