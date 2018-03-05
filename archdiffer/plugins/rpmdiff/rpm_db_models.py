@@ -9,7 +9,8 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
-from ... database import Base, Comparison, ComparisonType, modify_query
+from ... database import (Base, Comparison, ComparisonType, modify_query,
+                          general_iter_query_result)
 from . import constants
 from ... import constants as app_constants
 
@@ -602,47 +603,6 @@ class RPMRepository(BaseExported, Base):
         :return int: number of rpm_repositories
         """
         return RPMRepository.query(ses).count()
-
-def general_iter_query_result(result, group_id, group_dict,
-                              line_dict=None, name=None):
-    """Process query result.
-
-    :param sqlalchemy.orm.query.Query result: query
-    :param callable group_id: function getting id from line of the result
-    :param callable group_dict: function getting dict from line of the result;
-        will be called each time id changes
-    :param callable line_dict: function for geting dict from line of the
-        result; will be called for every line and agregated into list
-    :param string name: desired name of the list resulting from the aggregation
-    :return Iterator[dict]: iterator of resulting dict
-    """
-    last_id = None
-    result_dict = None
-    outerjoin_items = []
-
-    for line in result:
-        if last_id is None:
-            # Save new id and dict
-            last_id = group_id(line)
-            result_dict = group_dict(line)
-        if group_id(line) != last_id:
-            # Add aggregated list and yield
-            if line_dict is not None and result_dict is not None:
-                result_dict[name] = outerjoin_items
-            yield (last_id, result_dict)
-            # Save new id and dict
-            last_id = group_id(line)
-            result_dict = group_dict(line)
-            outerjoin_items = []
-        if line_dict is not None:
-            item = line_dict(line)
-            if item is not None:
-                outerjoin_items.append(item)
-    # Add aggregated list and yield
-    if line_dict is not None and result_dict is not None:
-        result_dict[name] = outerjoin_items
-    if last_id is not None:
-        yield (last_id, result_dict)
 
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
