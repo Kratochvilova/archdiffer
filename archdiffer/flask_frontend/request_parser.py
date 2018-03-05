@@ -102,7 +102,7 @@ def parse_request(filters={}, defaults={}):
     :raises werkzeug.exceptions.BadRequest: if one of the request arguments is
         not recognized
     """
-    args_dict = defaults
+    args_dict = defaults.copy()
     filters_list = []
 
     for key, value in request.args.items():
@@ -114,6 +114,7 @@ def parse_request(filters={}, defaults={}):
             )
         else:
             raise BadRequest()
+
     if 'filter' not in args_dict.keys():
         args_dict['filter'] = []
     args_dict['filter'] += filters_list
