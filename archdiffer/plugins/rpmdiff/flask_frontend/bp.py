@@ -43,7 +43,7 @@ def record_params(setup_state):
 
 class RPMTableDict(TableDict):
     """Dict of given table."""
-    def get(self, id):
+    def get(self, id=None):
         """Get dict.
 
         :param int id: id to optionaly filter by
@@ -158,7 +158,7 @@ class RPMDifferencesDict(RPMTableDictOuter):
         """
         return RPMDifference
 
-    def get(self, id):
+    def get(self, id=None):
         """Get dict.
 
         :param int id: RPMComparison id
