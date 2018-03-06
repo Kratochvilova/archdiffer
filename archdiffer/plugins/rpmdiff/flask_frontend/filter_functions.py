@@ -13,6 +13,13 @@ from ....flask_frontend import request_parser
 
 # Functions for making sets of filters
 def rpm_comparisons(prefix='comparisons_', relationships=False):
+    """Get filters for rpm comparisons.
+
+    :param string prefix: prefix of the name of the filter
+    :param bool relationships: True if relationship-related columns should be
+        included
+    :return dict: dict of filters
+    """
     filters = dict(
         **request_parser.equals(
             RPMComparison.id,
@@ -46,6 +53,13 @@ def rpm_comparisons(prefix='comparisons_', relationships=False):
     return filters
 
 def rpm_differences(prefix='differences_', relationships=False):
+    """Get filters for rpm differences.
+
+    :param string prefix: prefix of the name of the filter
+    :param bool relationships: True if relationship-related columns should be
+        included
+    :return dict: dict of filters
+    """
     filters = dict(
         **request_parser.equals(
             RPMDifference.id,
@@ -87,6 +101,14 @@ def rpm_differences(prefix='differences_', relationships=False):
     return filters
 
 def rpm_packages(table=RPMPackage, prefix='packages_', relationships=False):
+    """Get filters for rpm packages.
+
+    :param sqlalchemy.ext.declarative.api.declarativemeta table: database model
+    :param string prefix: prefix of the name of the filter
+    :param bool relationships: True if relationship-related columns should be
+        included
+    :return dict: dict of filters
+    """
     filters = dict(
         **request_parser.equals(
             table.id,
@@ -109,8 +131,13 @@ def rpm_packages(table=RPMPackage, prefix='packages_', relationships=False):
         ))
     return filters
 
-def rpm_repositories(table=RPMRepository, prefix='repositories_',
-                     relationships=False):
+def rpm_repositories(table=RPMRepository, prefix='repositories_'):
+    """Get filters for rpm repositories.
+
+    :param sqlalchemy.ext.declarative.api.declarativemeta table: database model
+    :param string prefix: prefix of the name of the filter
+    :return dict: dict of filters
+    """
     filters = dict(
         **request_parser.equals(
             table.id,
@@ -120,4 +147,3 @@ def rpm_repositories(table=RPMRepository, prefix='repositories_',
         **request_parser.equals(table.path, name=prefix + 'path'),
     )
     return filters
-

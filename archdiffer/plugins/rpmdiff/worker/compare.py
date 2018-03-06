@@ -9,9 +9,9 @@ import os
 from tempfile import mkdtemp
 from shutil import rmtree
 import subprocess
+from collections import defaultdict
 import dnf
 import rpm
-from collections import defaultdict
 from celery.signals import worker_process_init, worker_process_shutdown
 from .... import database
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage)
@@ -63,7 +63,7 @@ def download_packages(pkg):
         pkgs = pkgs.filter(version=pkg['version'])
 
     # Download the package
-    if len(pkgs) > 0:
+    if pkgs:
         print('Started package download: %s' % pkgs[0].name)
         base.conf.destdir = os.getcwd()
         base.repos.all().pkgdir = base.conf.destdir
@@ -104,7 +104,7 @@ def remove_old_versions(pkgs):
                 newest_pkg = pkg
         pkg_list.append(newest_pkg)
 
-    return pkg_list    
+    return pkg_list
 
 def make_tuples(original1, original2, pkgs1, pkgs2):
     """Make list of tuples from two lists of packages.

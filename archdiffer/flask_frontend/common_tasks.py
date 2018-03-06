@@ -20,9 +20,9 @@ def get_comparison_types():
     :return sqlalchemy.orm.query.Query: resulting query
     """
     ses = db_session()
-    comparison_types = ComparisonType.query(ses)
+    comp_types = ComparisonType.query(ses)
     ses.close()
-    return comparison_types
+    return comp_types
 
 comparison_types = get_comparison_types()
 

@@ -12,6 +12,11 @@ from . import request_parser
 
 # Functions for making sets of filters
 def comparisons(prefix='comparisons_'):
+    """Get filters for comparisons.
+
+    :param string prefix: prefix of the name of the filter
+    :return dict: dict of filters
+    """
     filters = dict(
         **request_parser.equals(
             Comparison.id,
@@ -30,6 +35,11 @@ def comparisons(prefix='comparisons_'):
     return filters
 
 def comparison_types(prefix='comparison_types_'):
+    """Get filters for comparison types.
+
+    :param string prefix: prefix of the name of the filter
+    :return dict: dict of filters
+    """
     filters = dict(
         **request_parser.equals(
             ComparisonType.id,

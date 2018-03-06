@@ -50,7 +50,7 @@ class Comparison(Base):
         :return Comparison: newly added Comparison
         """
         comparison = Comparison(
-            comparison_type_id = comparison_type_id, state=state
+            comparison_type_id=comparison_type_id, state=state
         )
         ses.add(comparison)
         ses.commit()
@@ -66,7 +66,7 @@ class Comparison(Base):
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(Comparison, ComparisonType).filter(
-            Comparison.comparison_type_id==ComparisonType.id
+            Comparison.comparison_type_id == ComparisonType.id
         ).order_by(Comparison.id)
         if modifiers is not None:
             query = modify_query(query, modifiers)
@@ -77,7 +77,7 @@ class Comparison(Base):
         """Get Comparison id from line.
 
         :param line: named tuple (one item of query result) containing
-            Comparison 
+            Comparison
         :return int: Comparison id
         """
         return line.Comparison.id

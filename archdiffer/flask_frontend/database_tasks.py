@@ -14,12 +14,8 @@ from .common_tasks import my_render_template
 from . import request_parser
 from . import filter_functions
 
-def get_pagination_modifiers():
-    args_dict = request_parser.parse_request(defaults={'limit':5, 'offset':0})
-    return request_parser.get_request_arguments('limit', 'offset', args_dict=args_dict)
-
 class TableDict(Resource):
-    """Show dict of given table."""
+    """Dict of given table."""
     filters = {}
 
     def table(self):
@@ -51,7 +47,7 @@ class TableDict(Resource):
         return dict(iter_query_result(self.make_query(), self.table()))
 
 class TableDictItem(TableDict):
-    """Show dict of one item of given table."""    
+    """Dict of one item of given table."""
     def get(self, id):
         """Get dict.
 
@@ -62,7 +58,7 @@ class TableDictItem(TableDict):
         return dict(iter_query_result(query, self.table()))
 
 class ComparisonsDict(TableDict):
-    """Show dict of comparisons."""
+    """Dict of comparisons."""
     filters = dict(
         **filter_functions.comparisons(prefix=''),
         **filter_functions.comparison_types()
@@ -76,10 +72,10 @@ class ComparisonsDict(TableDict):
         return Comparison
 
 class ComparisonsDictItem(ComparisonsDict, TableDictItem):
-    """Show dict of one item of comparisons."""
+    """Dict of one item of comparisons."""
 
 class ComparisonTypesDict(TableDict):
-    """Show dict of comparison_types."""
+    """Dict of comparison_types."""
     filters = filter_functions.comparison_types(prefix='')
 
     def table(self):
@@ -90,10 +86,10 @@ class ComparisonTypesDict(TableDict):
         return ComparisonType
 
 class ComparisonTypesDictItem(ComparisonTypesDict, TableDictItem):
-    """Show dict of one item of comparison_types."""
+    """Dict of one item of comparison_types."""
 
 class ComparisonsView(ComparisonsDict):
-    """Show comparisons."""
+    """View of omparisons."""
     def modifiers(self, limit=5, offset=0):
         """Get modifiers from request arguments.
 
@@ -112,7 +108,7 @@ class ComparisonsView(ComparisonsDict):
         comps = dict(iter_query_result(query, Comparison))
 
         return my_render_template(
-            'show_comparisons.html', 
+            'show_comparisons.html',
             comparisons=comps,
             items_count=items_count,
             limit=self.modifiers()['limit'],
@@ -122,7 +118,7 @@ class ComparisonsView(ComparisonsDict):
         )
 
 class ComparisonTypesView(ComparisonTypesDict):
-    """Show comparison types."""
+    """View of comparison types."""
     def modifiers(self, limit=5, offset=0):
         """Get modifiers from request arguments.
 

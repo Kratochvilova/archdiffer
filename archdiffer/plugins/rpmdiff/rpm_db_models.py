@@ -108,7 +108,7 @@ class RPMComparison(BaseExported, Base):
             id_group = comparison.id
 
         rpm_comparison = RPMComparison(
-            id_group = id_group,
+            id_group=id_group,
             pkg1_id=rpm_package1.id,
             pkg2_id=rpm_package2.id,
             state=constants.STATE_NEW,
@@ -147,7 +147,7 @@ class RPMComparison(BaseExported, Base):
         """Get RPMComparison id from line.
 
         :param line: named tuple (one item of query result) containing
-            RPMComparison 
+            RPMComparison
         :return int: RPMComparison id
         """
         return line.RPMComparison.id
@@ -186,13 +186,17 @@ class RPMComparison(BaseExported, Base):
         """
         return RPMComparison.query(ses).count()
 
+    @staticmethod
     def comparisons_query(ses, modifiers=None, outer_modifiers=None):
         """Query Comparison outer-joined with RPMComparison and its packages
         and their repositories.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values;
+            will be applied before the outerjoin
+        :param dict outer_modifiers: dict of modifiers and their values;
+            will be applied after the outerjoin
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(Comparison, ComparisonType).filter(
@@ -218,6 +222,7 @@ class RPMComparison(BaseExported, Base):
 
         return query
 
+    @staticmethod
     def comparisons_id_from_line(line):
         """Get Comparison id from line.
 
@@ -227,6 +232,7 @@ class RPMComparison(BaseExported, Base):
         """
         return line.Comparison.id
 
+    @staticmethod
     def comparisons_dict_from_line(line):
         """Get dict from line.
 
@@ -249,7 +255,7 @@ class RPMComparison(BaseExported, Base):
         :return int: number of comparisons of COMPARISON_TYPE type
         """
         return Comparison.query(ses).filter(
-            ComparisonType.name==constants.COMPARISON_TYPE
+            ComparisonType.name == constants.COMPARISON_TYPE
         ).count()
 
 class RPMDifference(BaseExported, Base):
@@ -329,7 +335,10 @@ class RPMDifference(BaseExported, Base):
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values
+        :param dict modifiers: dict of modifiers and their values;
+            will be applied before the outerjoin
+        :param dict outer_modifiers: dict of modifiers and their values;
+            will be applied after the outerjoin
         :return sqlalchemy.orm.query.Query: query
         """
         query = RPMComparison.query(ses, modifiers=modifiers)

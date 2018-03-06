@@ -15,7 +15,7 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
 from .. import constants
 from ....database import Comparison, ComparisonType, modify_query
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.database_tasks import get_pagination_modifiers, TableDict, TableDictItem
+from ....flask_frontend.database_tasks import TableDict, TableDictItem
 from ....flask_frontend import filter_functions as app_filter_functions
 from ....flask_frontend import request_parser
 from . import filter_functions
@@ -42,7 +42,7 @@ def record_params(setup_state):
     )
 
 class RPMTableDict(TableDict):
-    """Show dict of given table."""
+    """Dict of given table."""
     def get(self):
         """Get dict.
 
@@ -51,7 +51,7 @@ class RPMTableDict(TableDict):
         return dict(iter_query_result(self.make_query(), self.table()))
 
 class RPMTableDictItem(TableDictItem):
-    """Show dict of one item of given table."""    
+    """Dict of one item of given table."""
     def get(self, id):
         """Get dict.
 
@@ -61,17 +61,20 @@ class RPMTableDictItem(TableDictItem):
         query = self.make_query().filter(self.table().id == id)
         return dict(iter_query_result(query, self.table()))
 
-class RPMTableDictOuter(RPMTableDict):    
+class RPMTableDictOuter(RPMTableDict):
+    """Dict of given table, implementing outer modifiers."""
     def modifiers(self):
-        """Get modifiers from request arguments.
+        """Get modifiers from request arguments, only limit and offset.
 
         :return dict: modifiers
         """
         modifiers = request_parser.parse_request(filters=self.filters)
-        return request_parser.get_request_arguments('limit', 'offset', args_dict=modifiers)
+        return request_parser.get_request_arguments(
+            'limit', 'offset', args_dict=modifiers
+        )
 
     def outer_modifiers(self):
-        """Get modifiers from request arguments.
+        """Get modifiers from request arguments, exclude limit and offset.
 
         :return dict: modifiers
         """
@@ -87,7 +90,8 @@ class RPMTableDictOuter(RPMTableDict):
         return modifiers
 
     def make_query(self):
-        """Call query method on the table with modifiers as argument.
+        """Call query method on the table with modifiers and outer_modifiers
+        as arguments.
 
         :return sqlalchemy.orm.query.Query result: query
         """
@@ -98,7 +102,7 @@ class RPMTableDictOuter(RPMTableDict):
         )
 
 class GroupsDict(RPMTableDictOuter):
-    """Show dict of comparison groups."""
+    """Dict of comparison groups."""
     filters = dict(
         **app_filter_functions.comparisons(prefix=''),
         **filter_functions.rpm_comparisons(prefix='comparisons_'),
@@ -109,14 +113,15 @@ class GroupsDict(RPMTableDictOuter):
     )
 
     def table(self):
-        """Get RPMComparison table.
+        """Get Comparison table.
 
-        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMComparison
+        :return sqlalchemy.ext.declarative.api.declarativemeta: Comparison
         """
         return Comparison
 
     def make_query(self):
-        """Call query method on the table with modifiers as argument.
+        """Call query method on the table with modifiers and outer_modifiers
+        as arguments.
 
         :return sqlalchemy.orm.query.Query result: query
         """
@@ -127,10 +132,10 @@ class GroupsDict(RPMTableDictOuter):
         )
 
 class GroupsDictItem(GroupsDict, RPMTableDictItem):
-    """Show dict of one comparison group."""
+    """Dict of one comparison group."""
 
 class RPMComparisonsDict(RPMTableDict):
-    """Show dict of rpm comparisons."""
+    """Dict of rpm comparisons."""
     filters = dict(
         **filter_functions.rpm_comparisons(prefix=''),
         **app_filter_functions.comparisons(prefix='groups_'),
@@ -148,10 +153,10 @@ class RPMComparisonsDict(RPMTableDict):
         return RPMComparison
 
 class RPMComparisonsDictItem(RPMComparisonsDict, RPMTableDictItem):
-    """Show dict of one rpm comparison."""
+    """Dict of one rpm comparison."""
 
 class RPMDifferencesDict(RPMTableDictOuter):
-    """Show dict of rpm differences."""
+    """Dict of rpm differences."""
     filters = dict(
         **RPMComparisonsDict.filters.copy(),
         **filter_functions.rpm_differences(),
@@ -165,7 +170,7 @@ class RPMDifferencesDict(RPMTableDictOuter):
         return RPMDifference
 
 class RPMDifferencesDictItem(RPMDifferencesDict, RPMTableDictItem):
-    """Show dict of rpm differences of one rpm comparison."""
+    """Dict of rpm differences of one rpm comparison."""
     def get(self, id):
         """Get dict.
 
@@ -176,7 +181,7 @@ class RPMDifferencesDictItem(RPMDifferencesDict, RPMTableDictItem):
         return dict(iter_query_result(query, self.table()))
 
 class RPMPackagesDict(RPMTableDict):
-    """Show dict of rpm packages."""
+    """Dict of rpm packages."""
     filters = dict(
         **filter_functions.rpm_packages(prefix=''),
         **filter_functions.rpm_repositories(),
@@ -190,10 +195,10 @@ class RPMPackagesDict(RPMTableDict):
         return RPMPackage
 
 class RPMPackagesDictItem(RPMPackagesDict, RPMTableDictItem):
-    """Show dict of one rpm package."""
+    """Dict of one rpm package."""
 
 class RPMRepositoriesDict(RPMTableDict):
-    """Show dict of rpm repositories."""
+    """Dict of rpm repositories."""
     filters = dict(**filter_functions.rpm_repositories(prefix=''))
 
     def table(self):
@@ -204,7 +209,7 @@ class RPMRepositoriesDict(RPMTableDict):
         return RPMRepository
 
 class RPMRepositoriesDictItem(RPMRepositoriesDict, RPMTableDictItem):
-    """Show dict of one rpm repository."""
+    """Dict of one rpm repository."""
 
 flask_api.add_resource(GroupsDict, '/rest/groups')
 flask_api.add_resource(GroupsDictItem, '/rest/groups/<int:id>')
@@ -222,12 +227,14 @@ flask_api.add_resource(RPMRepositoriesDictItem, '/rest/repositories/<int:id>')
 @bp.route('/')
 def index():
     """Show index page."""
-    modifiers = get_pagination_modifiers()
+    modifiers = request_parser.get_pagination_modifiers(
+        defaults={'limit': 5, 'offset': 0}
+    )
     query = RPMComparison.comparisons_query(g.db_session, modifiers)
     comps = dict(iter_query_result(query, Comparison))
     items_count = RPMComparison.comparisons_count(g.db_session)
     return my_render_template(
-        'rpm_show_index.html', 
+        'rpm_show_index.html',
         comparisons=comps,
         items_count=items_count,
         limit=modifiers['limit'],
@@ -239,7 +246,9 @@ def index():
 @bp.route('/comparisons')
 def show_comparisons():
     """Show all comparisons."""
-    modifiers = get_pagination_modifiers()
+    modifiers = request_parser.get_pagination_modifiers(
+        defaults={'limit': 5, 'offset': 0}
+    )
     query = RPMComparison.comparisons_query(g.db_session, modifiers)
     comps = dict(iter_query_result(query, Comparison))
     items_count = RPMComparison.comparisons_count(g.db_session)
@@ -264,7 +273,9 @@ def show_group(id_group):
     
     :param int id_group: id of the group
     """
-    modifiers = get_pagination_modifiers()
+    modifiers = request_parser.get_pagination_modifiers(
+        defaults={'limit': 5, 'offset': 0}
+    )
     query = RPMComparison.comparisons_query(g.db_session)
     query = query.filter(
         ComparisonType.name == constants.COMPARISON_TYPE,
@@ -284,7 +295,9 @@ def show_group(id_group):
 @bp.route('/groups')
 def show_groups():
     """Show all rpm comparisons."""
-    modifiers = get_pagination_modifiers()
+    modifiers = request_parser.get_pagination_modifiers(
+        defaults={'limit': 5, 'offset': 0}
+    )
     query = RPMComparison.comparisons_query(g.db_session, modifiers)
     query = query.filter(ComparisonType.name == constants.COMPARISON_TYPE)
     comps = dict(iter_query_result(query, Comparison))
@@ -338,7 +351,9 @@ def show_packages_name(name):
 
     :param string name: package name
     """
-    modifiers = get_pagination_modifiers()
+    modifiers = request_parser.get_pagination_modifiers(
+        defaults={'limit': 5, 'offset': 0}
+    )
     query = RPMPackage.query(g.db_session)
     query = query.filter(RPMPackage.name == name)
     items_count = query.count()
@@ -357,7 +372,9 @@ def show_packages_name(name):
 @bp.route('/packages')
 def show_packages():
     """Show all rpm packages."""
-    modifiers = get_pagination_modifiers()
+    modifiers = request_parser.get_pagination_modifiers(
+        defaults={'limit': 5, 'offset': 0}
+    )
     query = RPMPackage.query(g.db_session)
     query = modify_query(query, modifiers)
     pkgs = dict(iter_query_result(query, RPMPackage))
@@ -394,7 +411,9 @@ def show_repository(repo_id):
 @bp.route('/repositories')
 def show_repositories():
     """Show all rpm repositories."""
-    modifiers = get_pagination_modifiers()
+    modifiers = request_parser.get_pagination_modifiers(
+        defaults={'limit': 5, 'offset': 0}
+    )
     query = RPMRepository.query(g.db_session)
     query = modify_query(query, modifiers)
     repos = dict(iter_query_result(query, RPMRepository))
@@ -414,7 +433,7 @@ def add_entry():
     """Add request for comparison of two rpm packages."""
     if 'openid' not in flask_session:
         abort(401)
-    pkg1 = {
+    pkg1_dict = {
         'name': request.form['name1'],
         'arch': request.form['arch1'],
         'epoch': request.form['epoch1'],
@@ -422,7 +441,7 @@ def add_entry():
         'release': request.form['release1'],
         'repository': request.form['repo1'],
     }
-    pkg2 = {
+    pkg2_dict = {
         'name': request.form['name2'],
         'arch': request.form['arch2'],
         'epoch': request.form['epoch2'],
@@ -431,7 +450,7 @@ def add_entry():
         'repository': request.form['repo2'],
     }
     celery_app.send_task(
-        'rpmdiff.compare', args=(pkg1, pkg2)
+        'rpmdiff.compare', args=(pkg1_dict, pkg2_dict)
     )
     flash('New entry was successfully posted')
     return redirect(url_for('rpmdiff.index'))

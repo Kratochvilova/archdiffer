@@ -89,20 +89,22 @@ def equals(column, name='id', function=(lambda x: x)):
     return {name: (column, operator.eq, function)}
 
 # Request parser
-def parse_request(filters={}, defaults={}):
+def parse_request(filters=None, defaults=None):
     """Parse arguments in request according to the _TRANSFORMATIONS or given
     filters.
     Requests containing other keys are considered invalid.
 
     :param dict filters: dict of filter templates containing for each key
         (column, operator, function transforming value from request argument)
-    :param bool pagination: if True pagination modifiers are used even if not
-        specified in request
+    :param dict defaults: default values of modifiers
     :return dict: dict of parsed arguments
     :raises werkzeug.exceptions.BadRequest: if one of the request arguments is
         not recognized
     """
-    args_dict = defaults.copy()
+    if filters is None:
+        filters = {}
+    if defaults is not None:
+        args_dict = defaults.copy()
     filters_list = []
 
     for key, value in request.args.items():
@@ -131,3 +133,13 @@ def get_request_arguments(*names, args_dict=None):
     if args_dict is None:
         args_dict = parse_request()
     return {k:v for k, v in args_dict.items() if k in names}
+
+
+def get_pagination_modifiers(defaults=None):
+    """Get modifiers limit and offset.
+
+    :param dict defaults: default values of the modifiers
+    :return dict: dict of modifiers
+    """
+    args_dict = parse_request(defaults=defaults)
+    return get_request_arguments('limit', 'offset', args_dict=args_dict)
