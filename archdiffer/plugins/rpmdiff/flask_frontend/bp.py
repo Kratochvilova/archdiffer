@@ -7,15 +7,18 @@ Created on Sat Sep 16 22:54:57 2017
 
 from flask import Blueprint, abort, request, flash, redirect, url_for, g
 from flask import session as flask_session
-from flask_restful import Api, Resource
+from flask_restful import Api
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
-                             RPMRepository, iter_query_result)
+                             RPMRepository, pkg1, pkg2, repo1, repo2,
+                             iter_query_result)
 from .. import constants
 from ....database import Comparison, ComparisonType, modify_query
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.request_parser import parse_request
-from ....flask_frontend.database_tasks import get_pagination_modifiers
+from ....flask_frontend.database_tasks import get_pagination_modifiers, TableDict, TableDictItem
+from ....flask_frontend import filter_functions as app_filter_functions
+from ....flask_frontend import request_parser
+from . import filter_functions
 
 celery_app = Celery(broker='pyamqp://localhost', )
 
@@ -37,6 +40,184 @@ def record_params(setup_state):
     bp.config = dict(
         [(key, value) for (key, value) in app.config.items()]
     )
+
+class RPMTableDict(TableDict):
+    """Show dict of given table."""
+    def get(self):
+        """Get dict.
+
+        :return dict: dict of the resulting query
+        """
+        return dict(iter_query_result(self.make_query(), self.table()))
+
+class RPMTableDictItem(TableDictItem):
+    """Show dict of one item of given table."""    
+    def get(self, id):
+        """Get dict.
+
+        :param int id: id of item from the table
+        :return dict: dict of the resulting query
+        """
+        query = self.make_query().filter(self.table().id == id)
+        return dict(iter_query_result(query, self.table()))
+
+class RPMTableDictOuter(RPMTableDict):    
+    def modifiers(self):
+        """Get modifiers from request arguments.
+
+        :return dict: modifiers
+        """
+        modifiers = request_parser.parse_request(filters=self.filters)
+        return request_parser.get_request_arguments('limit', 'offset', args_dict=modifiers)
+
+    def outer_modifiers(self):
+        """Get modifiers from request arguments.
+
+        :return dict: modifiers
+        """
+        modifiers = request_parser.parse_request(filters=self.filters)
+        try:
+            modifiers.pop('limit')
+        except KeyError:
+            pass
+        try:
+            modifiers.pop('offset')
+        except KeyError:
+            pass
+        return modifiers
+
+    def make_query(self):
+        """Call query method on the table with modifiers as argument.
+
+        :return sqlalchemy.orm.query.Query result: query
+        """
+        return self.table().query(
+            g.db_session,
+            modifiers=self.modifiers(),
+            outer_modifiers=self.outer_modifiers()
+        )
+
+class GroupsDict(RPMTableDictOuter):
+    """Show dict of comparison groups."""
+    filters = dict(
+        **app_filter_functions.comparisons(prefix=''),
+        **filter_functions.rpm_comparisons(prefix='comparisons_'),
+        **filter_functions.rpm_packages(table=pkg1, prefix='pkg1_'),
+        **filter_functions.rpm_packages(table=pkg2, prefix='pkg2_'),
+        **filter_functions.rpm_repositories(table=repo1, prefix='repo1_'),
+        **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
+    )
+
+    def table(self):
+        """Get RPMComparison table.
+
+        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMComparison
+        """
+        return Comparison
+
+    def make_query(self):
+        """Call query method on the table with modifiers as argument.
+
+        :return sqlalchemy.orm.query.Query result: query
+        """
+        return RPMComparison.comparisons_query(
+            g.db_session,
+            modifiers=self.modifiers(),
+            outer_modifiers=self.outer_modifiers()
+        )
+
+class GroupsDictItem(GroupsDict, RPMTableDictItem):
+    """Show dict of one comparison group."""
+
+class RPMComparisonsDict(RPMTableDict):
+    """Show dict of rpm comparisons."""
+    filters = dict(
+        **filter_functions.rpm_comparisons(prefix=''),
+        **app_filter_functions.comparisons(prefix='groups_'),
+        **filter_functions.rpm_packages(table=pkg1, prefix='pkg1_'),
+        **filter_functions.rpm_packages(table=pkg2, prefix='pkg2_'),
+        **filter_functions.rpm_repositories(table=repo1, prefix='repo1_'),
+        **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
+    )
+
+    def table(self):
+        """Get RPMComparison table.
+
+        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMComparison
+        """
+        return RPMComparison
+
+class RPMComparisonsDictItem(RPMComparisonsDict, RPMTableDictItem):
+    """Show dict of one rpm comparison."""
+
+class RPMDifferencesDict(RPMTableDictOuter):
+    """Show dict of rpm differences."""
+    filters = dict(
+        **RPMComparisonsDict.filters.copy(),
+        **filter_functions.rpm_differences(),
+    )
+
+    def table(self):
+        """Get RPMDifference table.
+
+        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMDifference
+        """
+        return RPMDifference
+
+class RPMDifferencesDictItem(RPMDifferencesDict, RPMTableDictItem):
+    """Show dict of rpm differences of one rpm comparison."""
+    def get(self, id):
+        """Get dict.
+
+        :param int id: RPMComparison id
+        :return dict: dict of the resulting query
+        """
+        query = self.make_query().filter(RPMComparison.id == id)
+        return dict(iter_query_result(query, self.table()))
+
+class RPMPackagesDict(RPMTableDict):
+    """Show dict of rpm packages."""
+    filters = dict(
+        **filter_functions.rpm_packages(prefix=''),
+        **filter_functions.rpm_repositories(),
+    )
+
+    def table(self):
+        """Get RPMPackage table.
+
+        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMPackage
+        """
+        return RPMPackage
+
+class RPMPackagesDictItem(RPMPackagesDict, RPMTableDictItem):
+    """Show dict of one rpm package."""
+
+class RPMRepositoriesDict(RPMTableDict):
+    """Show dict of rpm repositories."""
+    filters = dict(**filter_functions.rpm_repositories(prefix=''))
+
+    def table(self):
+        """Get RPMRepository table.
+
+        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMRepository
+        """
+        return RPMRepository
+
+class RPMRepositoriesDictItem(RPMRepositoriesDict, RPMTableDictItem):
+    """Show dict of one rpm repository."""
+
+flask_api.add_resource(GroupsDict, '/rest/groups')
+flask_api.add_resource(GroupsDictItem, '/rest/groups/<int:id>')
+flask_api.add_resource(RPMComparisonsDict, '/rest/comparisons')
+flask_api.add_resource(
+    RPMComparisonsDictItem, '/rest/comparisons/<int:id>'
+)
+flask_api.add_resource(RPMDifferencesDict, '/rest/differences')
+flask_api.add_resource(RPMDifferencesDictItem, '/rest/differences/<int:id>')
+flask_api.add_resource(RPMPackagesDict, '/rest/packages')
+flask_api.add_resource(RPMPackagesDictItem, '/rest/packages/<int:id>')
+flask_api.add_resource(RPMRepositoriesDict, '/rest/repositories')
+flask_api.add_resource(RPMRepositoriesDictItem, '/rest/repositories/<int:id>')
 
 @bp.route('/')
 def index():
@@ -254,72 +435,3 @@ def add_entry():
     )
     flash('New entry was successfully posted')
     return redirect(url_for('rpmdiff.index'))
-
-# Resources
-def table_by_string(string_table):
-    """Convert string to corresponding class.
-
-    :param string string_table: shortened name of the table
-    :return: class of the corresponding table
-    """
-    if string_table == "groups":
-        return Comparison
-    if string_table == "comparisons":
-        return RPMComparison
-    if string_table == "differences":
-        return RPMDifference
-    if string_table == "packages":
-        return RPMPackage
-    if string_table == "repositories":
-        return RPMRepository
-
-class ShowRPMTable(Resource):
-    """Show dict of given table."""
-    def get(self, string_table):
-        """Get dict.
-
-        :param string string_table: shortened name of the table
-        :return dict: dict of the resulting query
-        """
-        table = table_by_string(string_table)
-        modifiers = parse_request()
-        if table == Comparison:
-            query = RPMComparison.comparisons_query(
-                g.db_session, modifiers=modifiers
-            )
-        else:
-            query = table.query(g.db_session, modifiers=modifiers)
-        return dict(iter_query_result(query, table))
-
-class ShowRPMTableItem(Resource):
-    """Show dict of one item of given table."""
-    def shown_table(self, table):
-        """Determine which table's id is filtered by.
-
-        :param table: class of the table"""
-        if table == RPMDifference:
-            return RPMComparison
-        return table
-
-    def get(self, string_table, id):
-        """Get dict.
-
-        :param string string_table: shortened name of the table
-        :param int id: id of item from the table
-        :return dict: dict of the resulting query
-        """
-        table = table_by_string(string_table)
-        modifiers = parse_request()
-        if table == Comparison:
-            query = RPMComparison.comparisons_query(
-                g.db_session, modifiers=modifiers
-            )
-        else:
-            query = table.query(g.db_session, modifiers=modifiers)
-        query = query.filter(self.shown_table(table).id == id)
-        return dict(iter_query_result(query, table))
-
-flask_api.add_resource(ShowRPMTable, '/rest/<string:string_table>')
-flask_api.add_resource(
-    ShowRPMTableItem, '/rest/<string:string_table>/<int:id>'
-)

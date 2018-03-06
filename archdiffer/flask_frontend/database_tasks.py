@@ -10,9 +10,9 @@ from flask import g
 from flask_restful import Resource
 from .flask_app import flask_app, flask_api
 from ..database import Comparison, ComparisonType, iter_query_result
-from .. import constants
 from .common_tasks import my_render_template
 from . import request_parser
+from . import filter_functions
 
 def get_pagination_modifiers():
     args_dict = request_parser.parse_request(defaults={'limit':5, 'offset':0})
@@ -20,6 +20,8 @@ def get_pagination_modifiers():
 
 class TableDict(Resource):
     """Show dict of given table."""
+    filters = {}
+
     def table(self):
         """Get table.
 
@@ -32,7 +34,7 @@ class TableDict(Resource):
 
         :return dict: modifiers
         """
-        return request_parser.parse_request()
+        return request_parser.parse_request(filters=self.filters)
 
     def make_query(self):
         """Call query method on the table with modifiers as argument.
@@ -62,26 +64,8 @@ class TableDictItem(TableDict):
 class ComparisonsDict(TableDict):
     """Show dict of comparisons."""
     filters = dict(
-        **request_parser.equals(
-            Comparison.id,
-            function=(lambda x: int(x))
-        ),
-        **request_parser.equals(
-            Comparison.state,
-            name='state',
-            function=(lambda x: constants.STATE_STRINGS.get(x))
-        ),
-        **request_parser.equals(
-            ComparisonType.id,
-            name='comparison_type_id',
-            function=(lambda x: int(x))
-        ),
-        **request_parser.equals(
-            ComparisonType.name, name='comparison_type_name'
-        ),
-        **request_parser.time(Comparison.time),
-        **request_parser.before(Comparison.time),
-        **request_parser.after(Comparison.time),
+        **filter_functions.comparisons(prefix=''),
+        **filter_functions.comparison_types()
     )
 
     def table(self):
@@ -91,22 +75,12 @@ class ComparisonsDict(TableDict):
         """
         return Comparison
 
-    def modifiers(self):
-        """Get modifiers from request arguments.
-
-        :return dict: modifiers
-        """
-        return request_parser.parse_request(filters=self.filters)
-
 class ComparisonsDictItem(ComparisonsDict, TableDictItem):
     """Show dict of one item of comparisons."""
 
 class ComparisonTypesDict(TableDict):
     """Show dict of comparison_types."""
-    filters = dict(
-        **request_parser.equals(ComparisonType.id),
-        **request_parser.equals(ComparisonType.name, name='name'),
-    )
+    filters = filter_functions.comparison_types(prefix='')
 
     def table(self):
         """Get ComparisonType table.
@@ -114,13 +88,6 @@ class ComparisonTypesDict(TableDict):
         :return sqlalchemy.ext.declarative.api.declarativemeta: ComparisonType
         """
         return ComparisonType
-
-    def modifiers(self):
-        """Get modifiers from request arguments.
-
-        :return dict: modifiers
-        """
-        return request_parser.parse_request(filters=self.filters)
 
 class ComparisonTypesDictItem(ComparisonTypesDict, TableDictItem):
     """Show dict of one item of comparison_types."""

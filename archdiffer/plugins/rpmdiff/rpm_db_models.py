@@ -127,11 +127,6 @@ class RPMComparison(BaseExported, Base):
         :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
-        pkg1 = aliased(RPMPackage, name='pkg1')
-        pkg2 = aliased(RPMPackage, name='pkg2')
-        repo1 = aliased(RPMRepository, name='repo1')
-        repo2 = aliased(RPMRepository, name='repo2')
-
         query = ses.query(
             RPMComparison, Comparison, pkg1, pkg2, repo1, repo2
         ).filter(
@@ -144,7 +139,7 @@ class RPMComparison(BaseExported, Base):
             RPMComparison.id
         )
         if modifiers is not None:
-            query = modify_query(query, modifiers).from_self()
+            query = modify_query(query, modifiers)
         return query
 
     @staticmethod
@@ -191,7 +186,7 @@ class RPMComparison(BaseExported, Base):
         """
         return RPMComparison.query(ses).count()
 
-    def comparisons_query(ses, modifiers=None):
+    def comparisons_query(ses, modifiers=None, outer_modifiers=None):
         """Query Comparison outer-joined with RPMComparison and its packages
         and their repositories.
 
@@ -200,11 +195,6 @@ class RPMComparison(BaseExported, Base):
         :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
-        pkg1 = aliased(RPMPackage, name='pkg1')
-        pkg2 = aliased(RPMPackage, name='pkg2')
-        repo1 = aliased(RPMRepository, name='repo1')
-        repo2 = aliased(RPMRepository, name='repo2')
-
         query = ses.query(Comparison, ComparisonType).filter(
             ComparisonType.name == constants.COMPARISON_TYPE
         )
@@ -223,6 +213,8 @@ class RPMComparison(BaseExported, Base):
         ).order_by(
             Comparison.id
         )
+        if outer_modifiers is not None:
+            query = modify_query(query, outer_modifiers)
 
         return query
 
@@ -331,7 +323,7 @@ class RPMDifference(BaseExported, Base):
         return difference
 
     @staticmethod
-    def query(ses, modifiers=None):
+    def query(ses, modifiers=None, outer_modifiers=None):
         """Query RPMComparison joined with its packages and their repositories,
         outer-joined with RPMDifference.
 
@@ -346,6 +338,9 @@ class RPMDifference(BaseExported, Base):
         ).order_by(
             RPMComparison.id
         )
+        if outer_modifiers is not None:
+            query = modify_query(query, outer_modifiers)
+
         return query
 
     @staticmethod
@@ -496,7 +491,7 @@ class RPMPackage(BaseExported, Base):
             RPMPackage.id_repo == RPMRepository.id
         ).order_by(RPMPackage.id)
         if modifiers is not None:
-            query = modify_query(query, modifiers).from_self()
+            query = modify_query(query, modifiers)
         return query
 
     @staticmethod
@@ -577,7 +572,7 @@ class RPMRepository(BaseExported, Base):
         """
         query = ses.query(RPMRepository).order_by(RPMRepository.id)
         if modifiers is not None:
-            query = modify_query(query, modifiers).from_self()
+            query = modify_query(query, modifiers)
         return query
 
     @staticmethod
@@ -636,3 +631,8 @@ def iter_query_result(result, table):
     return general_iter_query_result(
         result, group_id, group_dict, line_dict=line_dict, name=name
     )
+
+pkg1 = aliased(RPMPackage, name='pkg1')
+pkg2 = aliased(RPMPackage, name='pkg2')
+repo1 = aliased(RPMRepository, name='repo1')
+repo2 = aliased(RPMRepository, name='repo2')

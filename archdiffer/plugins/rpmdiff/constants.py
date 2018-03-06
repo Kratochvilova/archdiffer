@@ -12,7 +12,9 @@ STATE_NEW = 0
 STATE_DONE = 1
 STATE_STRINGS = {
     STATE_NEW: 'new',
+    'new': STATE_NEW,
     STATE_DONE: 'done',
+    'done': STATE_DONE,
 }
 
 CATEGORY_TAGS = 0
@@ -20,8 +22,11 @@ CATEGORY_PRCO = 1
 CATEGORY_FILES = 2
 CATEGORY_STRINGS = {
     CATEGORY_TAGS: 'tags',
+    'tags': CATEGORY_TAGS,
     CATEGORY_PRCO: 'PRCO',
+    'PRCO': CATEGORY_PRCO,
     CATEGORY_FILES: 'files',
+    'files': CATEGORY_FILES,
 }
 
 DIFF_TYPE_REMOVED = 0
@@ -30,9 +35,13 @@ DIFF_TYPE_CHANGED = 2
 DIFF_TYPE_RENAMED = 3
 DIFF_TYPE_STRINGS = {
     DIFF_TYPE_REMOVED: 'removed',
+    'removed': DIFF_TYPE_REMOVED,
     DIFF_TYPE_ADDED: 'added',
+    'added': DIFF_TYPE_ADDED,
     DIFF_TYPE_CHANGED: 'changed',
+    'changed': DIFF_TYPE_CHANGED,
     DIFF_TYPE_RENAMED: 'renamed',
+    'renamed': DIFF_TYPE_RENAMED,
 }
 
 DIFF_STATE_NORMAL = 0
@@ -41,9 +50,13 @@ DIFF_STATE_OK = 2
 DIFF_STATE_NOK = 3
 DIFF_STATE_STRINGS = {
     DIFF_STATE_NORMAL: 'normal',
+    'normal': DIFF_STATE_NORMAL,
     DIFF_STATE_HIDDEN: 'hidden',
+    'hidden': DIFF_STATE_HIDDEN,
     DIFF_STATE_OK: 'ok',
+    'ok': DIFF_STATE_OK,
     DIFF_STATE_NOK: 'nok',
+    'nok': DIFF_STATE_NOK,
 }
 
 TAGS = ('NAME', 'SUMMARY', 'DESCRIPTION', 'GROUP', 'LICENSE', 'URL',
