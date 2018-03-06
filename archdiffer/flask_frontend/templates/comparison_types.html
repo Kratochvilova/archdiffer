@@ -1,0 +1,7 @@
+<div class="plugins">
+  <ul>
+    {% for type in comparison_types %}
+      <li><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></li>
+    {% endfor %}
+  </ul>
+</div>

@@ -1,10 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-  <div class="plugins">
-    <ul>
-      {% for type in comparison_types %}
-        <li><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></li>
-      {% endfor %}
-    </ul>
-  </div>
+  {% include 'pagination.html' %}
+  {% include 'comparison_types.html' %}
+  {% include 'pagination.html' %}
 {% endblock %}
