@@ -16,7 +16,8 @@ from . import filter_functions
 
 class TableDict(Resource):
     """Dict of given table."""
-    filters = {}
+    filters = None
+    default_modifiers = None
 
     def table(self):
         """Get table.
@@ -30,7 +31,9 @@ class TableDict(Resource):
 
         :return dict: modifiers
         """
-        return request_parser.parse_request(filters=self.filters)
+        return request_parser.parse_request(
+            filters=self.filters, defaults=self.default_modifiers
+        )
 
     def make_query(self):
         """Call query method on the table with modifiers as argument.
@@ -85,21 +88,9 @@ class ComparisonTypesDict(TableDict):
         """
         return ComparisonType
 
-class ComparisonTypesDictItem(ComparisonTypesDict, TableDictItem):
-    """Dict of one item of comparison_types."""
-
 class ComparisonsView(ComparisonsDict):
-    """View of omparisons."""
-    def modifiers(self, limit=5, offset=0):
-        """Get modifiers from request arguments.
-
-        :param int limit: default value for limit
-        :param int offset: default value for offset
-        :return dict: modifiers
-        """
-        return request_parser.parse_request(
-            filters=self.filters, defaults={'limit': limit, 'offset': offset}
-        )
+    """View of comparisons."""
+    default_modifiers = {'limit': 5, 'offset': 0}
 
     def dispatch_request(self):
         """Render template."""
@@ -119,16 +110,7 @@ class ComparisonsView(ComparisonsDict):
 
 class ComparisonTypesView(ComparisonTypesDict):
     """View of comparison types."""
-    def modifiers(self, limit=5, offset=0):
-        """Get modifiers from request arguments.
-
-        :param int limit: default value for limit
-        :param int offset: default value for offset
-        :return dict: modifiers
-        """
-        return request_parser.parse_request(
-            filters=self.filters, defaults={'limit': limit, 'offset': offset}
-        )
+    default_modifiers = {'limit': 5, 'offset': 0}
 
     def dispatch_request(self):
         """Render template."""
