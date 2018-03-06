@@ -61,7 +61,9 @@ class RPMTableDictOuter(RPMTableDict):
 
         :return dict: modifiers
         """
-        modifiers = request_parser.parse_request(filters=self.filters)
+        modifiers = request_parser.parse_request(
+            filters=self.filters, defaults=self.default_modifiers
+        )
         return request_parser.get_request_arguments(
             'limit', 'offset', args_dict=modifiers
         )
