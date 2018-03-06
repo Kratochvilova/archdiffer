@@ -114,6 +114,14 @@ class ComparisonTypesView(ComparisonTypesDict):
 
     def dispatch_request(self):
         """Render template."""
+        return my_render_template(
+            'show_comparison_types.html',
+            items_count=ComparisonType.count(g.db_session),
+            limit=self.modifiers()['limit'],
+            offset=self.modifiers()['offset'],
+            endpoint='index',
+            arguments={},
+        )
         return my_render_template('show_comparison_types.html')
 
 flask_api.add_resource(ComparisonsDict, '/rest/comparisons')
