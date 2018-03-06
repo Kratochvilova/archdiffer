@@ -105,6 +105,8 @@ def parse_request(filters=None, defaults=None):
         filters = {}
     if defaults is not None:
         args_dict = defaults.copy()
+    else:
+        args_dict = {}
     filters_list = []
 
     for key, value in request.args.items():
