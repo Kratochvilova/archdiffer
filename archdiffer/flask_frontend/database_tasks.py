@@ -42,22 +42,15 @@ class TableDict(Resource):
         """
         return self.table().query(g.db_session, modifiers=self.modifiers())
 
-    def get(self):
+    def get(self, id=None):
         """Get dict.
 
+        :param int id: id to optionaly filter by
         :return dict: dict of the resulting query
         """
-        return dict(iter_query_result(self.make_query(), self.table()))
-
-class TableDictItem(TableDict):
-    """Dict of one item of given table."""
-    def get(self, id):
-        """Get dict.
-
-        :param int id: id of item from the table
-        :return dict: dict of the resulting query
-        """
-        query = self.make_query().filter(self.table().id == id)
+        query = self.make_query()
+        if id is not None:
+            query = query.filter(self.table().id == id)
         return dict(iter_query_result(query, self.table()))
 
 class ComparisonsDict(TableDict):
@@ -73,9 +66,6 @@ class ComparisonsDict(TableDict):
         :return sqlalchemy.ext.declarative.api.declarativemeta: Comparison
         """
         return Comparison
-
-class ComparisonsDictItem(ComparisonsDict, TableDictItem):
-    """Dict of one item of comparisons."""
 
 class ComparisonTypesDict(TableDict):
     """Dict of comparison_types."""
@@ -124,11 +114,13 @@ class ComparisonTypesView(ComparisonTypesDict):
         )
         return my_render_template('show_comparison_types.html')
 
-flask_api.add_resource(ComparisonsDict, '/rest/comparisons')
-flask_api.add_resource(ComparisonsDictItem, '/rest/comparisons/<int:id>')
-flask_api.add_resource(ComparisonTypesDict, '/rest/comparison_types')
 flask_api.add_resource(
-    ComparisonTypesDictItem, '/rest/comparison_types/<int:id>'
+    ComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
+)
+flask_api.add_resource(
+    ComparisonTypesDict,
+    '/rest/comparison_types',
+    '/rest/comparison_types/<int:id>'
 )
 flask_app.add_url_rule('/', view_func=ComparisonsView.as_view('index'))
 flask_app.add_url_rule(

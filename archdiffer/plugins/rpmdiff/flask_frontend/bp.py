@@ -15,7 +15,7 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
 from .. import constants
 from ....database import Comparison, ComparisonType, modify_query
 from ....flask_frontend.common_tasks import my_render_template
-from ....flask_frontend.database_tasks import TableDict, TableDictItem
+from ....flask_frontend.database_tasks import TableDict
 from ....flask_frontend import filter_functions as app_filter_functions
 from ....flask_frontend import request_parser
 from . import filter_functions
@@ -43,22 +43,15 @@ def record_params(setup_state):
 
 class RPMTableDict(TableDict):
     """Dict of given table."""
-    def get(self):
-        """Get dict.
-
-        :return dict: dict of the resulting query
-        """
-        return dict(iter_query_result(self.make_query(), self.table()))
-
-class RPMTableDictItem(TableDictItem):
-    """Dict of one item of given table."""
     def get(self, id):
         """Get dict.
 
-        :param int id: id of item from the table
+        :param int id: id to optionaly filter by
         :return dict: dict of the resulting query
         """
-        query = self.make_query().filter(self.table().id == id)
+        query = self.make_query()
+        if id is not None:
+            query = query.filter(self.table().id == id)
         return dict(iter_query_result(query, self.table()))
 
 class RPMTableDictOuter(RPMTableDict):
@@ -131,9 +124,6 @@ class GroupsDict(RPMTableDictOuter):
             outer_modifiers=self.outer_modifiers()
         )
 
-class GroupsDictItem(GroupsDict, RPMTableDictItem):
-    """Dict of one comparison group."""
-
 class RPMComparisonsDict(RPMTableDict):
     """Dict of rpm comparisons."""
     filters = dict(
@@ -152,9 +142,6 @@ class RPMComparisonsDict(RPMTableDict):
         """
         return RPMComparison
 
-class RPMComparisonsDictItem(RPMComparisonsDict, RPMTableDictItem):
-    """Dict of one rpm comparison."""
-
 class RPMDifferencesDict(RPMTableDictOuter):
     """Dict of rpm differences."""
     filters = dict(
@@ -169,15 +156,15 @@ class RPMDifferencesDict(RPMTableDictOuter):
         """
         return RPMDifference
 
-class RPMDifferencesDictItem(RPMDifferencesDict, RPMTableDictItem):
-    """Dict of rpm differences of one rpm comparison."""
     def get(self, id):
         """Get dict.
 
         :param int id: RPMComparison id
         :return dict: dict of the resulting query
         """
-        query = self.make_query().filter(RPMComparison.id == id)
+        query = self.make_query()
+        if id is not None:
+            query = query.filter(RPMComparison.id == id)
         return dict(iter_query_result(query, self.table()))
 
 class RPMPackagesDict(RPMTableDict):
@@ -194,9 +181,6 @@ class RPMPackagesDict(RPMTableDict):
         """
         return RPMPackage
 
-class RPMPackagesDictItem(RPMPackagesDict, RPMTableDictItem):
-    """Dict of one rpm package."""
-
 class RPMRepositoriesDict(RPMTableDict):
     """Dict of rpm repositories."""
     filters = dict(**filter_functions.rpm_repositories(prefix=''))
@@ -208,40 +192,33 @@ class RPMRepositoriesDict(RPMTableDict):
         """
         return RPMRepository
 
-class RPMRepositoriesDictItem(RPMRepositoriesDict, RPMTableDictItem):
-    """Dict of one rpm repository."""
+flask_api.add_resource(GroupsDict, '/rest/groups', '/rest/groups/<int:id>')
+flask_api.add_resource(RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>')
+flask_api.add_resource(RPMDifferencesDict, '/rest/differences', '/rest/differences/<int:id>')
+flask_api.add_resource(RPMPackagesDict, '/rest/packages', '/rest/packages/<int:id>')
+flask_api.add_resource(RPMRepositoriesDict, '/rest/repositories', '/rest/repositories/<int:id>')
 
-flask_api.add_resource(GroupsDict, '/rest/groups')
-flask_api.add_resource(GroupsDictItem, '/rest/groups/<int:id>')
-flask_api.add_resource(RPMComparisonsDict, '/rest/comparisons')
-flask_api.add_resource(
-    RPMComparisonsDictItem, '/rest/comparisons/<int:id>'
-)
-flask_api.add_resource(RPMDifferencesDict, '/rest/differences')
-flask_api.add_resource(RPMDifferencesDictItem, '/rest/differences/<int:id>')
-flask_api.add_resource(RPMPackagesDict, '/rest/packages')
-flask_api.add_resource(RPMPackagesDictItem, '/rest/packages/<int:id>')
-flask_api.add_resource(RPMRepositoriesDict, '/rest/repositories')
-flask_api.add_resource(RPMRepositoriesDictItem, '/rest/repositories/<int:id>')
+class ComparisonsView(GroupsDict):
+    """View of comparisons."""
+    default_modifiers = {'limit': 5, 'offset': 0}
 
-@bp.route('/')
-def index():
-    """Show index page."""
-    modifiers = request_parser.get_pagination_modifiers(
-        defaults={'limit': 5, 'offset': 0}
-    )
-    query = RPMComparison.comparisons_query(g.db_session, modifiers)
-    comps = dict(iter_query_result(query, Comparison))
-    items_count = RPMComparison.comparisons_count(g.db_session)
-    return my_render_template(
-        'rpm_show_index.html',
-        comparisons=comps,
-        items_count=items_count,
-        limit=modifiers['limit'],
-        offset=modifiers['offset'],
-        endpoint='rpmdiff.index',
-        arguments={},
-    )
+    def dispatch_request(self):
+        """Render template."""
+        query = self.make_query()
+        items_count = query.count()
+        comps = dict(iter_query_result(query, Comparison))
+
+        return my_render_template(
+            'rpm_show_index.html',
+            comparisons=comps,
+            items_count=items_count,
+            limit=self.modifiers()['limit'],
+            offset=self.modifiers()['offset'],
+            endpoint='rpmdiff.index',
+            arguments={},
+        )
+
+bp.add_url_rule('/', view_func=ComparisonsView.as_view('index'))
 
 @bp.route('/comparisons')
 def show_comparisons():
