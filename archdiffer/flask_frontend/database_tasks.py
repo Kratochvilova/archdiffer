@@ -16,15 +16,9 @@ from . import filter_functions
 
 class TableDict(Resource):
     """Dict of given table."""
+    table = None
     filters = None
     default_modifiers = None
-
-    def table(self):
-        """Get table.
-
-        :raises NotImplementedError: this method must be overridden
-        """
-        raise NotImplementedError
 
     def modifiers(self):
         """Get modifiers from request arguments.
@@ -40,7 +34,7 @@ class TableDict(Resource):
 
         :return sqlalchemy.orm.query.Query result: query
         """
-        return self.table().query(g.db_session, modifiers=self.modifiers())
+        return self.table.query(g.db_session, modifiers=self.modifiers())
 
     def get(self, id=None):
         """Get dict.
@@ -50,33 +44,21 @@ class TableDict(Resource):
         """
         query = self.make_query()
         if id is not None:
-            query = query.filter(self.table().id == id)
-        return dict(iter_query_result(query, self.table()))
+            query = query.filter(self.table.id == id)
+        return dict(iter_query_result(query, self.table))
 
 class ComparisonsDict(TableDict):
     """Dict of comparisons."""
+    table = Comparison
     filters = dict(
         **filter_functions.comparisons(prefix=''),
         **filter_functions.comparison_types()
     )
 
-    def table(self):
-        """Get Comparison table.
-
-        :return sqlalchemy.ext.declarative.api.declarativemeta: Comparison
-        """
-        return Comparison
-
 class ComparisonTypesDict(TableDict):
     """Dict of comparison_types."""
+    table = ComparisonType
     filters = filter_functions.comparison_types(prefix='')
-
-    def table(self):
-        """Get ComparisonType table.
-
-        :return sqlalchemy.ext.declarative.api.declarativemeta: ComparisonType
-        """
-        return ComparisonType
 
 class ComparisonsView(ComparisonsDict):
     """View of comparisons."""

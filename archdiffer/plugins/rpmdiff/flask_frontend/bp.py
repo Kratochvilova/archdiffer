@@ -51,8 +51,8 @@ class RPMTableDict(TableDict):
         """
         query = self.make_query()
         if id is not None:
-            query = query.filter(self.table().id == id)
-        return dict(iter_query_result(query, self.table()))
+            query = query.filter(self.table.id == id)
+        return dict(iter_query_result(query, self.table))
 
 class RPMTableDictOuter(RPMTableDict):
     """Dict of given table, implementing outer modifiers."""
@@ -90,7 +90,7 @@ class RPMTableDictOuter(RPMTableDict):
 
         :return sqlalchemy.orm.query.Query result: query
         """
-        return self.table().query(
+        return self.table.query(
             g.db_session,
             modifiers=self.modifiers(),
             outer_modifiers=self.outer_modifiers()
@@ -98,6 +98,7 @@ class RPMTableDictOuter(RPMTableDict):
 
 class GroupsDict(RPMTableDictOuter):
     """Dict of comparison groups."""
+    table = Comparison
     filters = dict(
         **app_filter_functions.comparisons(prefix=''),
         **filter_functions.rpm_comparisons(prefix='comparisons_'),
@@ -106,13 +107,6 @@ class GroupsDict(RPMTableDictOuter):
         **filter_functions.rpm_repositories(table=repo1, prefix='repo1_'),
         **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
     )
-
-    def table(self):
-        """Get Comparison table.
-
-        :return sqlalchemy.ext.declarative.api.declarativemeta: Comparison
-        """
-        return Comparison
 
     def make_query(self):
         """Call query method on the table with modifiers and outer_modifiers
@@ -128,6 +122,7 @@ class GroupsDict(RPMTableDictOuter):
 
 class RPMComparisonsDict(RPMTableDict):
     """Dict of rpm comparisons."""
+    table = RPMComparison
     filters = dict(
         **filter_functions.rpm_comparisons(prefix=''),
         **app_filter_functions.comparisons(prefix='groups_'),
@@ -137,26 +132,13 @@ class RPMComparisonsDict(RPMTableDict):
         **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
     )
 
-    def table(self):
-        """Get RPMComparison table.
-
-        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMComparison
-        """
-        return RPMComparison
-
 class RPMDifferencesDict(RPMTableDictOuter):
     """Dict of rpm differences."""
+    table = RPMDifference
     filters = dict(
         **RPMComparisonsDict.filters.copy(),
         **filter_functions.rpm_differences(),
     )
-
-    def table(self):
-        """Get RPMDifference table.
-
-        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMDifference
-        """
-        return RPMDifference
 
     def get(self, id=None):
         """Get dict.
@@ -167,32 +149,20 @@ class RPMDifferencesDict(RPMTableDictOuter):
         query = self.make_query()
         if id is not None:
             query = query.filter(RPMComparison.id == id)
-        return dict(iter_query_result(query, self.table()))
+        return dict(iter_query_result(query, self.table))
 
 class RPMPackagesDict(RPMTableDict):
     """Dict of rpm packages."""
+    table = RPMPackage
     filters = dict(
         **filter_functions.rpm_packages(prefix=''),
         **filter_functions.rpm_repositories(),
     )
 
-    def table(self):
-        """Get RPMPackage table.
-
-        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMPackage
-        """
-        return RPMPackage
-
 class RPMRepositoriesDict(RPMTableDict):
     """Dict of rpm repositories."""
+    table = RPMRepository
     filters = dict(**filter_functions.rpm_repositories(prefix=''))
-
-    def table(self):
-        """Get RPMRepository table.
-
-        :return sqlalchemy.ext.declarative.api.declarativemeta: RPMRepository
-        """
-        return RPMRepository
 
 flask_api.add_resource(GroupsDict, '/rest/groups', '/rest/groups/<int:id>')
 flask_api.add_resource(RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>')
