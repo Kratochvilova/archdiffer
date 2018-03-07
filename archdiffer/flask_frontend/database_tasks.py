@@ -97,7 +97,7 @@ class ComparisonTypesView(ComparisonTypesDict):
             items_count=ComparisonType.count(g.db_session),
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
-            endpoint='index',
+            endpoint='show_comparison_types',
             arguments={},
         )
         return my_render_template('show_comparison_types.html')
