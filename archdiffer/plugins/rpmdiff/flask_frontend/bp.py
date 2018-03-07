@@ -352,3 +352,12 @@ def add_entry():
     )
     flash('New entry was successfully posted')
     return redirect(url_for('rpmdiff.index'))
+
+@bp.route('/wave', methods=['POST'])
+def waive():
+    id_diff = request.form['id_diff']
+    diff = g.db_session.query(RPMDifference).filter_by(id=id_diff).one()
+    diff.waive(g.db_session)
+    return redirect(
+        url_for('rpmdiff.show_differences', id=request.form['id_comp'])
+    )

@@ -231,18 +231,18 @@ table td {
     background-color: #F7FD7F;
 }
 
+.state_ignored {
+    background-color: #9DCEFC;
+}
+
 .state_normal {
     background-color: #F7FD7F;
 }
 
-.state_hidden {
-    background-color: #9DCEFC;
-}
-
-.state_ok {
-    background-color: #9DCEFC;
-}
-
-.state_nok {
+.state_error {
     background-color: #FD9886;
+}
+
+.state_waived {
+    background-color: #81F781;
 }

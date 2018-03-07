@@ -29,13 +29,21 @@
           <th>Type</th>
           <th>Diff</th>
           <th>State</th>
+          <th>Waive</th>
         </tr>
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_TAGS] %}
           <tr>
             <td>{{ diff['id'] }}</td>
             <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
-            <td class={{ 'state_' + diff['state'] }}>{{ diff['state'] }}</td>
+            <td {% if diff['waived'] %} class="state_waived" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
+            <td>
+              <form action="{{ url_for('rpmdiff.waive') }}" method="post">
+                <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
+                <input type="hidden" name="id_comp" value="{{ id_comp }}" />
+                <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
+              </form>
+            </td>
           </tr>
         {% endfor %}
       </table>
@@ -47,13 +55,21 @@
           <th>Type</th>
           <th>Diff</th>
           <th>State</th>
+          <th>Waive</th>
         </tr>
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_PRCO] %}
           <tr>
             <td>{{ diff['id'] }}</td>
             <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
-            <td class={{ 'state_' + diff['state'] }}>{{ diff['state'] }}</td>
+            <td {% if diff['waived'] %} class="state_waived" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
+            <td>
+              <form action="{{ url_for('rpmdiff.waive') }}" method="post">
+                <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
+                <input type="hidden" name="id_comp" value="{{ id_comp }}" />
+                <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
+              </form>
+            </td>
           </tr>
         {% endfor %}
       </table>
@@ -66,6 +82,7 @@
           <th>Diff</th>
           <th>Info</th>
           <th>State</th>
+          <th>Waive</th>
         </tr>
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_FILES] %}
           <tr>
@@ -73,7 +90,14 @@
             <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
             <td>{{ diff['diff'] }}</td>
             <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
-            <td class={{ 'state_' + diff['state'] }}>{{ diff['state'] }}</td>
+            <td {% if diff['waived'] %} class="state_waived" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
+            <td>
+              <form action="{{ url_for('rpmdiff.waive') }}" method="post">
+                <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
+                <input type="hidden" name="id_comp" value="{{ id_comp }}" />
+                <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
+              </form>
+            </td>
           </tr>
         {% endfor %}
       </table>

@@ -5,7 +5,7 @@ Created on Tue Oct  3 10:56:53 2017
 @author: pavla
 """
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
@@ -262,7 +262,9 @@ class RPMDifference(BaseExported, Base):
     """Database model of rpm differences."""
     __tablename__ = 'rpm_differences'
 
-    to_export = ['id', 'category', 'diff_type', 'diff_info', 'diff', 'state']
+    to_export = [
+        'id', 'category', 'diff_type', 'diff_info', 'diff', 'state', 'waived'
+    ]
 
     id = Column(Integer, primary_key=True, nullable=False)
     id_comp = Column(
@@ -273,6 +275,7 @@ class RPMDifference(BaseExported, Base):
     diff_info = Column(String)
     diff = Column(String, nullable=False)
     state = Column(Integer, nullable=False)
+    waived = Column(Boolean, nullable=False)
 
     rpm_comparison = relationship(
         "RPMComparison", back_populates="rpm_differences"
@@ -301,6 +304,19 @@ class RPMDifference(BaseExported, Base):
         ses.add(self)
         ses.commit()
 
+    def waive(self, ses):
+        """Set/clear waive flag.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        """
+        if self.waived:
+            self.waived = False
+        else:
+            self.waived = True
+        ses.add(self)
+        ses.commit()
+
     @staticmethod
     def add(ses, id_comp, category, diff_type, diff_info, diff,
             state=constants.DIFF_STATE_NORMAL):
@@ -323,6 +339,7 @@ class RPMDifference(BaseExported, Base):
             diff_info=diff_info,
             diff=diff,
             state=state,
+            waived=False,
         )
         ses.add(difference)
         ses.commit()
