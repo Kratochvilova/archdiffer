@@ -83,7 +83,7 @@ class ComparisonsView(ComparisonsDict):
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
             endpoint='index',
-            arguments={},
+            arguments={'id': id},
         )
 
 class ComparisonTypesView(ComparisonTypesDict):
