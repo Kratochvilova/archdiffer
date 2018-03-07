@@ -45,6 +45,7 @@ class RPMTableDict(TableDict):
     """Dict of given table."""
     def get(self, id=None):
         """Get dict.
+        (Overriden because of different iter_query_result function.)
 
         :param int id: id to optionaly filter by
         :return dict: dict of the resulting query
