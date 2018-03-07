@@ -74,16 +74,12 @@ class RPMTableDictOuter(RPMTableDict):
 
         :return dict: modifiers
         """
-        modifiers = request_parser.parse_request(filters=self.filters)
-        try:
-            modifiers.pop('limit')
-        except KeyError:
-            pass
-        try:
-            modifiers.pop('offset')
-        except KeyError:
-            pass
-        return modifiers
+        modifiers = request_parser.parse_request(
+            filters=self.filters, defaults=self.default_modifiers
+        )
+        return request_parser.get_request_arguments(
+            'limit', 'offset', args_dict=modifiers, invert=True
+        )
 
     def make_query(self):
         """Call query method on the table with modifiers and outer_modifiers

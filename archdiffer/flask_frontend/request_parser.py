@@ -125,7 +125,7 @@ def parse_request(filters=None, defaults=None):
 
     return args_dict
 
-def get_request_arguments(*names, args_dict=None):
+def get_request_arguments(*names, args_dict=None, invert=False):
     """Get arguments from args_dict or request if they match given names.
 
     :param *names: names of arguments
@@ -134,8 +134,9 @@ def get_request_arguments(*names, args_dict=None):
     """
     if args_dict is None:
         args_dict = parse_request()
+    if invert:
+        return {k:v for k, v in args_dict.items() if k not in names}
     return {k:v for k, v in args_dict.items() if k in names}
-
 
 def get_pagination_modifiers(defaults=None):
     """Get modifiers limit and offset.
