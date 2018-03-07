@@ -13,7 +13,7 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository, pkg1, pkg2, repo1, repo2,
                              iter_query_result)
 from .. import constants
-from ....database import Comparison, ComparisonType, modify_query
+from ....database import Comparison
 from ....flask_frontend.common_tasks import my_render_template
 from ....flask_frontend.database_tasks import TableDict
 from ....flask_frontend import filter_functions as app_filter_functions
@@ -100,7 +100,7 @@ class RPMTableDictOuter(RPMTableDict):
             )
         )
 
-class GroupsDict(RPMTableDictOuter):
+class RPMGroupsDict(RPMTableDictOuter):
     """Dict of comparison groups."""
     table = Comparison
     filters = dict(
@@ -171,218 +171,160 @@ class RPMRepositoriesDict(RPMTableDict):
     table = RPMRepository
     filters = dict(**filter_functions.rpm_repositories(prefix=''))
 
-flask_api.add_resource(GroupsDict, '/rest/groups', '/rest/groups/<int:id>')
-flask_api.add_resource(RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>')
-flask_api.add_resource(RPMDifferencesDict, '/rest/differences', '/rest/differences/<int:id>')
-flask_api.add_resource(RPMPackagesDict, '/rest/packages', '/rest/packages/<int:id>')
-flask_api.add_resource(RPMRepositoriesDict, '/rest/repositories', '/rest/repositories/<int:id>')
+flask_api.add_resource(RPMGroupsDict, '/rest/groups', '/rest/groups/<int:id>')
+flask_api.add_resource(
+    RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
+)
+flask_api.add_resource(
+    RPMDifferencesDict, '/rest/differences', '/rest/differences/<int:id>'
+)
+flask_api.add_resource(
+    RPMPackagesDict, '/rest/packages', '/rest/packages/<int:id>'
+)
+flask_api.add_resource(
+    RPMRepositoriesDict, '/rest/repositories', '/rest/repositories/<int:id>'
+)
 
-class ComparisonsView(GroupsDict):
-    """View of comparisons."""
+class RPMIndexView(RPMGroupsDict):
+    """View of index."""
     default_modifiers = {'limit': 5, 'offset': 0}
+    template = 'rpm_show_index.html'
+    endpoint = 'rpmdiff.index'
 
-    def dispatch_request(self):
+    def dispatch_request(self, id=None):
         """Render template."""
-        query = self.make_query()
-        items_count = query.count()
-        comps = dict(iter_query_result(query, Comparison))
+        comps = self.get(id=id)
+        items_count = len(comps)
 
         return my_render_template(
-            'rpm_show_index.html',
+            self.template,
             comparisons=comps,
             items_count=items_count,
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
-            endpoint='rpmdiff.index',
-            arguments={},
+            endpoint=self.endpoint,
+            arguments={'id': id},
         )
 
-bp.add_url_rule('/', view_func=ComparisonsView.as_view('index'))
+class RPMComparisonsView(RPMIndexView):
+    """View of comparisons."""
+    template = 'rpm_show_comparisons.html'
+    endpoint = 'rpmdiff.show_comparisons'
 
-@bp.route('/comparisons')
-def show_comparisons():
-    """Show all comparisons."""
-    modifiers = request_parser.get_pagination_modifiers(
-        defaults={'limit': 5, 'offset': 0}
-    )
-    query = RPMComparison.comparisons_query(g.db_session, modifiers)
-    comps = dict(iter_query_result(query, Comparison))
-    items_count = RPMComparison.comparisons_count(g.db_session)
-    return my_render_template(
-        'rpm_show_comparisons.html',
-        comparisons=comps,
-        items_count=items_count,
-        limit=modifiers['limit'],
-        offset=modifiers['offset'],
-        endpoint='rpmdiff.show_comparisons',
-        arguments={},
-    )
+class RPMGroupsView(RPMIndexView):
+    """View of groups."""
+    template = 'rpm_show_groups.html'
+    endpoint = 'rpmdiff.show_groups'
+
+class RPMDifferencesView(RPMDifferencesDict):
+    """View of differences."""
+    template = 'rpm_show_differences.html'
+    endpoint = 'rpmdiff.show_differences'
+
+    def dispatch_request(self, id=None):
+        """Render template."""
+        comparison = self.get(id=id)
+        return my_render_template(self.template, comparison=comparison)
+
+class RPMPackagesView(RPMPackagesDict):
+    """View of packages."""
+    default_modifiers = {'limit': 5, 'offset': 0}
+    template = 'rpm_show_packages.html'
+    endpoint = 'rpmdiff.show_package'
+
+    def dispatch_request(self, id=None):
+        """Render template."""
+        pkgs = self.get(id=id)
+        items_count = len(pkgs)
+        return my_render_template(
+            self.template,
+            pkgs=pkgs,
+            items_count=items_count,
+            limit=self.modifiers()['limit'],
+            offset=self.modifiers()['offset'],
+            endpoint=self.endpoint,
+            arguments={'id': id},
+        )
+
+class RPMPackagesNameView(RPMPackagesDict):
+    """View of packages."""
+    default_modifiers = {'limit': 5, 'offset': 0}
+    template = 'rpm_show_packages.html'
+    endpoint = 'rpmdiff.show_packages_name'
+
+    def dispatch_request(self, name):
+        """Render template."""
+        additional_modifiers = None
+        if name is not None:
+            additional_modifiers = {'filter': [RPMPackage.name == name]}
+        query = self.make_query(additional_modifiers=additional_modifiers)
+        pkgs = dict(iter_query_result(query, self.table))
+        items_count = len(pkgs)
+
+        return my_render_template(
+            self.template,
+            pkgs=pkgs,
+            items_count=items_count,
+            limit=self.modifiers()['limit'],
+            offset=self.modifiers()['offset'],
+            endpoint=self.endpoint,
+            arguments={'name': name},
+        )
+
+class RPMRepositoriesView(RPMRepositoriesDict):
+    """View of packages."""
+    default_modifiers = {'limit': 5, 'offset': 0}
+    template = 'rpm_show_repositories.html'
+    endpoint = 'rpmdiff.show_repositories'
+
+    def dispatch_request(self, id=None):
+        """Render template."""
+        repos = self.get(id=id)
+        items_count = len(repos)
+        return my_render_template(
+            self.template,
+            repos=repos,
+            items_count=items_count,
+            limit=self.modifiers()['limit'],
+            offset=self.modifiers()['offset'],
+            endpoint=self.endpoint,
+            arguments={'id': id},
+        )
+
+bp.add_url_rule('/', view_func=RPMIndexView.as_view('index'))
+bp.add_url_rule(
+    '/comparisons', view_func=RPMComparisonsView.as_view('show_comparisons')
+)
+bp.add_url_rule('/groups', view_func=RPMGroupsView.as_view('show_groups'))
+bp.add_url_rule(
+    '/groups/<int:id>', view_func=RPMGroupsView.as_view('show_group')
+)
+bp.add_url_rule(
+    '/comparisons/<int:id>',
+    view_func=RPMDifferencesView.as_view('show_differences')
+)
+bp.add_url_rule(
+    '/packages', view_func=RPMPackagesView.as_view('show_packages')
+)
+bp.add_url_rule(
+    '/packages/<int:id>', view_func=RPMPackagesView.as_view('show_package')
+)
+bp.add_url_rule(
+    '/packages/<string:name>',
+    view_func=RPMPackagesNameView.as_view('show_packages_name')
+)
+bp.add_url_rule(
+    '/repositories', view_func=RPMRepositoriesView.as_view('show_repositories')
+)
+bp.add_url_rule(
+    '/repositories/<int:id>',
+    view_func=RPMRepositoriesView.as_view('show_repository')
+)
 
 @bp.route('/new')
 def show_new_comparison_form():
     """Show form for new comparison."""
     return my_render_template('rpm_show_new_comparison_form.html')
-
-@bp.route('/groups/<int:id_group>')
-def show_group(id_group):
-    """Show rpm comparisons in given group.
-    
-    :param int id_group: id of the group
-    """
-    modifiers = request_parser.get_pagination_modifiers(
-        defaults={'limit': 5, 'offset': 0}
-    )
-    query = RPMComparison.comparisons_query(g.db_session)
-    query = query.filter(
-        ComparisonType.name == constants.COMPARISON_TYPE,
-        Comparison.id == id_group,
-    )
-    comps = dict(iter_query_result(query, Comparison))
-    return my_render_template(
-        'rpm_show_groups.html',
-        comparisons=comps,
-        items_count=1,
-        limit=modifiers['limit'],
-        offset=modifiers['offset'],
-        endpoint='rpmdiff.show_group',
-        arguments={},
-    )
-
-@bp.route('/groups')
-def show_groups():
-    """Show all rpm comparisons."""
-    modifiers = request_parser.get_pagination_modifiers(
-        defaults={'limit': 5, 'offset': 0}
-    )
-    query = RPMComparison.comparisons_query(g.db_session, modifiers)
-    query = query.filter(ComparisonType.name == constants.COMPARISON_TYPE)
-    comps = dict(iter_query_result(query, Comparison))
-    items_count = RPMComparison.comparisons_count(g.db_session)
-    return my_render_template(
-        'rpm_show_groups.html',
-        comparisons=comps,
-        items_count=items_count,
-        limit=modifiers['limit'],
-        offset=modifiers['offset'],
-        endpoint='rpmdiff.show_groups',
-        arguments={},
-    )
-
-@bp.route('/comparisons/<int:id_comp>')
-def show_differences(id_comp):
-    """Show all rpm differences of one rpm comparison.
-
-    :param int id_comp: id of the comparison
-    """
-    query = RPMDifference.query(g.db_session)
-    query = query.filter(RPMComparison.id == id_comp)
-    comparison = dict(iter_query_result(query, RPMDifference))
-    return my_render_template(
-        'rpm_show_differences.html',
-        comparison=comparison
-    )
-
-@bp.route('/packages/<int:pkg_id>')
-def show_package(pkg_id):
-    """Show rpm package.
-
-    :param int pkg_id: id of the package
-    """
-    query = RPMPackage.query(g.db_session)
-    query = query.filter(RPMPackage.id == pkg_id)
-    pkgs = dict(iter_query_result(query, RPMPackage))
-    return my_render_template(
-        'rpm_show_packages.html',
-        pkgs=pkgs,
-        items_count=1,
-        limit=1,
-        offset=0,
-        endpoint='rpmdiff.show_package',
-        arguments={'pkg_id': pkg_id},
-    )
-
-@bp.route('/packages/<string:name>')
-def show_packages_name(name):
-    """Show rpm packages given by name.
-
-    :param string name: package name
-    """
-    modifiers = request_parser.get_pagination_modifiers(
-        defaults={'limit': 5, 'offset': 0}
-    )
-    query = RPMPackage.query(g.db_session)
-    query = query.filter(RPMPackage.name == name)
-    items_count = query.count()
-    query = modify_query(query, modifiers)
-    pkgs = dict(iter_query_result(query, RPMPackage))
-    return my_render_template(
-        'rpm_show_packages.html',
-        pkgs=pkgs,
-        items_count=items_count,
-        limit=modifiers['limit'],
-        offset=modifiers['offset'],
-        endpoint='rpmdiff.show_packages_name',
-        arguments={'name': name},
-    )
-
-@bp.route('/packages')
-def show_packages():
-    """Show all rpm packages."""
-    modifiers = request_parser.get_pagination_modifiers(
-        defaults={'limit': 5, 'offset': 0}
-    )
-    query = RPMPackage.query(g.db_session)
-    query = modify_query(query, modifiers)
-    pkgs = dict(iter_query_result(query, RPMPackage))
-    items_count = RPMPackage.count(g.db_session)
-    return my_render_template(
-        'rpm_show_packages.html',
-        pkgs=pkgs,
-        items_count=items_count,
-        limit=modifiers['limit'],
-        offset=modifiers['offset'],
-        endpoint='rpmdiff.show_packages',
-        arguments={},
-    )
-
-@bp.route('/repositories/<int:repo_id>')
-def show_repository(repo_id):
-    """Show rpm repository.
-
-    :param int repo_id: id of the repository
-    """
-    query = RPMRepository.query(g.db_session)
-    query = query.filter(RPMRepository.id == repo_id)
-    repos = dict(iter_query_result(query, RPMRepository))
-    return my_render_template(
-        'rpm_show_repositories.html',
-        repos=repos,
-        items_count=1,
-        limit=1,
-        offset=0,
-        endpoint='rpmdiff.show_repository',
-        arguments={'repo_id': repo_id},
-    )
-
-@bp.route('/repositories')
-def show_repositories():
-    """Show all rpm repositories."""
-    modifiers = request_parser.get_pagination_modifiers(
-        defaults={'limit': 5, 'offset': 0}
-    )
-    query = RPMRepository.query(g.db_session)
-    query = modify_query(query, modifiers)
-    repos = dict(iter_query_result(query, RPMRepository))
-    items_count = RPMRepository.count(g.db_session)
-    return my_render_template(
-        'rpm_show_repositories.html',
-        repos=repos,
-        items_count=items_count,
-        limit=modifiers['limit'],
-        offset=modifiers['offset'],
-        endpoint='rpmdiff.show_repositories',
-        arguments={},
-    )
 
 @bp.route('/add', methods=['POST'])
 def add_entry():

@@ -71,11 +71,10 @@ class ComparisonsView(ComparisonsDict):
     """View of comparisons."""
     default_modifiers = {'limit': 5, 'offset': 0}
 
-    def dispatch_request(self):
+    def dispatch_request(self, id=None):
         """Render template."""
-        query = self.make_query()
-        items_count = query.count()
-        comps = dict(iter_query_result(query, Comparison))
+        comps = self.get(id=id)
+        items_count = len(comps)
 
         return my_render_template(
             'show_comparisons.html',
