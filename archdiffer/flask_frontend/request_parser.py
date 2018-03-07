@@ -166,5 +166,4 @@ def update_modifiers(old_modifiers, new_modifiers):
                 modifiers[key] = value
         else:
             modifiers[key] = value
-        print(modifiers)
     return modifiers
