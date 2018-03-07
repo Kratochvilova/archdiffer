@@ -50,14 +50,15 @@ class RPMTableDict(TableDict):
         :param int id: id to optionaly filter by
         :return dict: dict of the resulting query
         """
-        query = self.make_query()
+        additional_modifiers = None
         if id is not None:
-            query = query.filter(self.table.id == id)
+            additional_modifiers = {'filter': [self.table.id == id]}
+        query = self.make_query(additional_modifiers=additional_modifiers)
         return dict(iter_query_result(query, self.table))
 
 class RPMTableDictOuter(RPMTableDict):
     """Dict of given table, implementing outer modifiers."""
-    def modifiers(self):
+    def modifiers(self, additional=None):
         """Get modifiers from request arguments, only limit and offset.
 
         :return dict: modifiers
@@ -65,11 +66,13 @@ class RPMTableDictOuter(RPMTableDict):
         modifiers = request_parser.parse_request(
             filters=self.filters, defaults=self.default_modifiers
         )
+        if additional is not None:
+            modifiers = request_parser.update_modifiers(modifiers, additional)
         return request_parser.get_request_arguments(
             'limit', 'offset', args_dict=modifiers
         )
 
-    def outer_modifiers(self):
+    def outer_modifiers(self, additional=None):
         """Get modifiers from request arguments, exclude limit and offset.
 
         :return dict: modifiers
@@ -77,11 +80,13 @@ class RPMTableDictOuter(RPMTableDict):
         modifiers = request_parser.parse_request(
             filters=self.filters, defaults=self.default_modifiers
         )
+        if additional is not None:
+            modifiers = request_parser.update_modifiers(modifiers, additional)
         return request_parser.get_request_arguments(
             'limit', 'offset', args_dict=modifiers, invert=True
         )
 
-    def make_query(self):
+    def make_query(self, additional_modifiers=None):
         """Call query method on the table with modifiers and outer_modifiers
         as arguments.
 
@@ -90,7 +95,9 @@ class RPMTableDictOuter(RPMTableDict):
         return self.table.query(
             g.db_session,
             modifiers=self.modifiers(),
-            outer_modifiers=self.outer_modifiers()
+            outer_modifiers=self.outer_modifiers(
+                additional=additional_modifiers
+            )
         )
 
 class GroupsDict(RPMTableDictOuter):
@@ -105,7 +112,7 @@ class GroupsDict(RPMTableDictOuter):
         **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
     )
 
-    def make_query(self):
+    def make_query(self, additional_modifiers=None):
         """Call query method on the table with modifiers and outer_modifiers
         as arguments.
 
@@ -114,7 +121,9 @@ class GroupsDict(RPMTableDictOuter):
         return RPMComparison.comparisons_query(
             g.db_session,
             modifiers=self.modifiers(),
-            outer_modifiers=self.outer_modifiers()
+            outer_modifiers=self.outer_modifiers(
+                additional=additional_modifiers
+            )
         )
 
 class RPMComparisonsDict(RPMTableDict):
@@ -143,9 +152,10 @@ class RPMDifferencesDict(RPMTableDictOuter):
         :param int id: RPMComparison id
         :return dict: dict of the resulting query
         """
-        query = self.make_query()
+        additional_modifiers = None
         if id is not None:
-            query = query.filter(RPMComparison.id == id)
+            additional_modifiers = {'filter': [RPMComparison.id == id]}
+        query = self.make_query(additional_modifiers=additional_modifiers)
         return dict(iter_query_result(query, self.table))
 
 class RPMPackagesDict(RPMTableDict):

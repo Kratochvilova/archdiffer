@@ -147,3 +147,24 @@ def get_pagination_modifiers(defaults=None):
     """
     args_dict = parse_request(defaults=defaults)
     return get_request_arguments('limit', 'offset', args_dict=args_dict)
+
+def update_modifiers(old_modifiers, new_modifiers):
+    """Update modifiers.
+
+    :param dict old_modifiers: old modifiers
+    :param dict old_modifiers: new modifiers
+    :return dict: resulting modifiers
+    """
+    modifiers = old_modifiers.copy()
+    for key, value in new_modifiers.items():
+        if key in old_modifiers:
+            if _TRANSFORMATIONS.get(key) == _list_transform:
+                modifiers[key] += value
+            elif _TRANSFORMATIONS.get(key) == _dict_transform:
+                modifiers[key].update(value)
+            else:
+                modifiers[key] = value
+        else:
+            modifiers[key] = value
+        print(modifiers)
+    return modifiers

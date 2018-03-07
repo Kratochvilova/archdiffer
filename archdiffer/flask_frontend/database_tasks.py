@@ -20,21 +20,27 @@ class TableDict(Resource):
     filters = None
     default_modifiers = None
 
-    def modifiers(self):
+    def modifiers(self, additional=None):
         """Get modifiers from request arguments.
 
         :return dict: modifiers
         """
-        return request_parser.parse_request(
+        modifiers = request_parser.parse_request(
             filters=self.filters, defaults=self.default_modifiers
         )
+        if additional is not None:
+            modifiers = request_parser.update_modifiers(modifiers, additional)
+        return modifiers
 
-    def make_query(self):
+    def make_query(self, additional_modifiers=None):
         """Call query method on the table with modifiers as argument.
 
         :return sqlalchemy.orm.query.Query result: query
         """
-        return self.table.query(g.db_session, modifiers=self.modifiers())
+        return self.table.query(
+            g.db_session,
+            modifiers=self.modifiers(additional=additional_modifiers)
+        )
 
     def get(self, id=None):
         """Get dict.
@@ -42,9 +48,10 @@ class TableDict(Resource):
         :param int id: id to optionaly filter by
         :return dict: dict of the resulting query
         """
-        query = self.make_query()
+        additional_modifiers = None
         if id is not None:
-            query = query.filter(self.table.id == id)
+            additional_modifiers = {'filter': [self.table.id == id]}
+        query = self.make_query(additional_modifiers=additional_modifiers)
         return dict(iter_query_result(query, self.table))
 
 class ComparisonsDict(TableDict):
