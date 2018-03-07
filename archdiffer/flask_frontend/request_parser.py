@@ -130,6 +130,7 @@ def get_request_arguments(*names, args_dict=None, invert=False):
 
     :param *names: names of arguments
     :param dict args_dict: dict of arguments
+    :param bool invert: True if names should be exclueded instead
     :return dict: dict of arguments
     """
     if args_dict is None:
