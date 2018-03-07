@@ -1,6 +1,6 @@
 <div class="groups">
   {% for id, comp in comparisons.items() %}
-    <a href="{{ url_for('rpmdiff.show_group', id=id) }}"><h3>Comparison {{ id }}</h3></a>
+    <a href="{{ url_for('rpmdiff.show_group', id=id) }}"><h3>Group {{ id }}</h3></a>
     <p>{{ comp['time'] }}</p>
     <table>
       <tr>
