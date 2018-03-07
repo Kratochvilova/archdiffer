@@ -6,15 +6,15 @@
       <table>
         <tr>
           <td>Comparison</td>
-          <td>{{ id_comp }}</td>
+          <td><a href="{{ url_for('rpmdiff.show_comparisons', id=id_comp) }}">{{ id_comp }}</a></td>
         </tr>
         <tr>
           <td>Package 1</td>
-          <td>{{ comp['pkg1']['filename'] }}</td>
+          <td><a href="{{ url_for('rpmdiff.show_packages', id=comp['pkg1']['id']) }}">{{ comp['pkg1']['filename'] }}</a></td>
         </tr>
         <tr>
           <td>Package 2</td>
-          <td>{{ comp['pkg2']['filename'] }}</td>
+          <td><a href="{{ url_for('rpmdiff.show_packages', id=comp['pkg2']['id']) }}">{{ comp['pkg2']['filename'] }}</a></td>
         </tr>
         <tr>
           <td>State</td>
