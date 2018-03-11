@@ -230,7 +230,7 @@ class RPMPackagesView(RPMPackagesDict):
     """View of packages."""
     default_modifiers = {'limit': 5, 'offset': 0}
     template = 'rpm_show_packages.html'
-    endpoint = 'rpmdiff.show_package'
+    endpoint = 'rpmdiff.show_packages'
 
     def dispatch_request(self, id=None):
         """Render template."""
