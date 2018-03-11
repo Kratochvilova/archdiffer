@@ -7,7 +7,7 @@ Created on Mon Mar  5 13:11:04 2018
 """
 
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
-                             RPMRepository)
+                             RPMRepository, RPMComment)
 from .. import constants
 from ....flask_frontend import request_parser
 
@@ -146,4 +146,34 @@ def rpm_repositories(table=RPMRepository, prefix='repositories_'):
         ),
         **request_parser.equals(table.path, name=prefix + 'path'),
     )
+    return filters
+
+def rpm_comments(table=RPMComment, prefix='comments_', relationships=False):
+    """Get filters for rpm comments.
+
+    :param sqlalchemy.ext.declarative.api.declarativemeta table: database model
+    :param string prefix: prefix of the name of the filter
+    :return dict: dict of filters
+    """
+    filters = dict(
+        **request_parser.equals(
+            table.id,
+            name=prefix + 'id',
+            function=(lambda x: int(x))
+        ),
+    )
+    if relationships:
+        filters.update(dict(
+            **request_parser.equals(table.id_user, name=prefix + 'id_user'),
+            **request_parser.equals(
+                table.id_comp,
+                name=prefix + 'id_comp',
+                function=(lambda x: int(x))
+            ),
+            **request_parser.equals(
+                table.id_diff,
+                name=prefix + 'id_diff',
+                function=(lambda x: int(x))
+            ),
+        ))
     return filters
