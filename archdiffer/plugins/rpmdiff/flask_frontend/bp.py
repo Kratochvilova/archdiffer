@@ -194,7 +194,7 @@ class RPMIndexView(RPMGroupsDict):
     def dispatch_request(self, id=None):
         """Render template."""
         comps = self.get(id=id)
-        items_count = len(comps)
+        items_count = RPMComparison.count(g.db_session)
 
         return my_render_template(
             self.template,
@@ -235,7 +235,8 @@ class RPMPackagesView(RPMPackagesDict):
     def dispatch_request(self, id=None):
         """Render template."""
         pkgs = self.get(id=id)
-        items_count = len(pkgs)
+        items_count = RPMPackage.count(g.db_session)
+
         return my_render_template(
             self.template,
             pkgs=pkgs,
@@ -259,7 +260,7 @@ class RPMPackagesNameView(RPMPackagesDict):
             additional_modifiers = {'filter': [RPMPackage.name == name]}
         query = self.make_query(additional_modifiers=additional_modifiers)
         pkgs = dict(iter_query_result(query, self.table))
-        items_count = len(pkgs)
+        items_count = RPMPackage.count(g.db_session)
 
         return my_render_template(
             self.template,
@@ -280,7 +281,8 @@ class RPMRepositoriesView(RPMRepositoriesDict):
     def dispatch_request(self, id=None):
         """Render template."""
         repos = self.get(id=id)
-        items_count = len(repos)
+        items_count = RPMRepository.count(g.db_session)
+
         return my_render_template(
             self.template,
             repos=repos,

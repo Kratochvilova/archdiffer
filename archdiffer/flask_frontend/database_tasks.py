@@ -74,7 +74,7 @@ class ComparisonsView(ComparisonsDict):
     def dispatch_request(self, id=None):
         """Render template."""
         comps = self.get(id=id)
-        items_count = len(comps)
+        items_count = Comparison.count(g.db_session)
 
         return my_render_template(
             'show_comparisons.html',
