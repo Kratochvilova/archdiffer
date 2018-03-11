@@ -682,6 +682,48 @@ class RPMComment(BaseExported, Base):
         ses.commit()
         return comment
 
+    @staticmethod
+    def query(ses, modifiers=None):
+        """Query RPMComment.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :param dict modifiers: dict of modifiers and their values
+        :return sqlalchemy.orm.query.Query: query
+        """
+        query = ses.query(RPMComment).order_by(RPMComment.id)
+        if modifiers is not None:
+            query = modify_query(query, modifiers)
+        return query
+
+    @staticmethod
+    def id_from_line(line):
+        """Get RPMComment id from line.
+
+        :param RPMComment line: RPMComment
+        :return int: RPMComment id
+        """
+        return line.id
+
+    @staticmethod
+    def dict_from_line(line):
+        """Get dict from line.
+
+        :param RPMComment line: RPMComment
+        :return dict: dict of RPMComment column values
+        """
+        return {'text': line.text}
+
+    @staticmethod
+    def count(ses):
+        """Count rpm_comments.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :return int: number of rpm_repositories
+        """
+        return RPMComment.query(ses).count()
+
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
 
