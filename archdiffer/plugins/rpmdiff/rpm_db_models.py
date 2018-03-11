@@ -9,7 +9,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
-from ... database import (Base, Comparison, ComparisonType, User, modify_query,
+from ... database import (Base, Comparison, ComparisonType, modify_query,
                           general_iter_query_result)
 from . import constants
 from ... import constants as app_constants
@@ -638,11 +638,11 @@ class RPMComment(BaseExported, Base):
 
     id = Column(Integer, primary_key=True, nullable=False)
     text = Column(String)
-    user_openid = Column(String, ForeignKey('users.openid'), nullable=False)
-    rpm_comparison_id = Column(Integer, ForeignKey('rpm_comparisons.id'))
-    rpm_difference_id = Column(Integer, ForeignKey('rpm_differences.id'))
+    id_user = Column(String, ForeignKey('users.openid'), nullable=False)
+    id_comp = Column(Integer, ForeignKey('rpm_comparisons.id'))
+    id_diff = Column(Integer, ForeignKey('rpm_differences.id'))
 
-    user = relationship("User", backref=backref("comments"))
+    user = relationship("User", backref=backref("rpm_comments"))
     rpm_comparison = relationship(
         "RPMComparison", back_populates="rpm_comments"
     )
@@ -661,22 +661,22 @@ class RPMComment(BaseExported, Base):
                 )
 
     @staticmethod
-    def add(ses, text, user_openid, rpm_comparison_id=None,
-            rpm_difference_id=None):
+    def add(ses, text, id_user, id_comp=None, id_diff=None):
         """Add comment to the database.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
         :param string text: text of the comment
-        :param int user_id: id of the author
-        :param int comparison_id: id of related comparison
+        :param string id_user: openid of the author
+        :param int id_comp: id of related rpm comparison
+        :param int id_diff: id of related rpm difference
         :return Comment: comment
         """
         comment = RPMComment(
             text=text,
-            user_openid=user_openid,
-            rpm_comparison_id=rpm_comparison_id,
-            rpm_difference_id=rpm_difference_id
+            id_user=id_user,
+            id_comp=id_comp,
+            id_diff=id_diff
         )
         ses.add(comment)
         ses.commit()
