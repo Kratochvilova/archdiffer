@@ -10,8 +10,8 @@ from flask import session as flask_session
 from flask_restful import Api
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
-                             RPMRepository, pkg1, pkg2, repo1, repo2,
-                             iter_query_result)
+                             RPMRepository, RPMComment, pkg1, pkg2, repo1,
+                             repo2, iter_query_result)
 from .. import constants
 from ....database import Comparison
 from ....flask_frontend.common_tasks import my_render_template
@@ -171,6 +171,11 @@ class RPMRepositoriesDict(RPMTableDict):
     table = RPMRepository
     filters = dict(**filter_functions.rpm_repositories(prefix=''))
 
+class RPMCommentsDict(RPMTableDict):
+    """Dict of rpm comments."""
+    table = RPMComment
+    filters = dict(**filter_functions.rpm_comments(prefix=''))
+
 flask_api.add_resource(RPMGroupsDict, '/rest/groups', '/rest/groups/<int:id>')
 flask_api.add_resource(
     RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
@@ -183,6 +188,9 @@ flask_api.add_resource(
 )
 flask_api.add_resource(
     RPMRepositoriesDict, '/rest/repositories', '/rest/repositories/<int:id>'
+)
+flask_api.add_resource(
+    RPMCommentsDict, '/rest/comments', '/rest/comments/<int:id>'
 )
 
 class RPMIndexView(RPMGroupsDict):
