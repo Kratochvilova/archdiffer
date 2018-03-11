@@ -1,0 +1,14 @@
+<tr>
+  <td>{{ diff['id'] }}</td>
+  <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
+  <td>{{ diff['diff'] }}</td>
+  <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
+  <td {% if diff['waived'] %} class="state_waived" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
+  <td>
+    <form action="{{ url_for('rpmdiff.waive') }}" method="post">
+      <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
+      <input type="hidden" name="id_comp" value="{{ id_comp }}" />
+      <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
+    </form>
+  </td>
+</tr>

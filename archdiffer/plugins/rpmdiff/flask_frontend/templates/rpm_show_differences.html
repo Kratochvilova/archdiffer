@@ -22,83 +22,27 @@
         </tr>
       </table>
 
-      <h3>Tags</h3>
+      <h3>Differences in tags</h3>
       <table>
-        <tr>
-          <th>Id</th>
-          <th>Type</th>
-          <th>Diff</th>
-          <th>State</th>
-          <th>Waive</th>
-        </tr>
+        {% include 'rpm_difference_header.html' %}
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_TAGS] %}
-          <tr>
-            <td>{{ diff['id'] }}</td>
-            <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
-            <td>{{ diff['diff'] }}</td>
-            <td {% if diff['waived'] %} class="state_waived" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
-            <td>
-              <form action="{{ url_for('rpmdiff.waive') }}" method="post">
-                <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
-                <input type="hidden" name="id_comp" value="{{ id_comp }}" />
-                <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
-              </form>
-            </td>
-          </tr>
+          {% include 'rpm_difference.html' %}
         {% endfor %}
       </table>
 
-      <h3>PRCO</h3>
+      <h3>Differences in dependencies</h3>
       <table>
-        <tr>
-          <th>Id</th>
-          <th>Type</th>
-          <th>Diff</th>
-          <th>State</th>
-          <th>Waive</th>
-        </tr>
+        {% include 'rpm_difference_header.html' %}
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_PRCO] %}
-          <tr>
-            <td>{{ diff['id'] }}</td>
-            <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
-            <td>{{ diff['diff'] }}</td>
-            <td {% if diff['waived'] %} class="state_waived" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
-            <td>
-              <form action="{{ url_for('rpmdiff.waive') }}" method="post">
-                <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
-                <input type="hidden" name="id_comp" value="{{ id_comp }}" />
-                <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
-              </form>
-            </td>
-          </tr>
+          {% include 'rpm_difference.html' %}
         {% endfor %}
       </table>
 
-      <h3>Files</h3>
+      <h3>Differences in files</h3>
       <table>
-        <tr>
-          <th>Id</th>
-          <th>Type</th>
-          <th>Diff</th>
-          <th>Info</th>
-          <th>State</th>
-          <th>Waive</th>
-        </tr>
+        {% include 'rpm_difference_header.html' %}
         {% for diff in comp['differences'] if diff['category'] == CATEGORY_STRINGS[CATEGORY_FILES] %}
-          <tr>
-            <td>{{ diff['id'] }}</td>
-            <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
-            <td>{{ diff['diff'] }}</td>
-            <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
-            <td {% if diff['waived'] %} class="state_waived" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
-            <td>
-              <form action="{{ url_for('rpmdiff.waive') }}" method="post">
-                <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
-                <input type="hidden" name="id_comp" value="{{ id_comp }}" />
-                <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
-              </form>
-            </td>
-          </tr>
+          {% include 'rpm_difference.html' %}
         {% endfor %}
       </table>
     {% endfor %}
