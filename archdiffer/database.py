@@ -177,7 +177,9 @@ class User(Base):
     email = Column(String)
 
     def __repr__(self):
-        return "<User(name='%s')>" % (self.openid)
+        return "<User(openid='%s', name='%s', email='%s')>" % (
+                    self.openid, self.name, self.email
+                )
 
     @staticmethod
     def query_by_openid(ses, openid):
