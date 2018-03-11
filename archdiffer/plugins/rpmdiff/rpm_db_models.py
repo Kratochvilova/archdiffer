@@ -9,7 +9,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
-from ... database import (Base, Comparison, ComparisonType, modify_query,
+from ... database import (Base, Comparison, ComparisonType, User, modify_query,
                           general_iter_query_result)
 from . import constants
 from ... import constants as app_constants
@@ -53,10 +53,9 @@ class RPMComparison(BaseExported, Base):
         "RPMPackage", foreign_keys=[pkg2_id], back_populates="rpm_comparisons2"
     )
 
-    comparison = relationship(
-        "Comparison",
-        backref=backref("rpm_comparison", uselist=False)
-    )
+    comparison = relationship("Comparison", backref=backref("rpm_comparison"))
+
+    rpm_comments = relationship("RPMComment", back_populates="rpm_comparison")
 
     def __repr__(self):
         return ("<RPMComparison(id='%s', id_group='%s', pkg1_id='%s', "
@@ -280,6 +279,8 @@ class RPMDifference(BaseExported, Base):
     rpm_comparison = relationship(
         "RPMComparison", back_populates="rpm_differences"
     )
+
+    rpm_comments = relationship("RPMComment", back_populates="rpm_difference")
 
     def __repr__(self):
         return ("<RPMDifference(id='%s', id_comp='%s', category='%s', "
@@ -628,6 +629,58 @@ class RPMRepository(BaseExported, Base):
         :return int: number of rpm_repositories
         """
         return RPMRepository.query(ses).count()
+
+class RPMComment(BaseExported, Base):
+    """Database model of rpm comments."""
+    __tablename__ = 'rpm_comments'
+
+    to_export = ['id', 'text']
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    text = Column(String)
+    user_openid = Column(String, ForeignKey('users.openid'), nullable=False)
+    rpm_comparison_id = Column(Integer, ForeignKey('rpm_comparisons.id'))
+    rpm_difference_id = Column(Integer, ForeignKey('rpm_differences.id'))
+
+    user = relationship("User", backref=backref("comments"))
+    rpm_comparison = relationship(
+        "RPMComparison", back_populates="rpm_comments"
+    )
+    rpm_difference = relationship(
+        "RPMDifference", back_populates="rpm_comments"
+    )
+
+    def __repr__(self):
+        return ("<Comment(id='%s', text='%s', user_openid='%s', "
+                "rpm_comparison_id='%s', rpm_difference_id='%s')>") % (
+                    self.id,
+                    self.text,
+                    self.user_openid,
+                    self.rpm_comparison_id,
+                    self.rpm_difference_id
+                )
+
+    @staticmethod
+    def add(ses, text, user_openid, rpm_comparison_id=None,
+            rpm_difference_id=None):
+        """Add comment to the database.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :param string text: text of the comment
+        :param int user_id: id of the author
+        :param int comparison_id: id of related comparison
+        :return Comment: comment
+        """
+        comment = RPMComment(
+            text=text,
+            user_openid=user_openid,
+            rpm_comparison_id=rpm_comparison_id,
+            rpm_difference_id=rpm_difference_id
+        )
+        ses.add(comment)
+        ses.commit()
+        return comment
 
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
