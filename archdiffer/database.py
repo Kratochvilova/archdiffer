@@ -57,20 +57,16 @@ class Comparison(Base):
         return comparison
 
     @staticmethod
-    def query(ses, modifiers=None):
+    def query(ses):
         """Query Comparison joined with its ComparisonType.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
-        query = ses.query(Comparison, ComparisonType).filter(
+        return ses.query(Comparison, ComparisonType).filter(
             Comparison.comparison_type_id == ComparisonType.id
         ).order_by(Comparison.id)
-        if modifiers is not None:
-            query = modify_query(query, modifiers)
-        return query
 
     @staticmethod
     def id_from_line(line):
@@ -123,18 +119,14 @@ class ComparisonType(Base):
         return "<ComparisonType(id='%s', name='%s')>" % (self.id, self.name)
 
     @staticmethod
-    def query(ses, modifiers=None):
+    def query(ses):
         """Query ComparisonType.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
-        query = ses.query(ComparisonType).order_by(ComparisonType.id)
-        if modifiers is not None:
-            query = modify_query(query, modifiers)
-        return query
+        return ses.query(ComparisonType).order_by(ComparisonType.id)
 
     @staticmethod
     def id_from_line(line):

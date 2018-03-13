@@ -13,7 +13,7 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository, RPMComment, pkg1, pkg2, repo1,
                              repo2, iter_query_result)
 from .. import constants
-from ....database import Comparison
+from ....database import Comparison, User, modify_query
 from ....flask_frontend.common_tasks import my_render_template
 from ....flask_frontend.database_tasks import TableDict
 from ....flask_frontend import filter_functions as app_filter_functions
@@ -41,6 +41,20 @@ def record_params(setup_state):
         [(key, value) for (key, value) in app.config.items()]
     )
 
+def add_filter(modifiers, new_filter):
+    """Add filter to the modifiers.
+
+    :param dict modifiers: modifiers
+    :param sqlalchemy.sql.expression.BinaryExpression new_filter: filter
+    :return dict modifiers: new modifiers
+    """
+    if modifiers is None:
+        modifiers = {}
+    if 'filter' not in modifiers:
+        modifiers['filter'] = []
+    modifiers['filter'].append(new_filter)
+    return modifiers
+
 class RPMTableDict(TableDict):
     """Dict of given table."""
     def get(self, id=None):
@@ -50,57 +64,15 @@ class RPMTableDict(TableDict):
         :param int id: id to optionaly filter by
         :return dict: dict of the resulting query
         """
+        query = self.make_query()
         additional_modifiers = None
         if id is not None:
             additional_modifiers = {'filter': [self.table.id == id]}
-        query = self.make_query(additional_modifiers=additional_modifiers)
+        modifiers = self.modifiers(additional=additional_modifiers)
+        query = modify_query(query, modifiers)
         return dict(iter_query_result(query, self.table))
 
-class RPMTableDictOuter(RPMTableDict):
-    """Dict of given table, implementing outer modifiers."""
-    def modifiers(self, additional=None):
-        """Get modifiers from request arguments, only limit and offset.
-
-        :return dict: modifiers
-        """
-        modifiers = request_parser.parse_request(
-            filters=self.filters, defaults=self.default_modifiers
-        )
-        if additional is not None:
-            modifiers = request_parser.update_modifiers(modifiers, additional)
-        return request_parser.get_request_arguments(
-            'limit', 'offset', args_dict=modifiers
-        )
-
-    def outer_modifiers(self, additional=None):
-        """Get modifiers from request arguments, exclude limit and offset.
-
-        :return dict: modifiers
-        """
-        modifiers = request_parser.parse_request(
-            filters=self.filters, defaults=self.default_modifiers
-        )
-        if additional is not None:
-            modifiers = request_parser.update_modifiers(modifiers, additional)
-        return request_parser.get_request_arguments(
-            'limit', 'offset', args_dict=modifiers, invert=True
-        )
-
-    def make_query(self, additional_modifiers=None):
-        """Call query method on the table with modifiers and outer_modifiers
-        as arguments.
-
-        :return sqlalchemy.orm.query.Query result: query
-        """
-        return self.table.query(
-            g.db_session,
-            modifiers=self.modifiers(),
-            outer_modifiers=self.outer_modifiers(
-                additional=additional_modifiers
-            )
-        )
-
-class RPMGroupsDict(RPMTableDictOuter):
+class RPMGroupsDict(RPMTableDict):
     """Dict of comparison groups."""
     table = Comparison
     filters = dict(
@@ -112,19 +84,13 @@ class RPMGroupsDict(RPMTableDictOuter):
         **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
     )
 
-    def make_query(self, additional_modifiers=None):
+    def make_query(self):
         """Call query method on the table with modifiers and outer_modifiers
         as arguments.
 
         :return sqlalchemy.orm.query.Query result: query
         """
-        return RPMComparison.comparisons_query(
-            g.db_session,
-            modifiers=self.modifiers(),
-            outer_modifiers=self.outer_modifiers(
-                additional=additional_modifiers
-            )
-        )
+        return RPMComparison.query_groups(g.db_session)
 
 class RPMComparisonsDict(RPMTableDict):
     """Dict of rpm comparisons."""
@@ -138,7 +104,7 @@ class RPMComparisonsDict(RPMTableDict):
         **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
     )
 
-class RPMDifferencesDict(RPMTableDictOuter):
+class RPMDifferencesDict(RPMTableDict):
     """Dict of rpm differences."""
     table = RPMDifference
     filters = dict(
@@ -152,10 +118,12 @@ class RPMDifferencesDict(RPMTableDictOuter):
         :param int id: RPMComparison id
         :return dict: dict of the resulting query
         """
+        query = self.make_query()
         additional_modifiers = None
         if id is not None:
             additional_modifiers = {'filter': [RPMComparison.id == id]}
-        query = self.make_query(additional_modifiers=additional_modifiers)
+        modifiers = self.modifiers(additional=additional_modifiers)
+        query = modify_query(query, modifiers)
         return dict(iter_query_result(query, self.table))
 
 class RPMPackagesDict(RPMTableDict):
@@ -176,6 +144,34 @@ class RPMCommentsDict(RPMTableDict):
     table = RPMComment
     filters = dict(**filter_functions.rpm_comments(prefix=''))
 
+    def get(self, id=None, username=None, id_comp=None, id_diff=None):
+        """Get dict.
+
+        :param int id: id to optionally filter by
+        :return dict: dict of the resulting query
+        """
+        query = self.make_query()
+        additional_modifiers = None
+        if id is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, RPMComparison.id == id
+            )
+        if username is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, User.name == username
+            )
+        if id_comp is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, RPMComparison.id == id_comp
+            )
+        if id_diff is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, RPMDifference.id == id_diff
+            )
+        modifiers = self.modifiers(additional=additional_modifiers)
+        query = modify_query(query, modifiers)
+        return dict(iter_query_result(query, self.table))
+
 flask_api.add_resource(RPMGroupsDict, '/rest/groups', '/rest/groups/<int:id>')
 flask_api.add_resource(
     RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
@@ -190,7 +186,12 @@ flask_api.add_resource(
     RPMRepositoriesDict, '/rest/repositories', '/rest/repositories/<int:id>'
 )
 flask_api.add_resource(
-    RPMCommentsDict, '/rest/comments', '/rest/comments/<int:id>'
+    RPMCommentsDict,
+    '/rest/comments',
+    '/rest/comments/<int:id>',
+    '/rest/comments/by_user/<string:username>',
+    '/rest/comments/by_comp/<int:id_comp>',
+    '/rest/comments/by_diff/<int:id_diff>'
 )
 
 class RPMIndexView(RPMGroupsDict):
@@ -200,8 +201,24 @@ class RPMIndexView(RPMGroupsDict):
 
     def dispatch_request(self, id=None):
         """Render template."""
-        comps = self.get(id=id)
-        items_count = RPMComparison.count(g.db_session)
+        additional_modifiers = None
+        if id is not None:
+            additional_modifiers = {'filter': [self.table.id == id]}
+        modifiers = self.modifiers(additional=additional_modifiers)
+
+        first = request_parser.get_request_arguments(
+            'limit', 'offset', args_dict=modifiers, invert=True
+        )
+        second = request_parser.get_request_arguments(
+            'limit', 'offset', args_dict=modifiers
+        )
+
+        query_ids = RPMComparison.query_group_ids(g.db_session)
+        query_ids = modify_query(query_ids, first)
+        items_count = query_ids.count()
+        query_ids = modify_query(query_ids, second)
+        query = RPMComparison.query_groups(g.db_session, query_ids.subquery())
+        comps = dict(iter_query_result(query, self.table))
 
         return my_render_template(
             self.template,
@@ -236,10 +253,22 @@ class RPMPackagesView(RPMPackagesDict):
     default_modifiers = {'limit': 5, 'offset': 0}
     template = 'rpm_show_packages.html'
 
-    def dispatch_request(self, id=None):
+    def dispatch_request(self, id=None, name=None):
         """Render template."""
-        pkgs = self.get(id=id)
-        items_count = RPMPackage.count(g.db_session)
+        query = self.make_query()
+
+        additional_modifiers = None
+        if id is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, self.table.id == id
+            )
+        if name is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, self.table.name == name
+            )
+        modifiers = self.modifiers(additional=additional_modifiers)
+
+        pkgs, items_count = self.apply_modifiers(query, modifiers)
 
         return my_render_template(
             self.template,
@@ -332,7 +361,7 @@ bp.add_url_rule(
 )
 bp.add_url_rule(
     '/packages/<string:name>',
-    view_func=RPMPackagesNameView.as_view('show_packages_name')
+    view_func=RPMPackagesView.as_view('show_packages_name')
 )
 bp.add_url_rule(
     '/repositories', view_func=RPMRepositoriesView.as_view('show_repositories')

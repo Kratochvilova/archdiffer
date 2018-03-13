@@ -9,7 +9,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
-from ... database import (Base, Comparison, ComparisonType, modify_query,
+from ... database import (Base, Comparison, ComparisonType, User,
                           general_iter_query_result)
 from . import constants
 from ... import constants as app_constants
@@ -117,13 +117,12 @@ class RPMComparison(BaseExported, Base):
         return rpm_comparison
 
     @staticmethod
-    def query(ses, modifiers=None):
+    def query(ses):
         """Query RPMComparison joined with its packages and their
         repositories.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(
@@ -134,11 +133,7 @@ class RPMComparison(BaseExported, Base):
             RPMComparison.pkg2_id == pkg2.id,
             pkg1.id_repo == repo1.id,
             pkg2.id_repo == repo2.id,
-        ).order_by(
-            RPMComparison.id
-        )
-        if modifiers is not None:
-            query = modify_query(query, modifiers)
+        ).order_by(RPMComparison.id)
         return query
 
     @staticmethod
@@ -176,33 +171,45 @@ class RPMComparison(BaseExported, Base):
         return result_dict
 
     @staticmethod
-    def count(ses):
-        """Count rpm_comparisons.
-
-        :param ses: session for communication with the database
-        :type ses: qlalchemy.orm.session.Session
-        :return int: number of rpm_comparisons
-        """
-        return RPMComparison.query(ses).count()
-
-    @staticmethod
-    def comparisons_query(ses, modifiers=None, outer_modifiers=None):
-        """Query Comparison outer-joined with RPMComparison and its packages
+    def query_group_ids(ses):
+        """Query Comparison.id outer-joined with RPMComparison and its packages
         and their repositories.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values;
-            will be applied before the outerjoin
-        :param dict outer_modifiers: dict of modifiers and their values;
-            will be applied after the outerjoin
         :return sqlalchemy.orm.query.Query: query
         """
-        query = ses.query(Comparison, ComparisonType).filter(
+        query = ses.query(Comparison.id).join(ComparisonType).filter(
+            ComparisonType.name == constants.COMPARISON_TYPE
+        ).outerjoin(
+            RPMComparison, RPMComparison.id_group == Comparison.id
+        ).outerjoin(
+            pkg1, RPMComparison.pkg1_id == pkg1.id
+        ).outerjoin(
+            pkg2, RPMComparison.pkg2_id == pkg2.id
+        ).outerjoin(
+            repo1, pkg1.id_repo == repo1.id,
+        ).outerjoin(
+            repo2, pkg2.id_repo == repo2.id,
+        ).order_by(Comparison.id).distinct()
+        return query
+
+    @staticmethod
+    def query_groups(ses, group_ids):
+        """Query Comparison joined with query of Comparison.id, outer-joined
+        with RPMComparison and its packages and their repositories.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :param sqlalchemy.orm.query.Query group_ids: query of Comparison.id
+        :return sqlalchemy.orm.query.Query: query
+        """
+        query = ses.query(Comparison).join(
+            group_ids, group_ids.c.id == Comparison.id
+        )
+        query = query.add_entity(ComparisonType).filter(
             ComparisonType.name == constants.COMPARISON_TYPE
         )
-        if modifiers is not None:
-            query = modify_query(query, modifiers).from_self()
         query = query.add_entity(RPMComparison).add_entity(pkg1)
         query = query.add_entity(pkg2).add_entity(repo1).add_entity(repo2)
         query = query.outerjoin(
@@ -213,16 +220,11 @@ class RPMComparison(BaseExported, Base):
             RPMComparison.pkg2_id == pkg2.id,
             pkg1.id_repo == repo1.id,
             pkg2.id_repo == repo2.id,
-        ).order_by(
-            Comparison.id
-        )
-        if outer_modifiers is not None:
-            query = modify_query(query, outer_modifiers)
-
+        ).order_by(Comparison.id)
         return query
 
     @staticmethod
-    def comparisons_id_from_line(line):
+    def id_from_line_groups(line):
         """Get Comparison id from line.
 
         :param line: named tuple (one item of query result) containing
@@ -232,7 +234,7 @@ class RPMComparison(BaseExported, Base):
         return line.Comparison.id
 
     @staticmethod
-    def comparisons_dict_from_line(line):
+    def dict_from_line_groups(line):
         """Get dict from line.
 
         :param line: named tuple (one item of query result) containing
@@ -347,27 +349,18 @@ class RPMDifference(BaseExported, Base):
         return difference
 
     @staticmethod
-    def query(ses, modifiers=None, outer_modifiers=None):
+    def query(ses):
         """Query RPMComparison joined with its packages and their repositories,
         outer-joined with RPMDifference.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values;
-            will be applied before the outerjoin
-        :param dict outer_modifiers: dict of modifiers and their values;
-            will be applied after the outerjoin
         :return sqlalchemy.orm.query.Query: query
         """
-        query = RPMComparison.query(ses, modifiers=modifiers)
+        query = RPMComparison.query(ses)
         query = query.add_entity(RPMDifference).outerjoin(
             RPMDifference, RPMDifference.id_comp == RPMComparison.id
-        ).order_by(
-            RPMComparison.id
-        )
-        if outer_modifiers is not None:
-            query = modify_query(query, outer_modifiers)
-
+        ).order_by(RPMComparison.id)
         return query
 
     @staticmethod
@@ -506,19 +499,16 @@ class RPMPackage(BaseExported, Base):
         return rpm_package
 
     @staticmethod
-    def query(ses, modifiers=None):
+    def query(ses):
         """Query RPMPackage joined with its repository.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(RPMPackage, RPMRepository).filter(
             RPMPackage.id_repo == RPMRepository.id
         ).order_by(RPMPackage.id)
-        if modifiers is not None:
-            query = modify_query(query, modifiers)
         return query
 
     @staticmethod
@@ -589,17 +579,14 @@ class RPMRepository(BaseExported, Base):
         return repo
 
     @staticmethod
-    def query(ses, modifiers=None):
+    def query(ses):
         """Query RPMRepository.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
         query = ses.query(RPMRepository).order_by(RPMRepository.id)
-        if modifiers is not None:
-            query = modify_query(query, modifiers)
         return query
 
     @staticmethod
@@ -683,17 +670,20 @@ class RPMComment(BaseExported, Base):
         return comment
 
     @staticmethod
-    def query(ses, modifiers=None):
+    def query(ses):
         """Query RPMComment.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param dict modifiers: dict of modifiers and their values
         :return sqlalchemy.orm.query.Query: query
         """
-        query = ses.query(RPMComment).order_by(RPMComment.id)
-        if modifiers is not None:
-            query = modify_query(query, modifiers)
+        query = ses.query(RPMComment, User).filter(
+            RPMComment.id_user == User.openid
+        ).add_entity(RPMComparison).outerjoin(
+            RPMComparison, RPMComparison.id == RPMComment.id_comp
+        ).add_entity(RPMDifference).outerjoin(
+            RPMDifference, RPMDifference.id == RPMComment.id_diff
+        ).order_by(RPMComment.id)
         return query
 
     @staticmethod
@@ -739,8 +729,8 @@ def iter_query_result(result, table):
         line_dict = table.dict_from_line
         name = 'differences'
     elif table == Comparison:
-        group_id = RPMComparison.comparisons_id_from_line
-        group_dict = RPMComparison.comparisons_dict_from_line
+        group_id = RPMComparison.id_from_line_groups
+        group_dict = RPMComparison.dict_from_line_groups
         line_dict = RPMComparison.dict_from_line
         name = 'comparisons'
     else:

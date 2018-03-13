@@ -9,7 +9,8 @@ Created on Fri Feb  9 22:32:02 2018
 from flask import g
 from flask_restful import Resource
 from .flask_app import flask_app, flask_api
-from ..database import Comparison, ComparisonType, iter_query_result
+from ..database import (Comparison, ComparisonType, modify_query,
+                        iter_query_result)
 from .common_tasks import my_render_template
 from . import request_parser
 from . import filter_functions
@@ -23,6 +24,7 @@ class TableDict(Resource):
     def modifiers(self, additional=None):
         """Get modifiers from request arguments.
 
+        :param dict additional: additional modifiers
         :return dict: modifiers
         """
         modifiers = request_parser.parse_request(
@@ -32,15 +34,32 @@ class TableDict(Resource):
             modifiers = request_parser.update_modifiers(modifiers, additional)
         return modifiers
 
-    def make_query(self, additional_modifiers=None):
-        """Call query method on the table with modifiers as argument.
+    def make_query(self):
+        """Call query method on the table.
 
-        :return sqlalchemy.orm.query.Query result: query
+        :return sqlalchemy.orm.query.Query: query
         """
-        return self.table.query(
-            g.db_session,
-            modifiers=self.modifiers(additional=additional_modifiers)
+        return self.table.query(g.db_session)
+
+    def apply_modifiers(self, query, modifiers):
+        """Apply modifiers on the query.
+
+        :param sqlalchemy.orm.query.Query query: query
+        :param dict modifiers: modifiers
+        :return (dict, int): (resulting dict,
+                count of items before apllying limit and offset)
+        """
+        first = request_parser.get_request_arguments(
+            'limit', 'offset', args_dict=modifiers, invert=True
         )
+        second = request_parser.get_request_arguments(
+            'limit', 'offset', args_dict=modifiers
+        )
+        query = modify_query(query, first)
+        items_count = query.count()
+        query = modify_query(query, second)
+        items = dict(iter_query_result(query, self.table))
+        return (items, items_count)
 
     def get(self, id=None):
         """Get dict.
@@ -51,8 +70,10 @@ class TableDict(Resource):
         additional_modifiers = None
         if id is not None:
             additional_modifiers = {'filter': [self.table.id == id]}
-        query = self.make_query(additional_modifiers=additional_modifiers)
-        return dict(iter_query_result(query, self.table))
+        modifiers = self.modifiers(additional=additional_modifiers)
+        query = self.make_query()
+        items, items_count = self.apply_modifiers(query, modifiers)
+        return items
 
 class ComparisonsDict(TableDict):
     """Dict of comparisons."""
@@ -73,8 +94,14 @@ class ComparisonsView(ComparisonsDict):
 
     def dispatch_request(self, id=None):
         """Render template."""
-        comps = self.get(id=id)
-        items_count = Comparison.count(g.db_session)
+        query = self.make_query()
+
+        additional_modifiers = None
+        if id is not None:
+            additional_modifiers = {'filter': [self.table.id == id]}
+        modifiers = self.modifiers(additional=additional_modifiers)
+
+        comps, items_count = self.apply_modifiers(query, modifiers)
 
         return my_render_template(
             'show_comparisons.html',
