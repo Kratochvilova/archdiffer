@@ -96,16 +96,6 @@ class Comparison(Base):
         }
         return result_dict
 
-    @staticmethod
-    def count(ses):
-        """Count comparisons.
-
-        :param ses: session for communication with the database
-        :type ses: qlalchemy.orm.session.Session
-        :return int: number of comparisons
-        """
-        return Comparison.query(ses).count()
-
 class ComparisonType(Base):
     """Database model of comparison types."""
     __tablename__ = 'comparison_types'
@@ -149,16 +139,6 @@ class ComparisonType(Base):
             'name': line.name,
         }
         return result_dict
-
-    @staticmethod
-    def count(ses):
-        """Count comparison_types.
-
-        :param ses: session for communication with the database
-        :type ses: qlalchemy.orm.session.Session
-        :return int: number of comparison_types
-        """
-        return ComparisonType.query(ses).count()
 
 class User(Base):
     """Database model of users."""
