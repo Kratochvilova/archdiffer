@@ -5,7 +5,8 @@ Created on Tue Oct  3 10:56:53 2017
 @author: pavla
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import (Column, Integer, String, Boolean, DateTime, ForeignKey,
+                        func)
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
@@ -582,6 +583,8 @@ class RPMComment(BaseExported, Base):
     to_export = ['id', 'text']
 
     id = Column(Integer, primary_key=True, nullable=False)
+    # time is set when commited
+    time = Column(DateTime, default=func.now())
     text = Column(String)
     id_user = Column(String, ForeignKey('users.openid'), nullable=False)
     id_comp = Column(Integer, ForeignKey('rpm_comparisons.id'))
@@ -596,9 +599,10 @@ class RPMComment(BaseExported, Base):
     )
 
     def __repr__(self):
-        return ("<Comment(id='%s', text='%s', id_user='%s', id_comp='%s', "
-                "id_diff='%s')>") % (
+        return ("<Comment(id='%s', time='%s', text='%s', id_user='%s', "
+                "id_comp='%s', id_diff='%s')>") % (
                     self.id,
+                    self.time,
                     self.text,
                     self.id_user,
                     self.id_comp,
@@ -661,6 +665,7 @@ class RPMComment(BaseExported, Base):
         :return dict: dict of RPMComment column values
         """
         result_dict = line.RPMComment.exported()
+        result_dict['time'] = str(line.RPMComment.time)
         result_dict['username'] = line.User.name
         if line.RPMComparison is not None:
             result_dict['comparison'] = line.RPMComparison.exported()

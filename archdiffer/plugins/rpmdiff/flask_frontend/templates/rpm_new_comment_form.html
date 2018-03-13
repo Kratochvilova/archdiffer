@@ -1,6 +1,6 @@
 <div class="form">
   {% if session.openid %}
-    <form action="{{ url_for('rpmdiff.add_comment') }}" method="post" class="add-comment">
+    <form action="{{ url_for('rpmdiff.add_comment') }}" method="post" class="add-entry">
       <fieldset class="comment">
         <legend>New comment</legend>
         <ul>
@@ -12,7 +12,7 @@
             {% if 'id_comp' in request.view_args %}
               <input type="hidden" name="id_comp" value="{{ request.view_args.id_comp }}" />
             {% endif %}
-            <input id="text" name="text" type="text" />
+            <textarea rows=5 cols=50 name="text"></textarea>
           </li>
         </ul>
       </fieldset>

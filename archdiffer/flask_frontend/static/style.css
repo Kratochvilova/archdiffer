@@ -56,7 +56,7 @@ table td {
     border: #e0e1e4;
 }
 
-.darktheme a, h1, h2, h3 {
+.darktheme a, h1, h2, h3, h4 {
     color: #e0e1e4;
 }
 
@@ -70,7 +70,7 @@ table td {
     border: #283157;
 }
 
-.middletheme a, h1, h2, h3 {
+.middletheme a, h1, h2, h3, h4 {
     color: #283157;
 }
 
@@ -79,7 +79,7 @@ table td {
     border: #e0e1e4;
 }
 
-.lighttheme h1, h2, h3 {
+.lighttheme h1, h2, h3, h4 {
     color: #283157;
 }
 
@@ -130,18 +130,16 @@ table td {
 
 
 
+form {
+    display: inline;
+}
+
 .add-entry {
     font-size: 0.9em;
     border-bottom: 1px solid #ccc;
 }
 
-.package1 legend {
-    color: #283157;
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-.package2 legend {
+.add-entry legend {
     color: #283157;
     font-size: 1.2em;
     font-weight: bold;
