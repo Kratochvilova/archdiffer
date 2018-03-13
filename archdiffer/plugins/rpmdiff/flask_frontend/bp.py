@@ -90,7 +90,25 @@ class RPMGroupsDict(RPMTableDict):
 
         :return sqlalchemy.orm.query.Query result: query
         """
-        return RPMComparison.query_groups(g.db_session)
+        return RPMComparison.query_group_ids(g.db_session)
+
+    def get(self, id=None):
+        """Get dict.
+        (Overriden because of different iter_query_result function.)
+
+        :param int id: id to optionaly filter by
+        :return dict: dict of the resulting query
+        """
+        query_ids = RPMComparison.query_group_ids(g.db_session)
+
+        additional_modifiers = None
+        if id is not None:
+            additional_modifiers = {'filter': [self.table.id == id]}
+        modifiers = self.modifiers(additional=additional_modifiers)
+
+        query_ids = modify_query(query_ids, modifiers)
+        query = RPMComparison.query_groups(g.db_session, query_ids.subquery())
+        return dict(iter_query_result(query, self.table))
 
 class RPMComparisonsDict(RPMTableDict):
     """Dict of rpm comparisons."""
