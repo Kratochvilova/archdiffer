@@ -139,15 +139,6 @@ def get_request_arguments(*names, args_dict=None, invert=False):
         return {k:v for k, v in args_dict.items() if k not in names}
     return {k:v for k, v in args_dict.items() if k in names}
 
-def get_pagination_modifiers(defaults=None):
-    """Get modifiers limit and offset.
-
-    :param dict defaults: default values of the modifiers
-    :return dict: dict of modifiers
-    """
-    args_dict = parse_request(defaults=defaults)
-    return get_request_arguments('limit', 'offset', args_dict=args_dict)
-
 def update_modifiers(old_modifiers, new_modifiers):
     """Update modifiers.
 
