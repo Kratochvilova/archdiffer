@@ -1,0 +1,9 @@
+<div class="comments">
+  <ul>
+    {% for id, comm in comments.items() %}
+      <li>
+        {{ comm['username'] }}: {{ comm['text'] }}
+      </li>
+    {% endfor %}
+  </ul>
+</div>

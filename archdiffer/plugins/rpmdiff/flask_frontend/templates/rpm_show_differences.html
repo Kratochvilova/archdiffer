@@ -22,6 +22,10 @@
         </tr>
       </table>
 
+      <form action="{{ url_for('rpmdiff.show_comments_comp', id_comp=id_comp) }}" method="get">
+        <input type="submit" value="Comments" />
+      </form>
+
       <h3>Differences in tags</h3>
       <table>
         {% include 'rpm_difference_header.html' %}

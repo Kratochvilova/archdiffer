@@ -10,5 +10,8 @@
       <input type="hidden" name="id_comp" value="{{ id_comp }}" />
       <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
     </form>
+    <form action="{{ url_for('rpmdiff.show_comments_diff', id_diff=diff['id']) }}" method="get">
+      <input type="submit" value="Comments" />
+    </form>
   </td>
 </tr>
