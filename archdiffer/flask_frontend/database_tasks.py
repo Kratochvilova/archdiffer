@@ -34,13 +34,6 @@ class TableDict(Resource):
             modifiers = request_parser.update_modifiers(modifiers, additional)
         return modifiers
 
-    def make_query(self):
-        """Call query method on the table.
-
-        :return sqlalchemy.orm.query.Query: query
-        """
-        return self.table.query(g.db_session)
-
     def apply_modifiers(self, query, modifiers):
         """Apply modifiers on the query.
 
@@ -67,12 +60,12 @@ class TableDict(Resource):
         :param int id: id to optionaly filter by
         :return dict: dict of the resulting query
         """
+        query = self.table.query(g.db_session)
         additional_modifiers = None
         if id is not None:
             additional_modifiers = {'filter': [self.table.id == id]}
         modifiers = self.modifiers(additional=additional_modifiers)
-        query = self.make_query()
-        items, items_count = self.apply_modifiers(query, modifiers)
+        items, _ = self.apply_modifiers(query, modifiers)
         return items
 
 class ComparisonsDict(TableDict):
@@ -94,13 +87,11 @@ class ComparisonsView(ComparisonsDict):
 
     def dispatch_request(self, id=None):
         """Render template."""
-        query = self.make_query()
-
+        query = self.table.query(g.db_session)
         additional_modifiers = None
         if id is not None:
             additional_modifiers = {'filter': [self.table.id == id]}
         modifiers = self.modifiers(additional=additional_modifiers)
-
         comps, items_count = self.apply_modifiers(query, modifiers)
 
         return my_render_template(
