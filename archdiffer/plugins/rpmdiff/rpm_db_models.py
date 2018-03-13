@@ -247,18 +247,6 @@ class RPMComparison(BaseExported, Base):
             'state': app_constants.STATE_STRINGS[line.Comparison.state],
         }
 
-    @staticmethod
-    def comparisons_count(ses):
-        """Count comparisons of COMPARISON_TYPE type.
-
-        :param ses: session for communication with the database
-        :type ses: qlalchemy.orm.session.Session
-        :return int: number of comparisons of COMPARISON_TYPE type
-        """
-        return Comparison.query(ses).filter(
-            ComparisonType.name == constants.COMPARISON_TYPE
-        ).count()
-
 class RPMDifference(BaseExported, Base):
     """Database model of rpm differences."""
     __tablename__ = 'rpm_differences'
@@ -395,16 +383,6 @@ class RPMDifference(BaseExported, Base):
             ]
         return result_dict
 
-    @staticmethod
-    def count(ses, id_comp):
-        """Count rpm_differences that belong to rpm_comparison with set id.
-
-        :param ses: session for communication with the database
-        :type ses: qlalchemy.orm.session.Session
-        :return int: number of rpm_differences of given rpm_comparison
-        """
-        return RPMDifference.query(ses).filter(id_comp=id_comp).count()
-
 class RPMPackage(BaseExported, Base):
     """Database model of rpm packages."""
     __tablename__ = 'rpm_packages'
@@ -534,16 +512,6 @@ class RPMPackage(BaseExported, Base):
         result_dict['repo'] = line.RPMRepository.exported()
         return result_dict
 
-    @staticmethod
-    def count(ses):
-        """Count rpm_packages.
-
-        :param ses: session for communication with the database
-        :type ses: qlalchemy.orm.session.Session
-        :return int: number of rpm_packages
-        """
-        return RPMPackage.query(ses).count()
-
 class RPMRepository(BaseExported, Base):
     """Database model of rpm repositories."""
     __tablename__ = 'rpm_repositories'
@@ -606,16 +574,6 @@ class RPMRepository(BaseExported, Base):
         :return dict: dict of RPMRepository column values
         """
         return {'path': line.path}
-
-    @staticmethod
-    def count(ses):
-        """Count rpm_repositories.
-
-        :param ses: session for communication with the database
-        :type ses: qlalchemy.orm.session.Session
-        :return int: number of rpm_repositories
-        """
-        return RPMRepository.query(ses).count()
 
 class RPMComment(BaseExported, Base):
     """Database model of rpm comments."""
@@ -703,16 +661,6 @@ class RPMComment(BaseExported, Base):
         :return dict: dict of RPMComment column values
         """
         return {'text': line.text}
-
-    @staticmethod
-    def count(ses):
-        """Count rpm_comments.
-
-        :param ses: session for communication with the database
-        :type ses: qlalchemy.orm.session.Session
-        :return int: number of rpm_repositories
-        """
-        return RPMComment.query(ses).count()
 
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
