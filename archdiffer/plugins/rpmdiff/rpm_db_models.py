@@ -596,13 +596,13 @@ class RPMComment(BaseExported, Base):
     )
 
     def __repr__(self):
-        return ("<Comment(id='%s', text='%s', user_openid='%s', "
-                "rpm_comparison_id='%s', rpm_difference_id='%s')>") % (
+        return ("<Comment(id='%s', text='%s', id_user='%s', id_comp='%s', "
+                "id_diff='%s')>") % (
                     self.id,
                     self.text,
-                    self.user_openid,
-                    self.rpm_comparison_id,
-                    self.rpm_difference_id
+                    self.id_user,
+                    self.id_comp,
+                    self.id_diff
                 )
 
     @staticmethod
