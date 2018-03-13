@@ -651,7 +651,7 @@ class RPMComment(BaseExported, Base):
         :param RPMComment line: RPMComment
         :return int: RPMComment id
         """
-        return line.id
+        return line.RPMComment.id
 
     @staticmethod
     def dict_from_line(line):
@@ -660,7 +660,13 @@ class RPMComment(BaseExported, Base):
         :param RPMComment line: RPMComment
         :return dict: dict of RPMComment column values
         """
-        return {'text': line.text}
+        result_dict = line.RPMComment.exported()
+        result_dict['username'] = line.User.name
+        if line.RPMComparison is not None:
+            result_dict['comparison'] = line.RPMComparison.exported()
+        if line.RPMDifference is not None:
+            result_dict['difference'] = line.RPMDifference.exported()
+        return result_dict
 
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.
