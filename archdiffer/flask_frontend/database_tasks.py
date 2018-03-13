@@ -110,7 +110,7 @@ class ComparisonTypesView(ComparisonTypesDict):
         """Render template."""
         return my_render_template(
             'show_comparison_types.html',
-            items_count=ComparisonType.count(g.db_session),
+            items_count=g.db_session.query(ComparisonType).count(),
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
         )
