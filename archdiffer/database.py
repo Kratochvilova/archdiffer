@@ -173,13 +173,13 @@ class User(Base):
     __tablename__ = 'users'
 
     openid = Column(String, primary_key=True, nullable=False)
-    name = Column(String)
+    name = Column(String, nullable=False, unique=True)
     email = Column(String)
 
     def __repr__(self):
         return "<User(openid='%s', name='%s', email='%s')>" % (
-                    self.openid, self.name, self.email
-                )
+            self.openid, self.name, self.email
+        )
 
     @staticmethod
     def query_by_openid(ses, openid):
