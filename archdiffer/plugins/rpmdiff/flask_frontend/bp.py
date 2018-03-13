@@ -197,7 +197,6 @@ class RPMIndexView(RPMGroupsDict):
     """View of index."""
     default_modifiers = {'limit': 5, 'offset': 0}
     template = 'rpm_show_index.html'
-    endpoint = 'rpmdiff.index'
 
     def dispatch_request(self, id=None):
         """Render template."""
@@ -210,8 +209,6 @@ class RPMIndexView(RPMGroupsDict):
             items_count=items_count,
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
-            endpoint=self.endpoint,
-            arguments={'id': id},
         )
 
 class RPMComparisonsView(RPMIndexView):
@@ -238,7 +235,6 @@ class RPMPackagesView(RPMPackagesDict):
     """View of packages."""
     default_modifiers = {'limit': 5, 'offset': 0}
     template = 'rpm_show_packages.html'
-    endpoint = 'rpmdiff.show_packages'
 
     def dispatch_request(self, id=None):
         """Render template."""
@@ -251,45 +247,23 @@ class RPMPackagesView(RPMPackagesDict):
             items_count=items_count,
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
-            endpoint=self.endpoint,
-            arguments={'id': id},
-        )
-
-class RPMPackagesNameView(RPMPackagesDict):
-    """View of packages."""
-    default_modifiers = {'limit': 5, 'offset': 0}
-    template = 'rpm_show_packages.html'
-    endpoint = 'rpmdiff.show_packages_name'
-
-    def dispatch_request(self, name):
-        """Render template."""
-        additional_modifiers = None
-        if name is not None:
-            additional_modifiers = {'filter': [RPMPackage.name == name]}
-        query = self.make_query(additional_modifiers=additional_modifiers)
-        pkgs = dict(iter_query_result(query, self.table))
-        items_count = RPMPackage.count(g.db_session)
-
-        return my_render_template(
-            self.template,
-            pkgs=pkgs,
-            items_count=items_count,
-            limit=self.modifiers()['limit'],
-            offset=self.modifiers()['offset'],
-            endpoint=self.endpoint,
-            arguments={'name': name},
         )
 
 class RPMRepositoriesView(RPMRepositoriesDict):
-    """View of packages."""
+    """View of repositories."""
     default_modifiers = {'limit': 5, 'offset': 0}
     template = 'rpm_show_repositories.html'
-    endpoint = 'rpmdiff.show_repositories'
 
     def dispatch_request(self, id=None):
         """Render template."""
-        repos = self.get(id=id)
-        items_count = RPMRepository.count(g.db_session)
+        query = self.make_query()
+
+        additional_modifiers = None
+        if id is not None:
+            additional_modifiers = {'filter': [self.table.id == id]}
+        modifiers = self.modifiers(additional=additional_modifiers)
+
+        repos, items_count = self.apply_modifiers(query, modifiers)
 
         return my_render_template(
             self.template,
@@ -297,8 +271,45 @@ class RPMRepositoriesView(RPMRepositoriesDict):
             items_count=items_count,
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
-            endpoint=self.endpoint,
-            arguments={'id': id},
+        )
+
+class RPMCommentsView(RPMCommentsDict):
+    """View of comments."""
+    default_modifiers = {'limit': 5, 'offset': 0}
+    template = 'rpm_show_comments.html'
+
+    def dispatch_request(self, id=None, username=None, id_comp=None,
+                         id_diff=None):
+        """Render template."""
+        query = self.make_query()
+
+        additional_modifiers = None
+        if id is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, RPMComparison.id == id
+            )
+        if username is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, User.name == username
+            )
+        if id_comp is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, RPMComparison.id == id_comp
+            )
+        if id_diff is not None:
+            additional_modifiers = add_filter(
+                additional_modifiers, RPMDifference.id == id_diff
+            )
+        modifiers = self.modifiers(additional=additional_modifiers)
+
+        comments, items_count = self.apply_modifiers(query, modifiers)
+
+        return my_render_template(
+            self.template,
+            comments=comments,
+            items_count=items_count,
+            limit=self.modifiers()['limit'],
+            offset=self.modifiers()['offset'],
         )
 
 bp.add_url_rule('/', view_func=RPMIndexView.as_view('index'))

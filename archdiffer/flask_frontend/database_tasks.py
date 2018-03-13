@@ -82,8 +82,6 @@ class ComparisonsView(ComparisonsDict):
             items_count=items_count,
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
-            endpoint='index',
-            arguments={'id': id},
         )
 
 class ComparisonTypesView(ComparisonTypesDict):
@@ -97,10 +95,7 @@ class ComparisonTypesView(ComparisonTypesDict):
             items_count=ComparisonType.count(g.db_session),
             limit=self.modifiers()['limit'],
             offset=self.modifiers()['offset'],
-            endpoint='show_comparison_types',
-            arguments={},
         )
-        return my_render_template('show_comparison_types.html')
 
 flask_api.add_resource(
     ComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
