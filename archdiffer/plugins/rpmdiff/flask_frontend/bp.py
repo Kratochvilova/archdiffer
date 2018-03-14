@@ -440,6 +440,19 @@ def waive():
         url_for('rpmdiff.show_differences', id=request.form['id_comp'])
     )
 
+@bp.route('/filter_diffs', methods=['POST'])
+def filter_diffs():
+    """Add request for filtering differences in given comparison."""
+    id_comp = request.form['id_comp']
+    comp = g.db_session.query(RPMComparison).filter_by(id=id_comp).one()
+    comp.update_state(g.db_session, constants.STATE_FILTERING)
+    celery_app.send_task(
+        'rpmdiff.filter_diffs', args=(id_comp,)
+    )
+    return redirect(
+        url_for('rpmdiff.show_differences', id=request.form['id_comp'])
+    )
+
 @bp.route('/add_comment', methods=['POST'])
 def add_comment():
     """Add new comment."""

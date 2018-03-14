@@ -10,11 +10,14 @@ COMPARISON_TYPE = 'rpmdiff'
 
 STATE_NEW = 0
 STATE_DONE = 1
+STATE_FILTERING = 2
 STATE_STRINGS = {
     STATE_NEW: 'new',
     'new': STATE_NEW,
     STATE_DONE: 'done',
     'done': STATE_DONE,
+    STATE_FILTERING: 'filtering',
+    'filtering': STATE_FILTERING,
 }
 
 CATEGORY_TAGS = 0

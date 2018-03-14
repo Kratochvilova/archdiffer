@@ -22,6 +22,10 @@
         </tr>
       </table>
 
+      <form action="{{ url_for('rpmdiff.filter_diffs') }}" method="post">
+        <input type="hidden" name="id_comp" value="{{ id_comp }}" />
+        <input type="submit" value="Filter" />
+      </form>
       <form action="{{ url_for('rpmdiff.show_comments_comp', id_comp=id_comp) }}" method="get">
         <input type="submit" value="Comments" />
       </form>

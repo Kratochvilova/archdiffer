@@ -6,4 +6,4 @@ Created on Sat Nov 25 11:43:08 2017
 @author: pavla
 """
 
-from . import compare
+from . import compare, filter_diffs
