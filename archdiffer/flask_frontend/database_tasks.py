@@ -83,7 +83,7 @@ class ComparisonTypesDict(TableDict):
 
 class ComparisonsView(ComparisonsDict):
     """View of comparisons."""
-    default_modifiers = {'limit': 5, 'offset': 0}
+    default_modifiers = {'limit': 10, 'offset': 0}
 
     def dispatch_request(self, id=None):
         """Render template."""
@@ -104,7 +104,7 @@ class ComparisonsView(ComparisonsDict):
 
 class ComparisonTypesView(ComparisonTypesDict):
     """View of comparison types."""
-    default_modifiers = {'limit': 5, 'offset': 0}
+    default_modifiers = {'limit': 10, 'offset': 0}
 
     def dispatch_request(self):
         """Render template."""

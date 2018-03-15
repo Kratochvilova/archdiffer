@@ -204,7 +204,7 @@ flask_api.add_resource(
 
 class RPMIndexView(RPMGroupsDict):
     """View of index."""
-    default_modifiers = {'limit': 5, 'offset': 0}
+    default_modifiers = {'limit': 10, 'offset': 0}
     template = 'rpm_show_index.html'
 
     def dispatch_request(self, id=None):
@@ -258,7 +258,7 @@ class RPMDifferencesView(RPMDifferencesDict):
 
 class RPMPackagesView(RPMPackagesDict):
     """View of packages."""
-    default_modifiers = {'limit': 5, 'offset': 0}
+    default_modifiers = {'limit': 10, 'offset': 0}
     template = 'rpm_show_packages.html'
 
     def dispatch_request(self, id=None, name=None):
@@ -288,7 +288,7 @@ class RPMPackagesView(RPMPackagesDict):
 
 class RPMRepositoriesView(RPMRepositoriesDict):
     """View of repositories."""
-    default_modifiers = {'limit': 5, 'offset': 0}
+    default_modifiers = {'limit': 10, 'offset': 0}
     template = 'rpm_show_repositories.html'
 
     def dispatch_request(self, id=None):
@@ -312,7 +312,7 @@ class RPMRepositoriesView(RPMRepositoriesDict):
 
 class RPMCommentsView(RPMCommentsDict):
     """View of comments."""
-    default_modifiers = {'limit': 5, 'offset': 0}
+    default_modifiers = {'limit': 10, 'offset': 0}
     template = 'rpm_show_comments.html'
 
     def dispatch_request(self, id=None, username=None, id_comp=None,
