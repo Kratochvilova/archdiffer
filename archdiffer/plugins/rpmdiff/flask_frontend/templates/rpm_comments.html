@@ -1,13 +1,11 @@
-<div class="comments">
-  <ul>
-    {% for id, comm in comments.items() %}
-      <li>
-        <p>Author: {{ comm['username'] }}</p>
-        <p>Time: {{ comm['time'] }}</p>
-        <p>Comment: {{ comm['text'] }}</p>
-      </li>
-    {% else %}
-      No comments yet.
-    {% endfor %}
-  </ul>
-</div>
+<ul>
+  {% for id, comm in comments.items() %}
+    <li>
+      <p>Author: {{ comm['username'] }}</p>
+      <p>Time: {{ comm['time'] }}</p>
+      <p>Comment: {{ comm['text'] }}</p>
+    </li>
+  {% else %}
+    No comments yet.
+  {% endfor %}
+</ul>

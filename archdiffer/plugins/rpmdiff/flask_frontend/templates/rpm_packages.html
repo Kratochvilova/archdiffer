@@ -1,5 +1,5 @@
-<div class="packages">
-  <table>
+<table class="table table-striped">
+  <thead>
     <tr>
       <th>ID</th>
       <th>Name</th>
@@ -9,6 +9,8 @@
       <th>Release</th>
       <th>Repo path</th>
     </tr>
+  </thead>
+  <tbody>
     {% for id, pkg in pkgs.items() %}
       <tr>
         <td><a href="{{ url_for('rpmdiff.show_package', id=id) }}">{{ id }}</a></td>
@@ -20,5 +22,5 @@
         <td><a href="{{ pkg['repo']['path'] }}">{{ pkg['repo']['path'] }}</a></td>
       </tr>
     {% endfor %}
-  </table>
-</div>
+  </tbody>
+</table>

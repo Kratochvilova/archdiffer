@@ -1,14 +1,16 @@
-<div class="groups">
-  {% for id, comp in comparisons.items() %}
-    <a href="{{ url_for('rpmdiff.show_group', id=id) }}"><h3>Group {{ id }}</h3></a>
-    <p>{{ comp['time'] }}</p>
-    <table>
+{% for id, comp in comparisons.items() %}
+  <a href="{{ url_for('rpmdiff.show_group', id=id) }}"><h3>Group {{ id }}</h3></a>
+  <p>{{ comp['time'] }}</p>
+  <table class="table table-striped">
+    <thead>
       <tr>
         <th>Id</th>
         <th>Pkg 1</th>
         <th>Pkg 2</th>
         <th>State</th>
       </tr>
+    </thead>
+    <tbody>
       {% for rpm_comp in comp['comparisons'] %}
         <tr>
           <td><a href="{{ url_for('rpmdiff.show_differences', id=rpm_comp['id']) }}">{{ rpm_comp['id'] }}</a></td>
@@ -17,6 +19,6 @@
           <td>{{ rpm_comp['state'] }}</td>
         </tr>
       {% endfor %}
-    </table>
-  {% endfor %}
-</div>
+    </tbody>
+  </table>
+{% endfor %}

@@ -2,21 +2,18 @@
   {% if session.openid %}
     <form action="{{ url_for('rpmdiff.add_comment') }}" method="post" class="add-entry">
       <fieldset class="comment">
-        <legend>New comment</legend>
-        <ul>
-          <li>
-            <label for="text">Text: </label><br>
-            {% if 'id_diff' in request.view_args %}
-              <input type="hidden" name="id_diff" value="{{ request.view_args.id_diff }}" />
-            {% endif %}
-            {% if 'id_comp' in request.view_args %}
-              <input type="hidden" name="id_comp" value="{{ request.view_args.id_comp }}" />
-            {% endif %}
-            <textarea rows=5 cols=50 name="text"></textarea>
-          </li>
-        </ul>
+        <div class="form-group">
+          <label for="text">Text: </label><br>
+          {% if 'id_diff' in request.view_args %}
+            <input type="hidden" name="id_diff" value="{{ request.view_args.id_diff }}" />
+          {% endif %}
+          {% if 'id_comp' in request.view_args %}
+            <input type="hidden" name="id_comp" value="{{ request.view_args.id_comp }}" />
+          {% endif %}
+          <textarea class="form-control" rows=5 cols=50 name="text"></textarea>
+        </div>
       </fieldset>
-      <input class="submit" type="submit" value="Submit" />
+      <button type="submit" class="btn btn-default">Submit</button>
     </form>
   {% endif %}
 </div>

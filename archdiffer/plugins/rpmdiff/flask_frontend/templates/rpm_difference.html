@@ -1,17 +1,22 @@
-<tr>
-  <td>{{ diff['id'] }}</td>
-  <td class={{ 'diff_type_' + diff['diff_type'] }}>{{ diff['diff_type'] }}</td>
-  <td>{{ diff['diff'] }}</td>
-  <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
-  <td {% if diff['waived'] %} class="state_waived" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
-  <td>
-    <form action="{{ url_for('rpmdiff.waive') }}" method="post">
-      <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
-      <input type="hidden" name="id_comp" value="{{ id_comp }}" />
-      <input type="submit" {% if diff['waived'] %} value="Unwaive" {% else %} value="Waive" {% endif %}/>
-    </form>
-    <form action="{{ url_for('rpmdiff.show_comments_diff', id_diff=diff['id']) }}" method="get">
-      <input type="submit" value="Comments" />
-    </form>
-  </td>
-</tr>
+<tbody>
+  <tr>
+    <td>{{ diff['id'] }}</td>
+    <td {% if diff['diff_type'] == "added" %} class="success"
+      {% elif diff['diff_type'] == "removed" %} class="error"
+      {% else %} class="warning"
+      {% endif %}>{{ diff['diff_type'] }}</td>
+    <td>{{ diff['diff'] }}</td>
+    <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
+    <td {% if diff['waived'] %} class="success" {% else %} class={{ 'state_' + diff['state'] }} {% endif %}>{{ diff['state'] }}</td>
+    <td>
+      <form class="btn-group" action="{{ url_for('rpmdiff.waive') }}" method="post">
+        <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
+        <input type="hidden" name="id_comp" value="{{ id_comp }}" />
+        <button type="submit" class="btn btn-success">{% if diff['waived'] %}Unwaive{% else %}Waive{% endif %}</button>
+      </form>
+      <form class="btn-group" action="{{ url_for('rpmdiff.show_comments_diff', id_diff=diff['id']) }}" method="get">
+        <button type="submit" class="btn btn-default">Comments</button>
+      </form>
+    </td>
+  </tr>
+</tbody>

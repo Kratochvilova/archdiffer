@@ -1,5 +1,5 @@
-<div class="comparisons">
-  <table>
+<table class="table table-striped">
+  <thead>
     <tr>
       <th>Id</th>
       <th>Group</th>
@@ -8,6 +8,8 @@
       <th>Pkg 2</th>
       <th>State</th>
     </tr>
+  </thead>
+  <tbody>
     {% for id, comp in comparisons.items() %}
       {% if comp['comparisons']|length > 1 %}
         <tr>
@@ -31,5 +33,5 @@
         {% endfor %}
       {% endif %}
     {% endfor %}
-  </table>
-</div>
+  </tbody>
+</table>

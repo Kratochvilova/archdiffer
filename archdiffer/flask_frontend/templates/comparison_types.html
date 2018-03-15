@@ -1,7 +1,16 @@
-<div class="plugins">
-  <ul>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Comparison Type</th>
+      <th>ID</th>
+    </tr>
+  </thead>
+  <tbody>
     {% for type in comparison_types %}
-      <li><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></li>
+    <tr>
+      <td><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></td>
+      <td><a href="{{ url_for('index') + type.name }}">{{ type.id }}</a></td>
+    </tr>
     {% endfor %}
-  </ul>
-</div>
+  </tbody>
+</table>
