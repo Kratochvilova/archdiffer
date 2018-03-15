@@ -56,7 +56,7 @@
           </ul>
           <ul class="nav nav-sidebar">
             {% for type in comparison_types %}
-              <li><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></li>
+              <li><a href="{{ url_for('index') + type.name }}"><b>{{ type.name }}</b></a></li>
             {% endfor %}
           </ul>
         </div>
