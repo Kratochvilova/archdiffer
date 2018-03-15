@@ -58,12 +58,13 @@
             {% for type in comparison_types %}
               <li {% if request.endpoint == 'rpmdiff.index' %} class="active" {% endif %} ><a href="{{ url_for('index') + type.name }}"><b>{{ type.name }}</b></a></li>
               {% if type.name == 'rpmdiff' %}
+                
                 {% if session.openid %}
-                  <li {% if request.endpoint == 'rpmdiff.show_new_comparison_form' %} class="active" {% endif %} ><a href="{{ url_for('rpmdiff.show_new_comparison_form') }}">New Comparison</a></li>
+                  <li {% if active_page == "New Comparison" %} class="active"{% endif%}><a href="{{ url_for('rpmdiff.show_new_comparison_form') }}">New Comparison</a></li>
                 {% endif %}
-                <li {% if request.endpoint == 'rpmdiff.show_comparisons' %} class="active" {% endif %} ><a href="{{ url_for('rpmdiff.show_comparisons') }}">Comparisons</a></li>
-                <li {% if request.endpoint == 'rpmdiff.show_packages' %} class="active" {% endif %} ><a href="{{ url_for('rpmdiff.show_packages') }}">Packages</a></li>
-                <li {% if request.endpoint == 'rpmdiff.show_repositories' %} class="active" {% endif %} ><a href="{{ url_for('rpmdiff.show_repositories') }}">Repositories</a></li>
+                <li {% if active_page == "Comparisons" %} class="active"{% endif%}><a href="{{ url_for('rpmdiff.show_comparisons') }}">Comparisons</a></li>
+                <li {% if active_page == "Packages" %} class="active"{% endif%}><a href="{{ url_for('rpmdiff.show_packages') }}">Packages</a></li>
+                <li {% if active_page == "Repositories" %} class="active"{% endif%}><a href="{{ url_for('rpmdiff.show_repositories') }}">Repositories</a></li>
               {% endif %}
             {% endfor %}
           </ul>
