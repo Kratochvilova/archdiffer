@@ -250,4 +250,4 @@ def compare(pkg1, pkg2):
         # Update RPMComparison state
         rpm_comparison.update_state(session, constants.STATE_DONE)
 
-    rpm_comparison.update_group_state(session, app_constants.STATE_DONE)
+    comparison.update_state(session, app_constants.STATE_DONE)
