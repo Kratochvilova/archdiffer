@@ -221,7 +221,7 @@ class RPMComparison(BaseExported, Base):
         query = query.add_entity(pkg2).outerjoin(pkg2, RPMComparison.pkg2_id == pkg2.id)
         query = query.add_entity(repo1).outerjoin(repo1, pkg1.id_repo == repo1.id)
         query = query.add_entity(repo2).outerjoin(repo2, pkg2.id_repo == repo2.id)
-        query = query.order_by(Comparison.id)
+        query = query.order_by(RPMComparison.id, Comparison.id)
         return query
 
     @staticmethod
@@ -351,7 +351,7 @@ class RPMDifference(BaseExported, Base):
         query = RPMComparison.query(ses)
         query = query.add_entity(RPMDifference).outerjoin(
             RPMDifference, RPMDifference.id_comp == RPMComparison.id
-        ).order_by(RPMComparison.id)
+        ).order_by(RPMDifference.id, RPMComparison.id)
         return query
 
     @staticmethod
