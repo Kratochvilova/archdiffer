@@ -46,7 +46,7 @@ class Comparison(Base):
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
         :param int comparison_type_id: id of its comparison_type
-        :param string state: state
+        :param int state: state
         :return Comparison: newly added Comparison
         """
         comparison = Comparison(
