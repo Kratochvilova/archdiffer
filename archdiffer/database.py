@@ -39,6 +39,17 @@ class Comparison(Base):
                     self.id, self.time, self.comparison_type_id, self.state,
                 )
 
+    def update_state(self, ses, state):
+        """Add new Comparison.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        :param int state: new state
+        """
+        self.state = state
+        ses.add(self)
+        ses.commit()
+
     @staticmethod
     def add(ses, comparison_type_id, state=STATE_NEW):
         """Add new Comparison.

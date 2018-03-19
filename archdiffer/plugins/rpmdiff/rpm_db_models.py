@@ -86,9 +86,7 @@ class RPMComparison(BaseExported, Base):
         :type ses: qlalchemy.orm.session.Session
         :param int state: new state
         """
-        self.comparison.state = state
-        ses.add(self.comparison)
-        ses.commit()
+        self.comparison.update_state(ses, state)
 
     @staticmethod
     def add(ses, rpm_package1, rpm_package2, id_group=None):
