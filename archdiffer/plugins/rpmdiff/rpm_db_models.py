@@ -5,6 +5,7 @@ Created on Tue Oct  3 10:56:53 2017
 @author: pavla
 """
 
+from datetime import datetime
 from sqlalchemy import (Column, Integer, String, Boolean, DateTime, ForeignKey,
                         func)
 from sqlalchemy.orm import relationship, backref, aliased
@@ -160,7 +161,9 @@ class RPMComparison(BaseExported, Base):
                 'id': line.RPMComparison.id,
                 'id_group': line.RPMComparison.id_group,
                 'state': constants.STATE_STRINGS[line.RPMComparison.state],
-                'time': str(line.Comparison.time),
+                'time': datetime.strftime(
+                    line.Comparison.time, '%Y-%m-%d %H:%M:%S'
+                ),
                 'type': constants.COMPARISON_TYPE,
                 'pkg1': line.pkg1.exported(),
                 'pkg2': line.pkg2.exported(),
@@ -240,7 +243,9 @@ class RPMComparison(BaseExported, Base):
         :return dict: dict with Comparison column values
         """
         return {
-            'time': str(line.Comparison.time),
+            'time': datetime.strftime(
+                line.Comparison.time, '%Y-%m-%d %H:%M:%S'
+            ),
             'type': line.ComparisonType.name,
             'state': app_constants.STATE_STRINGS[line.Comparison.state],
         }
@@ -599,7 +604,7 @@ class RPMComment(BaseExported, Base):
         return ("<Comment(id='%s', time='%s', text='%s', id_user='%s', "
                 "id_comp='%s', id_diff='%s')>") % (
                     self.id,
-                    self.time,
+                    datetime.strftime(self.time, '%Y-%m-%d %H:%M:%S'),
                     self.text,
                     self.id_user,
                     self.id_comp,
@@ -662,7 +667,9 @@ class RPMComment(BaseExported, Base):
         :return dict: dict of RPMComment column values
         """
         result_dict = line.RPMComment.exported()
-        result_dict['time'] = str(line.RPMComment.time)
+        result_dict['time'] = datetime.strftime(
+            line.RPMComment.time, '%Y-%m-%d %H:%M:%S'
+        )
         result_dict['username'] = line.User.name
         if line.RPMComparison is not None:
             result_dict['comparison'] = line.RPMComparison.exported()

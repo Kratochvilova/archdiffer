@@ -6,6 +6,7 @@ Created on Wed Apr  5 19:32:41 2017
 @author: pavla
 """
 
+from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
 from sqlalchemy import create_engine
@@ -36,7 +37,10 @@ class Comparison(Base):
     def __repr__(self):
         return ("<Comparison(id='%s', time='%s', comparison_type_id='%s', "
                 "state='%s')>") % (
-                    self.id, self.time, self.comparison_type_id, self.state,
+                    self.id,
+                    datetime.strftime(self.time, '%Y-%m-%d %H:%M:%S'),
+                    self.comparison_type_id,
+                    self.state,
                 )
 
     def update_state(self, ses, state):
@@ -98,7 +102,9 @@ class Comparison(Base):
         :return dict: dict with Comparison and ComparisonType column values
         """
         result_dict = {
-            'time': str(line.Comparison.time),
+            'time': datetime.strftime(
+                line.Comparison.time, '%Y-%m-%d %H:%M:%S'
+            ),
             'state': STATE_STRINGS[line.Comparison.state],
         }
         result_dict['comparison_type'] = {
