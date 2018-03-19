@@ -10,7 +10,7 @@ Created on Sun Mar  4 10:23:41 2018
 import operator
 import datetime
 from flask import request
-from werkzeug.exceptions import BadRequest
+from .exceptions import BadRequest
 
 def make_datetime(time_string, formats=None):
     """Makes datetime from string based on one of the formats.
@@ -111,13 +111,16 @@ def parse_request(filters=None, defaults=None):
 
     for key, value in request.args.items():
         if key in _TRANSFORMATIONS:
-            args_dict[key] = _TRANSFORMATIONS[key](value)
+            try:
+                args_dict[key] = _TRANSFORMATIONS[key](value)
+            except ValueError:
+                raise BadRequest('Argument has invalid value "%s".' % value)
         elif key in filters.keys():
             filters_list.append(
                 filters[key][1](filters[key][0], filters[key][2](value))
             )
         else:
-            raise BadRequest()
+            raise BadRequest('Argument "%s" not recognized.' % key)
 
     if 'filter' not in args_dict.keys():
         args_dict['filter'] = []
