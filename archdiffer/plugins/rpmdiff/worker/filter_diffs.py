@@ -12,6 +12,7 @@ from ..rpm_db_models import RPMComparison, RPMDifference
 from .. import constants
 
 RULES = [RPMDifference.category == 1, RPMDifference.diff_type == 0]
+RULES = []
 
 @celery_app.task(name='rpmdiff.filter_diffs')
 def filter_diffs(id_comp):
