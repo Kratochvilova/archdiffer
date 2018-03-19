@@ -4,6 +4,7 @@
       <th>ID</th>
       <th>Time</th>
       <th>Comparison Type</th>
+      <th>State</th>
     </tr>
   </thead>
   <tbody>
@@ -12,6 +13,7 @@
       <td><a href="{{ url_for(comp['comparison_type']['name'] + '.show_group', id=id) }}">{{ id }}</a></td>
       <td>{{ comp['time'] }}</td>
       <td><a href="{{ url_for('index') + comp['comparison_type']['name'] }}">{{ comp['comparison_type']['name'] }}</td>
+      <td>{{ comp['state'] }}</td>
     </tr>
     {% endfor %}
   </tbody>
