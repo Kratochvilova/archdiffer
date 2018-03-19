@@ -1,7 +1,9 @@
 {% extends "rpm_layout.html" %}
 {% set active_page = "index" %}
 {% block body %}
-  <h2 class="sub-header">New Comparison</h2>
+  {% if session.openid %}
+    <h2 class="sub-header">New Comparison</h2>
+  {% endif %}
   {% include 'rpm_new_comparison_form.html' %}
   <h2 class="sub-header">Comparisons</h2>
   {% include 'pagination.html' %}
