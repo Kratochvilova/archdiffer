@@ -46,8 +46,11 @@ def download_packages(pkg):
     base.repos.add_new_repo(label, base.conf, baseurl=[pkg['repository']])
     base.repos[label].enable()
     try:
+        print('Loading repository: %s' % pkg['repository'])
         base.repos[label].load()
+        print('Repository loaded.')
     except:
+        print('Repository loading failed.')
         return []
     base.fill_sack(load_system_repo=False)
 
