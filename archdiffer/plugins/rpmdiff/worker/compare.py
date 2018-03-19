@@ -210,6 +210,12 @@ def compare(pkg1, pkg2):
     """
     session = database.session()
 
+    # Add new comparison
+    comparison_type_id = session.query(database.ComparisonType).filter_by(
+        name=constants.COMPARISON_TYPE
+    ).one().id
+    comparison = database.Comparison.add(session, comparison_type_id)
+
     # Download packages
     dnf_packages1 = download_packages(pkg1)
     dnf_packages2 = download_packages(pkg2)
@@ -219,7 +225,7 @@ def compare(pkg1, pkg2):
     tuples = make_tuples(pkg1, pkg2, dnf_packages1, dnf_packages2)
 
     rpm_comparison = None
-    id_group = None
+    id_group = comparison.id
     for dnf_package1, dnf_package2 in tuples:
         # Add packages to the database
         db_package1 = RPMPackage.add(session, dnf_package1, pkg1['repository'])
@@ -229,7 +235,6 @@ def compare(pkg1, pkg2):
         rpm_comparison = RPMComparison.add(
             session, db_package1, db_package2, id_group=id_group
         )
-        id_group = rpm_comparison.id_group
 
         # Compare packages
         completed_process = run_rpmdiff(
