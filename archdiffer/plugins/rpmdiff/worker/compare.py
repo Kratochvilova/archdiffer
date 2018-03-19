@@ -222,8 +222,6 @@ def compare(pkg1, pkg2):
     # Download packages
     dnf_packages1 = download_packages(pkg1)
     dnf_packages2 = download_packages(pkg2)
-    if dnf_packages1 == [] or dnf_packages2 == []:
-        return
 
     tuples = make_tuples(pkg1, pkg2, dnf_packages1, dnf_packages2)
 
