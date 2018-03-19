@@ -156,19 +156,21 @@ class RPMComparison(BaseExported, Base):
         :return dict: dict with RPMComparison, packages and repositories
             column values
         """
-        result_dict = {
-            'id': line.RPMComparison.id,
-            'id_group': line.RPMComparison.id_group,
-            'state': constants.STATE_STRINGS[line.RPMComparison.state],
-            'time': str(line.Comparison.time),
-            'type': constants.COMPARISON_TYPE,
-            'pkg1': line.pkg1.exported(),
-            'pkg2': line.pkg2.exported(),
-        }
-        result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
-        result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
-        result_dict['pkg1']['repo'] = line.repo1.exported()
-        result_dict['pkg2']['repo'] = line.repo2.exported()
+        result_dict = None
+        if line.RPMComparison is not None:
+            result_dict = {
+                'id': line.RPMComparison.id,
+                'id_group': line.RPMComparison.id_group,
+                'state': constants.STATE_STRINGS[line.RPMComparison.state],
+                'time': str(line.Comparison.time),
+                'type': constants.COMPARISON_TYPE,
+                'pkg1': line.pkg1.exported(),
+                'pkg2': line.pkg2.exported(),
+            }
+            result_dict['pkg1']['filename'] = line.pkg1.rpm_filename()
+            result_dict['pkg2']['filename'] = line.pkg2.rpm_filename()
+            result_dict['pkg1']['repo'] = line.repo1.exported()
+            result_dict['pkg2']['repo'] = line.repo2.exported()
         return result_dict
 
     @staticmethod
@@ -211,17 +213,14 @@ class RPMComparison(BaseExported, Base):
         query = query.add_entity(ComparisonType).filter(
             ComparisonType.name == constants.COMPARISON_TYPE
         )
-        query = query.add_entity(RPMComparison).add_entity(pkg1)
-        query = query.add_entity(pkg2).add_entity(repo1).add_entity(repo2)
-        query = query.outerjoin(
+        query = query.add_entity(RPMComparison).outerjoin(
             RPMComparison, RPMComparison.id_group == Comparison.id
-        ).filter(
-            RPMComparison.id_group == Comparison.id,
-            RPMComparison.pkg1_id == pkg1.id,
-            RPMComparison.pkg2_id == pkg2.id,
-            pkg1.id_repo == repo1.id,
-            pkg2.id_repo == repo2.id,
-        ).order_by(Comparison.id)
+        )
+        query = query.add_entity(pkg1).outerjoin(pkg1, RPMComparison.pkg1_id == pkg1.id)
+        query = query.add_entity(pkg2).outerjoin(pkg2, RPMComparison.pkg2_id == pkg2.id)
+        query = query.add_entity(repo1).outerjoin(repo1, pkg1.id_repo == repo1.id)
+        query = query.add_entity(repo2).outerjoin(repo2, pkg2.id_repo == repo2.id)
+        query = query.order_by(Comparison.id)
         return query
 
     @staticmethod

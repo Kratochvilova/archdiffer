@@ -20,6 +20,15 @@
           <td><a href="{{ url_for('rpmdiff.show_packages_name', name=comp['comparisons'][0]['pkg2']['name']) }}">{{ comp['comparisons'][0]['pkg2']['name'] }}</a></td>
           <td>{{ comp['state'] }}</td>
         </tr>
+      {% elif comp['comparisons']|length == 0 %}
+        <tr>
+          <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">group</a></td>
+          <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
+          <td>{{ comp['time'] }}</td>
+          <td>-</td>
+          <td>-</td>
+          <td>{{ comp['state'] }}</td>
+        </tr>
       {% else %}
         {% for rpm_comp in comp['comparisons'] %}
           <tr>
