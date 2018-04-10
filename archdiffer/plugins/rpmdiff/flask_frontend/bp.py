@@ -433,6 +433,8 @@ def add_entry():
 @bp.route('/wave', methods=['POST'])
 def waive():
     """Waive a difference."""
+    if 'openid' not in flask_session:
+        abort(401)
     id_diff = request.form['id_diff']
     diff = g.db_session.query(RPMDifference).filter_by(id=id_diff).one()
     diff.waive(g.db_session)
@@ -443,6 +445,8 @@ def waive():
 @bp.route('/filter_diffs', methods=['POST'])
 def filter_diffs():
     """Add request for filtering differences in given comparison."""
+    if 'openid' not in flask_session:
+        abort(401)
     id_comp = request.form['id_comp']
     comp = g.db_session.query(RPMComparison).filter_by(id=id_comp).one()
     comp.update_state(g.db_session, constants.STATE_FILTERING)
