@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>Archdiffer</title>
+    <title>{% block maintitle %}Archdiffer{% endblock %}</title>
 
     <!-- Bootstrap core CSS -->
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
@@ -51,14 +51,17 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li {% if active_page == "Comparisons" %} class="active" {% endif %}><a href="{{ url_for('index') }}">Archdiffer</a></li>
-            <li {% if active_page == "Comparison Types" %} class="active" {% endif %}><a href="{{ url_for('show_comparison_types') }}">Comparison Types</a></li>
+            <li {% if active_page == "comparisons" %} class="active" {% endif %}><a href="{{ url_for('index') }}">Archdiffer</a></li>
+            <li {% if active_page == "comparison_types" %} class="active" {% endif %}><a href="{{ url_for('show_comparison_types') }}">Comparison Types</a></li>
+            <li {% if active_page == "rest_api" %} class="active" {% endif %}><a href="{{ url_for('show_rest_api') }}">REST API</a></li>
           </ul>
-          <ul class="nav nav-sidebar">
-            {% for type in comparison_types %}
-              <li><a href="{{ url_for(type.name + '.index') }}"><b>{{ type.name }}</b></a></li>
-            {% endfor %}
-          </ul>
+          {% block menu %}
+            <ul class="nav nav-sidebar">
+              {% for type in comparison_types %}
+                <li><a href="{{ url_for(type.name + '.index') }}"><b>{{ type.name }}</b></a></li>
+              {% endfor %}
+            </ul>
+          {% endblock %}
         </div>
 
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">

@@ -401,6 +401,10 @@ bp.add_url_rule(
 @bp.route('/new')
 def show_new_comparison_form():
     """Show form for new comparison."""
+    if 'openid' not in flask_session:
+        return redirect(
+            url_for('login', next=url_for('rpmdiff.show_new_comparison_form'))
+        )
     return my_render_template('rpm_show_new_comparison_form.html')
 
 @bp.route('/add_comparison', methods=['POST'])
