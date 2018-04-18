@@ -52,6 +52,17 @@ def close_database_session(exception):
         finally:
             ses.close()
 
+@flask_app.before_request
+def lookup_current_user():
+    g.user = None
+    if 'openid' in flask_session:
+        openid = flask_session['openid']
+        g.user = User.query_by_openid(g.db_session, openid)
+
+def get_openid_url(url, username):
+    """Fill in username into url."""
+    return url.replace('<username>', username)
+
 @flask_app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
@@ -59,15 +70,24 @@ def login():
     if g.get('user', None) is not None:
         return redirect(oid.get_next_url())
     if request.method == 'POST':
-        openid = request.form.get('openid')
-        if openid:
-            return oid.try_login(
-                openid,
-                ask_for=['email', 'nickname'],
-                ask_for_optional=['fullname']
-            )
-    return my_render_template('login.html', next=oid.get_next_url(),
-                              error=oid.fetch_error())
+        openid_url = ''
+        provider = request.form.get('provider')
+        if provider:
+            username = request.form.get('username')
+            if username:
+                openid_url = get_openid_url(
+                    flask_app.config['OPENID_PROVIDERS'][provider], username
+                )
+        else:
+            openid_url = request.form.get('openid')
+        if openid_url:
+            return oid.try_login(openid_url, ask_for=['nickname'])
+    return my_render_template(
+        'login.html',
+        next=oid.get_next_url(),
+        error=oid.fetch_error(),
+        providers = flask_app.config['OPENID_PROVIDERS'].keys()
+    )
 
 @oid.after_login
 def create_or_login(resp):
@@ -78,9 +98,11 @@ def create_or_login(resp):
         flash(u'Successfully signed in')
         g.user = user
         return redirect(oid.get_next_url())
-    return redirect(url_for('create_profile', next=oid.get_next_url(),
-                            name=resp.fullname or resp.nickname,
-                            email=resp.email))
+    return redirect(
+        url_for(
+            'create_profile', next=oid.get_next_url(), username=resp.nickname
+        )
+    )
 
 @flask_app.route('/create-profile', methods=['GET', 'POST'])
 def create_profile():
@@ -88,17 +110,17 @@ def create_profile():
     if g.get('user', None) is not None or 'openid' not in flask_session:
         return redirect(url_for('index'))
     if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        if not name:
-            flash(u'Error: you have to provide a name')
-        elif '@' not in email:
-            flash(u'Error: you have to enter a valid email address')
+        username = request.form['username']
+        if not username:
+            flash(u'Error: you have to provide username')
         else:
-            flash(u'Profile successfully created')
             g.user = User.add(
-                g.db_session, flask_session['openid'], name, email
+                g.db_session, flask_session['openid'], username
             )
+            if g.user is None:
+                flash(u'Error: username already exists')
+            else:
+                flash(u'Profile successfully created')
             return redirect(oid.get_next_url())
     return render_template('create_profile.html', next=oid.get_next_url())
 

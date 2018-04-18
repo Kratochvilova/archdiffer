@@ -33,7 +33,7 @@
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             <li>
-              {% if not session.openid %}
+              {% if not g.user %}
                 <a href="{{ url_for('login') }}">log in</a>
               {% else %}
                 <a href="{{ url_for('logout') }}">log out</a>

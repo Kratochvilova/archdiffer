@@ -401,7 +401,7 @@ bp.add_url_rule(
 @bp.route('/new')
 def show_new_comparison_form():
     """Show form for new comparison."""
-    if 'openid' not in flask_session:
+    if g.get('user', None) is None:
         return redirect(
             url_for('login', next=url_for('rpmdiff.show_new_comparison_form'))
         )
@@ -410,7 +410,7 @@ def show_new_comparison_form():
 @bp.route('/add_comparison', methods=['POST'])
 def add_entry():
     """Add request for comparison of two rpm packages."""
-    if 'openid' not in flask_session:
+    if g.get('user', None) is None:
         abort(401)
     pkg1_dict = {
         'name': request.form['name1'],
@@ -437,7 +437,7 @@ def add_entry():
 @bp.route('/wave', methods=['POST'])
 def waive():
     """Waive a difference."""
-    if 'openid' not in flask_session:
+    if g.get('user', None) is None:
         abort(401)
     id_diff = request.form['id_diff']
     diff = g.db_session.query(RPMDifference).filter_by(id=id_diff).one()
@@ -449,7 +449,7 @@ def waive():
 @bp.route('/filter_diffs', methods=['POST'])
 def filter_diffs():
     """Add request for filtering differences in given comparison."""
-    if 'openid' not in flask_session:
+    if g.get('user', None) is None:
         abort(401)
     id_comp = request.form['id_comp']
     comp = g.db_session.query(RPMComparison).filter_by(id=id_comp).one()
@@ -464,7 +464,7 @@ def filter_diffs():
 @bp.route('/add_comment', methods=['POST'])
 def add_comment():
     """Add new comment."""
-    if 'openid' not in flask_session:
+    if g.get('user', None) is None:
         abort(401)
     id_comp = None
     id_diff = None
@@ -482,11 +482,15 @@ def add_comment():
     )
     if 'id_diff' in request.form:
         return redirect(
-            url_for('rpmdiff.show_comments_diff', id_diff=request.form['id_diff'])
+            url_for(
+                'rpmdiff.show_comments_diff', id_diff=request.form['id_diff']
+            )
         )
     if 'id_comp' in request.form:
         return redirect(
-            url_for('rpmdiff.show_comments_comp', id_comp=request.form['id_comp'])
+            url_for(
+                'rpmdiff.show_comments_comp', id_comp=request.form['id_comp']
+            )
         )
     return redirect(
         url_for('rpmdiff.show_comments_user', id_user=flask_session['openid'])

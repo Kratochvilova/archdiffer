@@ -1,15 +1,32 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h2 class="sub-header">Login</h2>
-  {% if error %}<p class="error"><strong>Error:</strong> {{ error }}{% endif %}
-  <form action="{{ url_for('login') }}" method="post">
-    <fieldset>
-      <div class="form-group">
-        <label for="openid">OpenID:</label><br>
-        <input type="text" name="openid" size=30>
-        <input type="hidden" name="next" value="{{ next }}">
-      </div>
-    </fieldset>
-    <button type="submit" class="btn btn-default">Sign in</button>
-  </form>
+  {% for provider in providers %}
+    <h2 class="sub-header">{{ provider }} login</h2>
+    {% if error %}<p class="error"><strong>Error:</strong> {{ error }}{% endif %}
+    <form action="{{ url_for('login') }}" method="post">
+      <fieldset>
+        <div class="form-group">
+          <label for="username">Username:</label><br>
+          <input type="text" name="username" size=30>
+          <input type="hidden" name="provider" value="{{ provider }}">
+          <input type="hidden" name="next" value="{{ next }}">
+        </div>
+      </fieldset>
+      <button type="submit" class="btn btn-default">Sign in</button>
+    </form>
+  {% else %}
+    <h2 class="sub-header">OpenID login</h2>
+    {% if error %}<p class="error"><strong>Error:</strong> {{ error }}{% endif %}
+    <form action="{{ url_for('login') }}" method="post">
+      <fieldset>
+        <div class="form-group">
+          <label for="openid">OpenID:</label><br>
+          <input type="text" name="openid" size=30>
+          <input type="hidden" name="provider" value="">
+          <input type="hidden" name="next" value="{{ next }}">
+        </div>
+      </fieldset>
+      <button type="submit" class="btn btn-default">Sign in</button>
+    </form>
+  {% endfor %}
 {% endblock %}

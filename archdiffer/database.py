@@ -163,11 +163,10 @@ class User(Base):
 
     openid = Column(String, primary_key=True, nullable=False)
     name = Column(String, nullable=False, unique=True)
-    email = Column(String)
 
     def __repr__(self):
-        return "<User(openid='%s', name='%s', email='%s')>" % (
-            self.openid, self.name, self.email
+        return "<User(openid='%s', name='%s')>" % (
+            self.openid, self.name
         )
 
     @staticmethod
@@ -182,7 +181,7 @@ class User(Base):
         return ses.query(User).filter_by(openid=openid).first()
 
     @staticmethod
-    def add(ses, openid, name, email):
+    def add(ses, openid, name):
         """Add user to the database if it doesn't already exist.
 
         :param ses: session for communication with the database
@@ -193,12 +192,12 @@ class User(Base):
         :return User: user
         """
         try:
-            user = User(openid=openid, name=name, email=email)
+            user = User(openid=openid, name=name)
             ses.add(user)
             ses.commit()
         except IntegrityError:
             ses.rollback()
-            user = User.query_by_openid(ses, openid)
+            user = None
         return user
 
 class SessionSingleton():

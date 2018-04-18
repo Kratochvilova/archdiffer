@@ -16,7 +16,7 @@
       <form class="btn-group" action="{{ url_for('rpmdiff.waive') }}" method="post">
         <input type="hidden" name="id_diff" value="{{ diff['id'] }}" />
         <input type="hidden" name="id_comp" value="{{ id_comp }}" />
-        <button type="submit" class="btn btn-success" {% if not session.openid %} disabled {% endif %}>{% if diff['waived'] %}Unwaive{% else %}Waive{% endif %}</button>
+        <button type="submit" class="btn btn-success" {% if not g.user %} disabled {% endif %}>{% if diff['waived'] %}Unwaive{% else %}Waive{% endif %}</button>
       </form>
       <form class="btn-group" action="{{ url_for('rpmdiff.show_comments_diff', id_diff=diff['id']) }}" method="get">
         <button type="submit" class="btn btn-default">Comments</button>

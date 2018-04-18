@@ -1,5 +1,5 @@
 <div class="form">
-  {% if session.openid %}
+  {% if g.user %}
     <form action="{{ url_for('rpmdiff.add_comment') }}" method="post" class="add-entry">
       <fieldset class="comment">
         <div class="form-group">
