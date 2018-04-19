@@ -6,6 +6,7 @@ Created on Fri Feb  9 22:32:02 2018
 @author: pavla
 """
 
+from sqlalchemy import desc
 from flask import g
 from flask_restful import Resource
 from .flask_app import flask_app, flask_api
@@ -83,7 +84,9 @@ class ComparisonTypesDict(TableDict):
 
 class ComparisonsView(ComparisonsDict):
     """View of comparisons."""
-    default_modifiers = {'limit': 10, 'offset': 0}
+    default_modifiers = {
+        'limit': 10, 'offset': 0, 'order_by': [Comparison.id.desc()]
+    }
 
     def dispatch_request(self, id=None):
         """Render template."""

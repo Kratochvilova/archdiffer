@@ -82,7 +82,7 @@ class Comparison(Base):
         """
         return ses.query(Comparison, ComparisonType).filter(
             Comparison.comparison_type_id == ComparisonType.id
-        ).order_by(Comparison.id)
+        )
 
     @staticmethod
     def id_from_line(line):
@@ -134,7 +134,7 @@ class ComparisonType(Base):
         :type ses: qlalchemy.orm.session.Session
         :return sqlalchemy.orm.query.Query: query
         """
-        return ses.query(ComparisonType).order_by(ComparisonType.id)
+        return ses.query(ComparisonType)
 
     @staticmethod
     def id_from_line(line):

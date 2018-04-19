@@ -5,6 +5,7 @@ Created on Sat Sep 16 22:54:57 2017
 @author: pavla
 """
 
+from sqlalchemy import desc
 from flask import Blueprint, abort, request, flash, redirect, url_for, g
 from flask import session as flask_session
 from flask_restful import Api
@@ -204,7 +205,11 @@ flask_api.add_resource(
 
 class RPMIndexView(RPMGroupsDict):
     """View of index."""
-    default_modifiers = {'limit': 10, 'offset': 0}
+    default_modifiers = {
+        'limit': 10,
+        'offset': 0,
+        'order_by': [Comparison.id.desc(), RPMComparison.id.desc()]
+    }
     template = 'rpm_show_index.html'
 
     def dispatch_request(self, id=None):
@@ -248,6 +253,7 @@ class RPMGroupsView(RPMIndexView):
 
 class RPMDifferencesView(RPMDifferencesDict):
     """View of differences."""
+    default_modifiers = {'order_by': [RPMDifference.id]}
     template = 'rpm_show_differences.html'
     endpoint = 'rpmdiff.show_differences'
 
@@ -258,7 +264,9 @@ class RPMDifferencesView(RPMDifferencesDict):
 
 class RPMPackagesView(RPMPackagesDict):
     """View of packages."""
-    default_modifiers = {'limit': 10, 'offset': 0}
+    default_modifiers = {
+        'limit': 10, 'offset': 0, 'order_by': [RPMPackage.id.desc()]
+    }
     template = 'rpm_show_packages.html'
 
     def dispatch_request(self, id=None, name=None):
@@ -288,7 +296,9 @@ class RPMPackagesView(RPMPackagesDict):
 
 class RPMRepositoriesView(RPMRepositoriesDict):
     """View of repositories."""
-    default_modifiers = {'limit': 10, 'offset': 0}
+    default_modifiers = {
+        'limit': 10, 'offset': 0, 'order_by': [RPMRepository.id.desc()]
+    }
     template = 'rpm_show_repositories.html'
 
     def dispatch_request(self, id=None):
@@ -312,7 +322,9 @@ class RPMRepositoriesView(RPMRepositoriesDict):
 
 class RPMCommentsView(RPMCommentsDict):
     """View of comments."""
-    default_modifiers = {'limit': 10, 'offset': 0}
+    default_modifiers = {
+        'limit': 10, 'offset': 0, 'order_by': [RPMComment.time]
+    }
     template = 'rpm_show_comments.html'
 
     def dispatch_request(self, id=None, username=None, id_comp=None,
