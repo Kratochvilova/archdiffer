@@ -6,9 +6,10 @@ Created on Wed Apr  5 19:32:41 2017
 @author: pavla
 """
 
-from datetime import datetime
+import datetime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import (Column, Integer, String, DateTime, Date, ForeignKey,
+                        func)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
@@ -38,7 +39,7 @@ class Comparison(Base):
         return ("<Comparison(id='%s', time='%s', comparison_type_id='%s', "
                 "state='%s')>") % (
                     self.id,
-                    datetime.strftime(self.time, '%Y-%m-%d %H:%M:%S'),
+                    datetime.datetime.strftime(self.time, '%Y-%m-%d %H:%M:%S'),
                     self.comparison_type_id,
                     self.state,
                 )
@@ -102,7 +103,7 @@ class Comparison(Base):
         :return dict: dict with Comparison and ComparisonType column values
         """
         result_dict = {
-            'time': datetime.strftime(
+            'time': datetime.datetime.strftime(
                 line.Comparison.time, '%Y-%m-%d %H:%M:%S'
             ),
             'state': STATE_STRINGS[line.Comparison.state],
@@ -165,20 +166,34 @@ class User(Base):
     name = Column(String(255), nullable=False, unique=True)
 
     def __repr__(self):
-        return "<User(openid='%s', name='%s')>" % (
-            self.openid, self.name
+        return ("<User(openid='%s', name='%s', api_login='%s', "
+                "api_token='%s', api_token_expiration='%s')>") % (
+            self.openid,
+            self.name,
+            self.api_login,
+            self.api_token,
+            self.api_token_expiration,
         )
 
     @staticmethod
-    def query_by_openid(ses, openid):
-        """Query User by openid.
+    def query_user(ses, openid=None, name=None, api_login=None):
+        """Query User by openid, name or api_login.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
         :param string openid: openid
+        :param string name: name
+        :param string api_login: api_login
         :return sqlalchemy.orm.query.Query: query
         """
-        return ses.query(User).filter_by(openid=openid).first()
+        if openid is not None:
+            return ses.query(User).filter_by(openid=openid).first()
+        elif name is not None:
+            return ses.query(User).filter_by(name=name).first()
+        elif api_login is not None:
+            return ses.query(User).filter_by(api_login=api_login).first()
+        else:
+            return None
 
     @staticmethod
     def add(ses, openid, name):

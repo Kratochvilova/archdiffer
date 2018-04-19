@@ -53,7 +53,7 @@
           <ul class="nav nav-sidebar">
             <li {% if active_page == "comparisons" %} class="active" {% endif %}><a href="{{ url_for('index') }}">Archdiffer</a></li>
             <li {% if active_page == "comparison_types" %} class="active" {% endif %}><a href="{{ url_for('show_comparison_types') }}">Comparison Types</a></li>
-            <li {% if active_page == "rest_api" %} class="active" {% endif %}><a href="#">REST API</a></li>
+            <li {% if active_page == "rest_api" %} class="active" {% endif %}><a href="{{ url_for('show_rest_api') }}">REST API</a></li>
           </ul>
           {% block menu %}
             <ul class="nav nav-sidebar">
