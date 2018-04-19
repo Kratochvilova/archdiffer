@@ -165,6 +165,13 @@ class User(Base):
     openid = Column(String(255), primary_key=True, nullable=False)
     name = Column(String(255), nullable=False, unique=True)
 
+    # For aunthentication in REST
+    api_login = Column(String(40))
+    api_token = Column(String(40))
+    api_token_expiration = Column(
+        Date, nullable=False, default=datetime.date(2000, 1, 1)
+    )
+
     def __repr__(self):
         return ("<User(openid='%s', name='%s', api_login='%s', "
                 "api_token='%s', api_token_expiration='%s')>") % (
