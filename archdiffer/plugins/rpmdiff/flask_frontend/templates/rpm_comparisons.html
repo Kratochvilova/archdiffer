@@ -13,7 +13,11 @@
     {% for id, comp in comparisons.items() %}
       {% if comp['comparisons']|length > 1 %}
         <tr>
-          <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">group</a></td>
+          <td>
+            <form class="btn-group" action="{{ url_for('rpmdiff.show_group', id=id) }}" method="get">
+              <button type="submit" class="btn btn-primary">group</button>
+            </form>
+          </td>
           <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
           <td>{{ comp['time'] }}</td>
           <td><a href="{{ url_for('rpmdiff.show_packages_name', name=comp['comparisons'][0]['pkg1']['name']) }}">{{ comp['comparisons'][0]['pkg1']['name'] }}</a></td>
@@ -22,7 +26,11 @@
         </tr>
       {% elif comp['comparisons']|length == 0 %}
         <tr>
-          <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">group</a></td>
+          <td>
+            <form class="btn-group" action="{{ url_for('rpmdiff.show_group', id=id) }}" method="get">
+              <button type="submit" class="btn btn-primary">group</button>
+            </form>
+          </td>
           <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
           <td>{{ comp['time'] }}</td>
           <td>-</td>
@@ -32,7 +40,11 @@
       {% else %}
         {% for rpm_comp in comp['comparisons'] %}
           <tr>
-            <td><a href="{{ url_for('rpmdiff.show_differences', id=rpm_comp['id']) }}">{{ rpm_comp['id'] }}</a></td>
+            <td>
+              <form class="btn-group" action="{{ url_for('rpmdiff.show_differences', id=rpm_comp['id']) }}" method="get">
+                <button type="submit" class="btn btn-primary">{{ rpm_comp['id'] }}</button>
+              </form>
+            </td>
             <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
             <td>{{ comp['time'] }}</td>
             <td><a href="{{ url_for('rpmdiff.show_package', id=rpm_comp['pkg1']['id']) }}">{{ rpm_comp['pkg1']['filename'] }}</a></td>

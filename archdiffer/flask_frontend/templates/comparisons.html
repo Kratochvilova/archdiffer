@@ -10,7 +10,11 @@
   <tbody>
     {% for id, comp in comparisons.items() %}
     <tr>
-      <td><a href="{{ url_for(comp['comparison_type']['name'] + '.show_group', id=id) }}">{{ id }}</a></td>
+      <td>
+        <form class="btn-group" action="{{ url_for(comp['comparison_type']['name'] + '.show_group', id=id) }}" method="get">
+          <button type="submit" class="btn btn-primary">{{ id }}</button>
+        </form>
+      </td>
       <td>{{ comp['time'] }}</td>
       <td><a href="{{ url_for('index') + comp['comparison_type']['name'] }}">{{ comp['comparison_type']['name'] }}</td>
       <td>{{ comp['state'] }}</td>
