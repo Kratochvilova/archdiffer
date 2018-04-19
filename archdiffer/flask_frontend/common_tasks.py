@@ -63,7 +63,7 @@ def lookup_current_user():
     g.user = None
     if 'openid' in flask_session:
         openid = flask_session['openid']
-        g.user = User.query_by_openid(g.db_session, openid)
+        g.user = User.query(g.db_session, openid=openid)
 
 def get_openid_url(url, username):
     """Fill in username into url."""
@@ -99,7 +99,7 @@ def login():
 def create_or_login(resp):
     """Check if user exists and finish login or redirect to create_profile."""
     flask_session['openid'] = resp.identity_url
-    user = User.query_by_openid(g.db_session, resp.identity_url)
+    user = User.query(g.db_session, openid=resp.identity_url)
     if user is not None:
         flash(u'Successfully signed in')
         g.user = user
@@ -154,7 +154,7 @@ def rest_api_auth_required(f):
             api_login = token = None
         token_auth = False
         if token and api_login:
-            user = User.query_by_api_login(g.db_session, api_login)
+            user = User.query(g.db_session, api_login=api_login)
             if (user and user.api_token == token and
                     user.api_token_expiration >= datetime.date.today()):
                 token_auth = True

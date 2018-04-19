@@ -183,7 +183,7 @@ class User(Base):
         )
 
     @staticmethod
-    def query_user(ses, openid=None, name=None, api_login=None):
+    def query(ses, openid=None, name=None, api_login=None):
         """Query User by openid, name or api_login.
 
         :param ses: session for communication with the database
