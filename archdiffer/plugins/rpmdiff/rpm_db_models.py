@@ -6,8 +6,8 @@ Created on Tue Oct  3 10:56:53 2017
 """
 
 from datetime import datetime
-from sqlalchemy import (Column, Integer, String, Boolean, DateTime, ForeignKey,
-                        func)
+from sqlalchemy import (Column, Integer, String, Text, Boolean, DateTime,
+                        ForeignKey, func)
 from sqlalchemy.orm import relationship, backref, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
@@ -264,8 +264,8 @@ class RPMDifference(BaseExported, Base):
     )
     category = Column(Integer)
     diff_type = Column(Integer, nullable=False)
-    diff_info = Column(String)
-    diff = Column(String, nullable=False)
+    diff_info = Column(String(255))
+    diff = Column(String(255), nullable=False)
     state = Column(Integer, nullable=False)
     waived = Column(Boolean, nullable=False)
 
@@ -393,11 +393,11 @@ class RPMPackage(BaseExported, Base):
     to_export = ['id', 'name', 'arch', 'epoch', 'version', 'release']
 
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
-    arch = Column(String, nullable=False)
-    epoch = Column(String, nullable=False)
-    version = Column(String, nullable=False)
-    release = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
+    arch = Column(String(255), nullable=False)
+    epoch = Column(String(255), nullable=False)
+    version = Column(String(255), nullable=False)
+    release = Column(String(255), nullable=False)
     id_repo = Column(
         Integer, ForeignKey('rpm_repositories.id'), nullable=False
     )
@@ -522,7 +522,7 @@ class RPMRepository(BaseExported, Base):
     to_export = ['id', 'path']
 
     id = Column(Integer, primary_key=True, nullable=False)
-    path = Column(String, nullable=False, unique=True)
+    path = Column(String(255), nullable=False, unique=True)
 
     rpm_package = relationship(
         "RPMPackage", back_populates="rpm_repository"
@@ -587,8 +587,8 @@ class RPMComment(BaseExported, Base):
     id = Column(Integer, primary_key=True, nullable=False)
     # time is set when commited
     time = Column(DateTime, default=func.now())
-    text = Column(String)
-    id_user = Column(String, ForeignKey('users.openid'), nullable=False)
+    text = Column(Text)
+    id_user = Column(String(255), ForeignKey('users.openid'), nullable=False)
     id_comp = Column(Integer, ForeignKey('rpm_comparisons.id'))
     id_diff = Column(Integer, ForeignKey('rpm_differences.id'))
 

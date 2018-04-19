@@ -118,7 +118,7 @@ class ComparisonType(Base):
     __tablename__ = 'comparison_types'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False, unique=True)
+    name = Column(String(255), nullable=False, unique=True)
 
     comparisons = relationship("Comparison", back_populates="comparison_type")
 
@@ -161,8 +161,8 @@ class User(Base):
     """Database model of users."""
     __tablename__ = 'users'
 
-    openid = Column(String, primary_key=True, nullable=False)
-    name = Column(String, nullable=False, unique=True)
+    openid = Column(String(255), primary_key=True, nullable=False)
+    name = Column(String(255), nullable=False, unique=True)
 
     def __repr__(self):
         return "<User(openid='%s', name='%s')>" % (
