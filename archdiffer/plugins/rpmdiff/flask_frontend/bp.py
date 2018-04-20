@@ -253,6 +253,7 @@ class RPMGroupsView(RPMIndexView):
 
 class RPMDifferencesView(RPMDifferencesDict):
     """View of differences."""
+    default_modifiers = {'order_by': [RPMDifference.id]}
     template = 'rpm_show_differences.html'
     endpoint = 'rpmdiff.show_differences'
 
