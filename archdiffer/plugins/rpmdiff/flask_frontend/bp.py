@@ -5,7 +5,6 @@ Created on Sat Sep 16 22:54:57 2017
 @author: pavla
 """
 
-from sqlalchemy import desc
 from flask import Blueprint, abort, request, flash, redirect, url_for, g
 from flask import session as flask_session
 from flask_restful import Api
