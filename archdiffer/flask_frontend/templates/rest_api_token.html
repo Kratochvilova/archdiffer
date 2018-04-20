@@ -1,0 +1,23 @@
+<p>Some parts of the REST API require authentication. In that case, provide your API token in a request.</p>
+<p>The token is linked to your account and should not be shared.</p>
+<hr>
+{% if g.user %}
+  {% if g.user.api_token %}
+
+<pre>
+Login: {% if g.user.api_login %}{{ g.user.api_login }}{% else %}-{% endif %}
+Token: {% if g.user.api_token %}{{ g.user.api_token }}{% else %}-{% endif %}
+Expiration date: {{ g.user.api_token_expiration }}
+</pre>
+
+  {% else %}
+    <p><i>No token generated yet.</i></p>
+  {% endif %}
+  <div class="form">
+    <form action="{{ url_for('generate_token') }}" method="post">
+      <button type="submit" class="btn btn-default">Generate new</button>
+    </form>
+  </div>
+{% else %}
+  <p><i>You must be logged in to acces your token.</i></p>
+{% endif %}
