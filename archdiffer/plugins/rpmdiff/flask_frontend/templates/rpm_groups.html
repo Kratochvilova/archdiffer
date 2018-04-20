@@ -14,9 +14,7 @@
       {% for rpm_comp in comp['comparisons'] %}
         <tr>
           <td>
-            <form class="btn-group" action="{{ url_for('rpmdiff.show_differences', id=rpm_comp['id']) }}" method="get">
-              <button type="submit" class="btn btn-primary">{{ rpm_comp['id'] }}</button>
-            </form>
+            <a href="{{ url_for('rpmdiff.show_differences', id=rpm_comp['id']) }}" class="btn btn-primary" role="button">{{ rpm_comp['id'] }}</a>
           </td>
           <td><a href="{{ url_for('rpmdiff.show_package', id=rpm_comp['pkg1']['id']) }}">{{ rpm_comp['pkg1']['filename'] }}</a></td>
           <td><a href="{{ url_for('rpmdiff.show_package', id=rpm_comp['pkg1']['id']) }}">{{ rpm_comp['pkg2']['filename'] }}</a></td>

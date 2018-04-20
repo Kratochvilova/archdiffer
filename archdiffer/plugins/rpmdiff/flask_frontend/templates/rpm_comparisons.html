@@ -14,9 +14,7 @@
       {% if comp['comparisons']|length > 1 %}
         <tr>
           <td>
-            <form class="btn-group" action="{{ url_for('rpmdiff.show_group', id=id) }}" method="get">
-              <button type="submit" class="btn btn-primary">group</button>
-            </form>
+            <a href="{{ url_for('rpmdiff.show_group', id=id) }}" class="btn btn-primary" role="button">group</a>
           </td>
           <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
           <td>{{ comp['time'] }}</td>
@@ -27,9 +25,7 @@
       {% elif comp['comparisons']|length == 0 %}
         <tr>
           <td>
-            <form class="btn-group" action="{{ url_for('rpmdiff.show_group', id=id) }}" method="get">
-              <button type="submit" class="btn btn-primary">group</button>
-            </form>
+            <a href="{{ url_for('rpmdiff.show_group', id=id) }}" class="btn btn-primary" role="button">group</a>
           </td>
           <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
           <td>{{ comp['time'] }}</td>
@@ -41,9 +37,7 @@
         {% for rpm_comp in comp['comparisons'] %}
           <tr>
             <td>
-              <form class="btn-group" action="{{ url_for('rpmdiff.show_differences', id=rpm_comp['id']) }}" method="get">
-                <button type="submit" class="btn btn-primary">{{ rpm_comp['id'] }}</button>
-              </form>
+              <a href="{{ url_for('rpmdiff.show_differences', id=rpm_comp['id']) }}" class="btn btn-primary" role="button">{{ rpm_comp['id'] }}</a>
             </td>
             <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
             <td>{{ comp['time'] }}</td>
