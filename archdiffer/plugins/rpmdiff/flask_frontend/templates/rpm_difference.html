@@ -6,7 +6,19 @@
       {% else %} class="warning"
       {% endif %}>{{ diff['diff_type'] }}</td>
     <td>{{ diff['diff'] }}</td>
-    <td>{% if diff['diff_info'] %}{{ diff['diff_info'] }}{% endif %}</td>
+    <td>{% if diff['diff_info'] %}<a data-toggle="tooltip" title=
+"S - FSize
+M - FMode
+5 - Digest
+D - FRdev
+N - FNlink
+L - FState
+V - VFlags
+U - FUser
+G - FGroup
+F - FFlags
+T - FMtime"
+    >{{ diff['diff_info'] }}</a>{% endif %}</td>
     {% if diff['waived'] %}
       <td class="success">{{ diff['state'] }} (waived)</td>
     {% else %}
