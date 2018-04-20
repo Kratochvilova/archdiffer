@@ -227,7 +227,7 @@ class RPMIndexView(RPMGroupsDict):
         )
 
         query_ids = RPMComparison.query_group_ids(g.db_session)
-        query_ids = modify_query(query_ids, first)
+        query_ids = modify_query(query_ids, first).distinct(id)
         items_count = query_ids.count()
         query_ids = modify_query(query_ids, second)
         query = RPMComparison.query_groups(g.db_session, query_ids.subquery())
@@ -253,7 +253,6 @@ class RPMGroupsView(RPMIndexView):
 
 class RPMDifferencesView(RPMDifferencesDict):
     """View of differences."""
-    default_modifiers = {'order_by': [RPMDifference.id]}
     template = 'rpm_show_differences.html'
     endpoint = 'rpmdiff.show_differences'
 
@@ -323,7 +322,7 @@ class RPMRepositoriesView(RPMRepositoriesDict):
 class RPMCommentsView(RPMCommentsDict):
     """View of comments."""
     default_modifiers = {
-        'limit': 10, 'offset': 0, 'order_by': [RPMComment.time]
+        'limit': 10, 'offset': 0, 'order_by': [RPMComment.id.desc()]
     }
     template = 'rpm_show_comments.html'
 

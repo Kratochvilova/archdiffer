@@ -44,14 +44,14 @@ class TableDict(Resource):
                 count of items before apllying limit and offset)
         """
         first = request_parser.get_request_arguments(
-            'limit', 'offset', args_dict=modifiers, invert=True
+            'limit', 'offset', 'order_by', args_dict=modifiers, invert=True
         )
         second = request_parser.get_request_arguments(
-            'limit', 'offset', args_dict=modifiers
+            'limit', 'offset', 'order_by', args_dict=modifiers
         )
         query = modify_query(query, first)
         items_count = query.count()
-        query = modify_query(query, second)
+        query = modify_query(query.from_self(), second)
         items = dict(iter_query_result(query, self.table))
         return (items, items_count)
 

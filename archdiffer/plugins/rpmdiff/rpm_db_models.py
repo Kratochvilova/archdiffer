@@ -133,7 +133,7 @@ class RPMComparison(BaseExported, Base):
             RPMComparison.pkg2_id == pkg2.id,
             pkg1.id_repo == repo1.id,
             pkg2.id_repo == repo2.id,
-        )
+        ).order_by(Comparison.id)
         return query
 
     @staticmethod
@@ -195,7 +195,7 @@ class RPMComparison(BaseExported, Base):
             repo1, pkg1.id_repo == repo1.id,
         ).outerjoin(
             repo2, pkg2.id_repo == repo2.id,
-        )
+        ).order_by(Comparison.id).distinct()
         return query
 
     @staticmethod
@@ -228,7 +228,7 @@ class RPMComparison(BaseExported, Base):
         )
         query = query.add_entity(repo2).outerjoin(
             repo2, pkg2.id_repo == repo2.id
-        )
+        ).order_by(Comparison.id)
         return query
 
     @staticmethod
@@ -358,7 +358,7 @@ class RPMDifference(BaseExported, Base):
         query = RPMComparison.query(ses)
         query = query.add_entity(RPMDifference).outerjoin(
             RPMDifference, RPMDifference.id_comp == RPMComparison.id
-        )
+        ).order_by(RPMDifference.id, RPMComparison.id)
         return query
 
     @staticmethod
@@ -496,7 +496,7 @@ class RPMPackage(BaseExported, Base):
         """
         query = ses.query(RPMPackage, RPMRepository).filter(
             RPMPackage.id_repo == RPMRepository.id
-        )
+        ).order_by(RPMPackage.id)
         return query
 
     @staticmethod
@@ -564,7 +564,7 @@ class RPMRepository(BaseExported, Base):
         :type ses: qlalchemy.orm.session.Session
         :return sqlalchemy.orm.query.Query: query
         """
-        query = ses.query(RPMRepository)
+        query = ses.query(RPMRepository).order_by(RPMRepository.id)
         return query
 
     @staticmethod
@@ -654,7 +654,7 @@ class RPMComment(BaseExported, Base):
             RPMComparison, RPMComparison.id == RPMComment.id_comp
         ).add_entity(RPMDifference).outerjoin(
             RPMDifference, RPMDifference.id == RPMComment.id_diff
-        )
+        ).order_by(RPMComment.id)
         return query
 
     @staticmethod
