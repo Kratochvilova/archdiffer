@@ -5,19 +5,23 @@ Created on Sat Sep 16 22:54:57 2017
 @author: pavla
 """
 
-from flask import Blueprint, abort, request, flash, redirect, url_for, g
+import json
+from flask import (Blueprint, abort, request, flash, redirect, url_for, g,
+                   make_response)
 from flask import session as flask_session
-from flask_restful import Api
+from flask_restful import Api, Resource
 from celery import Celery
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository, RPMComment, pkg1, pkg2, repo1,
                              repo2, iter_query_result)
 from .. import constants
-from ....database import Comparison, User, modify_query
-from ....flask_frontend.common_tasks import my_render_template
+from ....database import Comparison, ComparisonType, User, modify_query
+from ....flask_frontend.common_tasks import (my_render_template,
+                                             rest_api_auth_required)
 from ....flask_frontend.database_tasks import TableDict
 from ....flask_frontend import filter_functions as app_filter_functions
 from ....flask_frontend import request_parser
+from ....flask_frontend.exceptions import BadRequest
 from . import filter_functions
 
 celery_app = Celery(broker='pyamqp://localhost', )
@@ -419,12 +423,45 @@ def show_new_comparison_form():
         )
     return my_render_template('rpm_show_new_comparison_form.html')
 
+class RPMAddComparison(Resource):
+    @rest_api_auth_required
+    def post(self):
+        data = json.loads(request.data.decode('utf8'))
+        pkg1 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
+        pkg2 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
+        try:
+            pkg1.update(data['pkg1'])
+            pkg2.update(data['pkg2'])
+        except KeyError:
+            raise BadRequest('Incorrect data format: missing packages.')
+        if 'name' not in pkg1 or 'name' not in pkg2:
+            raise BadRequest('Incorrect data format: missing package names.')
+        if 'repository' not in pkg1 or 'repository' not in pkg2:
+            raise BadRequest('Incorrect data format: missing repositories.')
+
+        # Add new comparison
+        comparison_type_id = g.db_session.query(ComparisonType).filter_by(
+            name=constants.COMPARISON_TYPE
+        ).one().id
+        comp = Comparison.add(g.db_session, comparison_type_id)
+
+        celery_app.send_task('rpmdiff.compare', args=(comp.id, pkg1, pkg2))
+        flash('New entry was successfully posted')
+
+        resp = make_response("", 201)
+        resp.headers["Location"] = url_for(
+            'rpmdiff.rpmdifferencesdict', id=comp.id
+        )
+        return resp
+
+flask_api.add_resource(RPMAddComparison, '/rest/add_comparison')
+
 @bp.route('/add_comparison', methods=['POST'])
 def add_entry():
     """Add request for comparison of two rpm packages."""
     if g.get('user', None) is None:
         abort(401)
-    pkg1_dict = {
+    pkg1 = {
         'name': request.form['name1'],
         'arch': request.form['arch1'],
         'epoch': request.form['epoch1'],
@@ -432,7 +469,7 @@ def add_entry():
         'release': request.form['release1'],
         'repository': request.form['repo1'],
     }
-    pkg2_dict = {
+    pkg2 = {
         'name': request.form['name2'],
         'arch': request.form['arch2'],
         'epoch': request.form['epoch2'],
@@ -440,9 +477,14 @@ def add_entry():
         'release': request.form['release2'],
         'repository': request.form['repo2'],
     }
-    celery_app.send_task(
-        'rpmdiff.compare', args=(pkg1_dict, pkg2_dict)
-    )
+    
+    # Add new comparison
+    comparison_type_id = g.db_session.query(ComparisonType).filter_by(
+        name=constants.COMPARISON_TYPE
+    ).one().id
+    comp = Comparison.add(g.db_session, comparison_type_id)
+
+    celery_app.send_task('rpmdiff.compare', args=(comp.id, pkg1, pkg2))
     flash('New entry was successfully posted')
     return redirect(url_for('rpmdiff.index'))
 

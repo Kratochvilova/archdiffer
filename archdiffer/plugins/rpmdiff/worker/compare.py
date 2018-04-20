@@ -204,20 +204,15 @@ def proces_differences(session, id_comp, differences):
             print(bad_diff)
 
 @celery_app.task(name='rpmdiff.compare')
-def compare(pkg1, pkg2):
+def compare(comp_id, pkg1, pkg2):
     """Compare two packages and write results to the database.
 
+    :param int comp_id: id of Comparison which will be used as group
     :param dict pkg1: first package dict with keys:
         name, arch, epoch, version, release, repository
     :param dict pkg2: second package dict
     """
     session = database.session()
-
-    # Add new comparison
-    comparison_type_id = session.query(database.ComparisonType).filter_by(
-        name=constants.COMPARISON_TYPE
-    ).one().id
-    comparison = database.Comparison.add(session, comparison_type_id)
 
     # Download packages
     dnf_packages1 = download_packages(pkg1)
@@ -226,7 +221,6 @@ def compare(pkg1, pkg2):
     tuples = make_tuples(pkg1, pkg2, dnf_packages1, dnf_packages2)
 
     rpm_comparison = None
-    id_group = comparison.id
     for dnf_package1, dnf_package2 in tuples:
         # Add packages to the database
         db_package1 = RPMPackage.add(session, dnf_package1, pkg1['repository'])
@@ -234,7 +228,7 @@ def compare(pkg1, pkg2):
 
         # Add comparison and rpm_comparison to the database
         rpm_comparison = RPMComparison.add(
-            session, db_package1, db_package2, id_group=id_group
+            session, db_package1, db_package2, id_group=comp_id
         )
 
         # Compare packages
@@ -250,4 +244,5 @@ def compare(pkg1, pkg2):
         # Update RPMComparison state
         rpm_comparison.update_state(session, constants.STATE_DONE)
 
-    comparison.update_state(session, app_constants.STATE_DONE)
+    comp = session.query(database.Comparison).filter_by(id=comp_id).first()
+    comp.update_state(session, app_constants.STATE_DONE)
