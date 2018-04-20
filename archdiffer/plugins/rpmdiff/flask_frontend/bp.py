@@ -227,10 +227,11 @@ class RPMIndexView(RPMGroupsDict):
         )
 
         query_ids = RPMComparison.query_group_ids(g.db_session)
-        query_ids = modify_query(query_ids, first).distinct(id)
+        query_ids = modify_query(query_ids, first).distinct(Comparison.id)
         items_count = query_ids.count()
         query_ids = modify_query(query_ids, second)
         query = RPMComparison.query_groups(g.db_session, query_ids.subquery())
+        query = query.from_self().order_by(*modifiers['order_by'])
         comps = dict(iter_query_result(query, self.table))
 
         return my_render_template(
