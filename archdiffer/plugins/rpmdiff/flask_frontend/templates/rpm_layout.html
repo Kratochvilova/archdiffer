@@ -4,7 +4,9 @@
 {% block menu %}
   <ul class="nav nav-sidebar">
     {% for type in comparison_types %}
-    <li {% if active_page == "rpm_index" %} class="active" {% endif %} ><a href="{{ url_for(type.name + '.index') }}"><b>{{ type.name }}</b></a></li>
+    <li {% if active_page == "rpm_index" %} class="active" {% endif %} ><a href="{{ url_for(type.name + '.index') }}"><b>
+      <font size="4.5em">{% if type.name %}-{%else%}+{%endif%}</font> {{ type.name }}</b></a>
+    </li>
       {% if type.name == 'rpmdiff' %}
         <li {% if active_page == "rpm_new_comparison" %} class="active"{% endif%}><a href="{{ url_for('rpmdiff.show_new_comparison_form') }}">New Comparison</a></li>
         <li {% if active_page == "rpm_comparisons" %} class="active"{% endif%}><a href="{{ url_for('rpmdiff.show_comparisons') }}">Comparisons</a></li>
