@@ -10,6 +10,7 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository, RPMComment)
 from .. import constants
 from ....flask_frontend import request_parser
+from ....flask_frontend.filter_functions import get_first_key
 
 # Functions for making sets of filters
 def rpm_comparisons(prefix='comparisons_', relationships=False):
@@ -29,7 +30,7 @@ def rpm_comparisons(prefix='comparisons_', relationships=False):
         **request_parser.equals(
             RPMComparison.state,
             name=prefix + 'state',
-            function=(lambda x: constants.STATE_STRINGS.get(x))
+            function=(lambda x: get_first_key(constants.STATE_STRINGS, x))
         ),
     )
     if relationships:
@@ -69,12 +70,12 @@ def rpm_differences(prefix='differences_', relationships=False):
         **request_parser.equals(
             RPMDifference.category,
             name=prefix + 'category',
-            function=(lambda x: constants.CATEGORY_STRINGS.get(x))
+            function=(lambda x: get_first_key(constants.CATEGORY_STRINGS, x))
         ),
         **request_parser.equals(
             RPMDifference.diff_type,
             name=prefix + 'diff_type',
-            function=(lambda x: constants.DIFF_TYPE_STRINGS.get(x))
+            function=(lambda x: get_first_key(constants.DIFF_TYPE_STRINGS, x))
         ),
         **request_parser.equals(
             RPMDifference.diff_info,
@@ -87,7 +88,7 @@ def rpm_differences(prefix='differences_', relationships=False):
         **request_parser.equals(
             RPMDifference.state,
             name=prefix + 'state',
-            function=(lambda x: constants.DIFF_STATE_STRINGS.get(x))
+            function=(lambda x: get_first_key(constants.DIFF_STATE_STRINGS, x))
         ),
     )
     if relationships:

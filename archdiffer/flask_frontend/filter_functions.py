@@ -10,6 +10,12 @@ from ..database import Comparison, ComparisonType
 from .. import constants
 from . import request_parser
 
+def get_first_key(dictionary, string):
+    for key, value in dictionary.items():
+        if value == string:
+            return key
+    return None
+
 # Functions for making sets of filters
 def comparisons(prefix='comparisons_'):
     """Get filters for comparisons.
@@ -26,7 +32,7 @@ def comparisons(prefix='comparisons_'):
         **request_parser.equals(
             Comparison.state,
             name=prefix + 'state',
-            function=(lambda x: constants.STATE_STRINGS.get(x))
+            function=(lambda x: get_first_key(constants.STATE_STRINGS, x))
         ),
         **request_parser.time(Comparison.time, name=prefix + 'time'),
         **request_parser.before(Comparison.time, name=prefix + 'before'),
