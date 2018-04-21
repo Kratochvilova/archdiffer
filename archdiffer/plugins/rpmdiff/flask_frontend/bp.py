@@ -15,7 +15,7 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              RPMRepository, RPMComment, pkg1, pkg2, repo1,
                              repo2, iter_query_result)
 from .. import constants
-from ....database import Comparison, ComparisonType, User, modify_query
+from ....database import Comparison, User, modify_query
 from ....flask_frontend.common_tasks import (my_render_template,
                                              rest_api_auth_required)
 from ....flask_frontend.database_tasks import TableDict
@@ -414,19 +414,16 @@ bp.add_url_rule(
     view_func=RPMCommentsView.as_view('show_comments_diff')
 )
 
-@bp.route('/new')
-def show_new_comparison_form():
-    """Show form for new comparison."""
-    if g.get('user', None) is None:
-        return redirect(
-            url_for('login', next=url_for('rpmdiff.show_new_comparison_form'))
-        )
-    return my_render_template('rpm_show_new_comparison_form.html')
-
 class AddComparison(Resource):
     @rest_api_auth_required
     def post(self):
-        data = json.loads(request.data.decode('utf8'))
+        """Add request for comparison of two rpm packages."""
+        try:
+            data = json.loads(request.data.decode('utf8'))
+        except:
+            raise BadRequest(
+                "No data: please provide dict with 'pkg1' and 'pkg2' dicts."
+            )
         pkg1 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
         pkg2 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
         try:
@@ -442,7 +439,6 @@ class AddComparison(Resource):
         comp = Comparison.add(g.db_session, constants.COMPARISON_TYPE)
 
         celery_app.send_task('rpmdiff.compare', args=(comp.id, pkg1, pkg2))
-        flash('New entry was successfully posted')
 
         resp = make_response("", 201)
         resp.headers["Location"] = url_for(
@@ -451,6 +447,89 @@ class AddComparison(Resource):
         return resp
 
 flask_api.add_resource(AddComparison, '/rest/add_comparison')
+
+class WaiveDifference(Resource):
+    @rest_api_auth_required
+    def put(self, id):
+        """Waive a difference."""
+        diff = g.db_session.query(RPMDifference).filter_by(id=id).first()
+        diff.waive(g.db_session)
+        resp = make_response("", 201)
+        return resp
+
+flask_api.add_resource(WaiveDifference, '/rest/waive/<int:id>')
+
+class UnwaiveDifference(Resource):
+    @rest_api_auth_required
+    def put(self, id):
+        """Unwaive a difference."""
+        diff = g.db_session.query(RPMDifference).filter_by(id=id).first()
+        diff.unwaive(g.db_session)
+        resp = make_response("", 201)
+        return resp
+
+flask_api.add_resource(UnwaiveDifference, '/rest/unwaive/<int:id>')
+
+class AddComment(Resource):
+    @rest_api_auth_required
+    def post(self):
+        """Add new comment."""
+        try:
+            data = json.loads(request.data.decode('utf8'))
+        except:
+            raise BadRequest(
+                "No data: please provide dict with 'text' and either "
+                "'id_comp' or 'id_diff'."
+            )
+        if 'text' not in data:
+            raise BadRequest('Incorrect data format: missing comment text.')
+        if 'id_comp' not in data and 'id_diff' not in data:
+            raise BadRequest(
+                'Incorrect data format: missing id of either '
+                'comparison or difference (id_comp or id_diff).'
+            )
+        if 'id_comp' in data and 'id_diff' in data:
+            diff = g.db_session.query(RPMDifference).filter_by(
+                id=data['id_diff']
+            ).first()
+            if diff.id_comp != data['id_comp']:
+                raise BadRequest(
+                    'Incorrect data format: the comparison id does not '
+                    'match the difference id.'
+                )
+        id_comp = None
+        id_diff = None
+        if 'id_comp' in data:
+            id_comp = data['id_comp']
+        if 'id_diff' in data:
+            id_diff = data['id_diff']
+
+        RPMComment.add(
+            g.db_session,
+            data['text'],
+            g.user.openid,
+            id_comp=id_comp,
+            id_diff=id_diff
+        )
+
+        resp = make_response("", 201)
+        if 'id_diff' in data:
+            id = id_diff
+        else:
+            id = id_comp
+        resp.headers["Location"] = url_for('rpmdiff.rpmcommentsdict', id=id)
+        return resp
+
+flask_api.add_resource(AddComment, '/rest/add_comment')
+
+@bp.route('/new')
+def show_new_comparison_form():
+    """Show form for new comparison."""
+    if g.get('user', None) is None:
+        return redirect(
+            url_for('login', next=url_for('rpmdiff.show_new_comparison_form'))
+        )
+    return my_render_template('rpm_show_new_comparison_form.html')
 
 @bp.route('/add_comparison', methods=['POST'])
 def add_comparison():
@@ -480,29 +559,27 @@ def add_comparison():
     flash('New entry was successfully posted')
     return redirect(url_for('rpmdiff.index'))
 
-@bp.route('/wave', methods=['POST'])
+@bp.route('/waive', methods=['POST'])
 def waive():
     """Waive a difference."""
     if g.get('user', None) is None:
         abort(401)
     id_diff = request.form['id_diff']
-    diff = g.db_session.query(RPMDifference).filter_by(id=id_diff).one()
+    diff = g.db_session.query(RPMDifference).filter_by(id=id_diff).first()
     diff.waive(g.db_session)
     return redirect(
         url_for('rpmdiff.show_differences', id=request.form['id_comp'])
     )
 
-@bp.route('/filter_diffs', methods=['POST'])
-def filter_diffs():
-    """Add request for filtering differences in given comparison."""
+@bp.route('/unwaive', methods=['POST'])
+def unwaive():
+    """Unwaive a difference."""
     if g.get('user', None) is None:
         abort(401)
-    id_comp = request.form['id_comp']
-    comp = g.db_session.query(RPMComparison).filter_by(id=id_comp).one()
-    comp.update_state(g.db_session, constants.STATE_FILTERING)
-    celery_app.send_task(
-        'rpmdiff.filter_diffs', args=(id_comp,)
-    )
+    id_diff = request.form['id_diff']
+    diff = g.db_session.query(RPMDifference).filter_by(id=id_diff).first()
+    diff.unwaive(g.db_session)
+    print(request.form['id_comp'])
     return redirect(
         url_for('rpmdiff.show_differences', id=request.form['id_comp'])
     )

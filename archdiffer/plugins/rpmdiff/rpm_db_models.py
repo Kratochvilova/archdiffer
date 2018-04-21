@@ -303,15 +303,22 @@ class RPMDifference(BaseExported, Base):
         ses.commit()
 
     def waive(self, ses):
-        """Set/clear waive flag.
+        """Set waive flag.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
         """
-        if self.waived:
-            self.waived = False
-        else:
-            self.waived = True
+        self.waived = True
+        ses.add(self)
+        ses.commit()
+
+    def unwaive(self, ses):
+        """Clear waive flag.
+
+        :param ses: session for communication with the database
+        :type ses: qlalchemy.orm.session.Session
+        """
+        self.waived = False
         ses.add(self)
         ses.commit()
 
