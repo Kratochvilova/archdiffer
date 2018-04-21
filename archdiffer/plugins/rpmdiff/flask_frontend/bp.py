@@ -423,7 +423,7 @@ def show_new_comparison_form():
         )
     return my_render_template('rpm_show_new_comparison_form.html')
 
-class RPMAddComparison(Resource):
+class AddComparison(Resource):
     @rest_api_auth_required
     def post(self):
         data = json.loads(request.data.decode('utf8'))
@@ -450,10 +450,10 @@ class RPMAddComparison(Resource):
         )
         return resp
 
-flask_api.add_resource(RPMAddComparison, '/rest/add_comparison')
+flask_api.add_resource(AddComparison, '/rest/add_comparison')
 
 @bp.route('/add_comparison', methods=['POST'])
-def add_entry():
+def add_comparison():
     """Add request for comparison of two rpm packages."""
     if g.get('user', None) is None:
         abort(401)
