@@ -6,6 +6,7 @@ Created on Tue Feb 20 09:27:50 2018
 @author: pavla
 """
 
+# Codes for states of comparisons used in the database
 STATE_NEW = 0
 STATE_DONE = 1
 STATE_ERROR = -1
