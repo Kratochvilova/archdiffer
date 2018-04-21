@@ -57,8 +57,8 @@
           </ul>
           {% block menu %}
             <ul class="nav nav-sidebar">
-              {% for type in comparison_types %}
-                <li><a href="{{ url_for(type.name + '.index') }}"><b><font size="4.5em">+</font> {{ type.name }}</b></a></li>
+              {% for type_name in comparison_types.keys() %}
+                <li><a href="{{ url_for(type_name + '.index') }}"><b><font size="4.5em">+</font> {{ type_name }}</b></a></li>
               {% endfor %}
             </ul>
           {% endblock %}

@@ -56,18 +56,17 @@ class Comparison(Base):
         ses.commit()
 
     @staticmethod
-    def add(ses, comparison_type_id, state=STATE_NEW):
+    def add(ses, comparison_type_name, state=STATE_NEW):
         """Add new Comparison.
 
         :param ses: session for communication with the database
         :type ses: qlalchemy.orm.session.Session
-        :param int comparison_type_id: id of its comparison_type
+        :param int comparison_type_name: name of its comparison_type
         :param int state: state
         :return Comparison: newly added Comparison
         """
-        comparison = Comparison(
-            comparison_type_id=comparison_type_id, state=state
-        )
+        comp_type_id = ComparisonType.get_cache(ses)[comparison_type_name]
+        comparison = Comparison(comparison_type_id=comp_type_id, state=state)
         ses.add(comparison)
         ses.commit()
         return comparison
@@ -123,8 +122,21 @@ class ComparisonType(Base):
 
     comparisons = relationship("Comparison", back_populates="comparison_type")
 
+    _cache = {}
+
     def __repr__(self):
         return "<ComparisonType(id='%s', name='%s')>" % (self.id, self.name)
+
+    @staticmethod
+    def make_cache(ses):
+        for comp_type in ComparisonType.query(ses).all():
+            ComparisonType._cache[comp_type.name] = comp_type.id
+
+    @staticmethod
+    def get_cache(ses):
+        if not ComparisonType._cache:
+            ComparisonType.make_cache(ses)
+        return ComparisonType._cache
 
     @staticmethod
     def query(ses):

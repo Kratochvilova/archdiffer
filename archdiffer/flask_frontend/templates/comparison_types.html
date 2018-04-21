@@ -6,10 +6,10 @@
     </tr>
   </thead>
   <tbody>
-    {% for type in comparison_types %}
+    {% for name, id in comparison_types.items() %}
     <tr>
-      <td><a href="{{ url_for('index') + type.name }}">{{ type.name }}</a></td>
-      <td><a href="{{ url_for('index') + type.name }}">{{ type.id }}</a></td>
+      <td><a href="{{ url_for('index') + name }}">{{ name }}</a></td>
+      <td><a href="{{ url_for('index') + name }}">{{ id }}</a></td>
     </tr>
     {% endfor %}
   </tbody>

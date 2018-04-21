@@ -439,11 +439,7 @@ class RPMAddComparison(Resource):
         if 'repository' not in pkg1 or 'repository' not in pkg2:
             raise BadRequest('Incorrect data format: missing repositories.')
 
-        # Add new comparison
-        comparison_type_id = g.db_session.query(ComparisonType).filter_by(
-            name=constants.COMPARISON_TYPE
-        ).one().id
-        comp = Comparison.add(g.db_session, comparison_type_id)
+        comp = Comparison.add(g.db_session, constants.COMPARISON_TYPE)
 
         celery_app.send_task('rpmdiff.compare', args=(comp.id, pkg1, pkg2))
         flash('New entry was successfully posted')
@@ -477,12 +473,8 @@ def add_entry():
         'release': request.form['release2'],
         'repository': request.form['repo2'],
     }
-    
-    # Add new comparison
-    comparison_type_id = g.db_session.query(ComparisonType).filter_by(
-        name=constants.COMPARISON_TYPE
-    ).one().id
-    comp = Comparison.add(g.db_session, comparison_type_id)
+
+    comp = Comparison.add(g.db_session, constants.COMPARISON_TYPE)
 
     celery_app.send_task('rpmdiff.compare', args=(comp.id, pkg1, pkg2))
     flash('New entry was successfully posted')

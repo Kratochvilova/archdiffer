@@ -100,10 +100,7 @@ class RPMComparison(BaseExported, Base):
         :return RPMComparison: newly added RPMComparison
         """
         if id_group is None:
-            comparison_type_id = ses.query(ComparisonType).filter_by(
-                name=constants.COMPARISON_TYPE
-            ).one().id
-            comparison = Comparison.add(ses, comparison_type_id)
+            comparison = Comparison.add(ses, constants.COMPARISON_TYPE)
             id_group = comparison.id
 
         rpm_comparison = RPMComparison(
