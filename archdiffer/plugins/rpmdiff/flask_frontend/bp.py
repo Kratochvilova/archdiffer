@@ -189,7 +189,7 @@ class RPMCommentsDict(RPMTableDict):
         query = modify_query(query, modifiers)
         return dict(iter_query_result(query, self.table))
 
-flask_api.add_resource(RoutesList, '/rest')
+flask_api.add_resource(RoutesDict, '/rest')
 flask_api.add_resource(RPMGroupsDict, '/rest/groups', '/rest/groups/<int:id>')
 flask_api.add_resource(
     RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'

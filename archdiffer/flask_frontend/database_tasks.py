@@ -174,7 +174,7 @@ class ComparisonTypesView(ComparisonTypesDict):
             offset=self.modifiers()['offset'],
         )
 
-flask_api.add_resource(RoutesList, '/rest')
+flask_api.add_resource(RoutesDict, '/rest')
 flask_api.add_resource(
     ComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
 )
