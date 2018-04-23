@@ -6,6 +6,7 @@ Created on Fri Feb  9 22:32:02 2018
 @author: pavla
 """
 
+from operator import attrgetter
 from flask import g, current_app
 from flask_restful import Resource
 from .flask_app import flask_app, flask_api
@@ -54,17 +55,13 @@ def routes(prefix):
             routes[rule.rule]['methods'].remove('OPTIONS')
 
     routes = {}
-    for rule in current_app.url_map.iter_rules():
+    sorted_rules = sorted(
+        current_app.url_map.iter_rules(), key=attrgetter('rule')
+    )
+    for rule in sorted_rules:
         if rule.rule.startswith(prefix):
             subroutes = find_subroutes(rule.rule, routes)
             add_route(rule, subroutes)
-            removed_keys = []
-            for route_key, route_value in subroutes.items():
-                if route_key.startswith(rule.rule) and not rule.rule == route_key:
-                    subroutes[rule.rule]['routes'][route_key] = route_value.copy()
-                    removed_keys.append(route_key)
-            for key in removed_keys:
-                del subroutes[key]
     return routes
 
 class RoutesDict(Resource):
