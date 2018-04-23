@@ -6,7 +6,7 @@ Created on Fri Feb  9 22:32:02 2018
 @author: pavla
 """
 
-from flask import g
+from flask import g, current_app
 from flask_restful import Resource
 from .flask_app import flask_app, flask_api
 from ..database import (Comparison, ComparisonType, modify_query,
@@ -14,6 +14,63 @@ from ..database import (Comparison, ComparisonType, modify_query,
 from .common_tasks import my_render_template
 from . import request_parser
 from . import filter_functions
+
+def routes(prefix):
+    """Get hierarchical dict of all routes of the current application with
+    given prefix.
+
+    :param string prefix: prefix of the routes
+    :return dict: routes
+    """
+    def find_subroutes(string, routes):
+        """Find subroutes of rule that is the best prefix of given string.
+
+        :param str string: string to match the prefix
+        :param dict routes:
+        :return dict: subroutes
+        """
+        route = ''
+        for prefix in routes.keys():
+            if string.startswith(prefix):
+                route = prefix
+        if not route:
+            return routes
+        else:
+            return find_subroutes(string, routes[route]['routes'])
+
+    def add_route(rule, routes):
+        """Add new route to dict of routes.
+
+        :param werkzeug.routing.Rule rule:
+        :param dict: routes
+        """
+        routes[rule.rule] = {
+            'methods': list(rule.methods),
+            'routes': {}
+        }
+        if 'HEAD' in rule.methods:
+            routes[rule.rule]['methods'].remove('HEAD')
+        if 'OPTIONS' in rule.methods:
+            routes[rule.rule]['methods'].remove('OPTIONS')
+
+    routes = {}
+    for rule in current_app.url_map.iter_rules():
+        if rule.rule.startswith(prefix):
+            subroutes = find_subroutes(rule.rule, routes)
+            add_route(rule, subroutes)
+            removed_keys = []
+            for route_key, route_value in subroutes.items():
+                if route_key.startswith(rule.rule) and not rule.rule == route_key:
+                    subroutes[rule.rule]['routes'][route_key] = route_value.copy()
+                    removed_keys.append(route_key)
+            for key in removed_keys:
+                del subroutes[key]
+    return routes
+
+class RoutesDict(Resource):
+    """Dict of routes."""
+    def get(self):
+        return routes('/rest')
 
 class TableDict(Resource):
     """Dict of given table."""
@@ -117,6 +174,7 @@ class ComparisonTypesView(ComparisonTypesDict):
             offset=self.modifiers()['offset'],
         )
 
+flask_api.add_resource(RoutesList, '/rest')
 flask_api.add_resource(
     ComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
 )

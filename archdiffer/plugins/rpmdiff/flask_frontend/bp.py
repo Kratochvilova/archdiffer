@@ -18,7 +18,7 @@ from .. import constants
 from ....database import Comparison, User, modify_query
 from ....flask_frontend.common_tasks import (my_render_template,
                                              rest_api_auth_required)
-from ....flask_frontend.database_tasks import TableDict
+from ....flask_frontend.database_tasks import TableDict, routes
 from ....flask_frontend import filter_functions as app_filter_functions
 from ....flask_frontend import request_parser
 from ....flask_frontend.exceptions import BadRequest
@@ -58,6 +58,11 @@ def add_filter(modifiers, new_filter):
         modifiers['filter'] = []
     modifiers['filter'].append(new_filter)
     return modifiers
+
+class RoutesDict(Resource):
+    """Dict of routes."""
+    def get(self):
+        return routes('/rpmdiff/rest')
 
 class RPMTableDict(TableDict):
     """Dict of given table."""
@@ -184,6 +189,7 @@ class RPMCommentsDict(RPMTableDict):
         query = modify_query(query, modifiers)
         return dict(iter_query_result(query, self.table))
 
+flask_api.add_resource(RoutesList, '/rest')
 flask_api.add_resource(RPMGroupsDict, '/rest/groups', '/rest/groups/<int:id>')
 flask_api.add_resource(
     RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
