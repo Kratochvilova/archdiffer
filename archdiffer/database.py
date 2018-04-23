@@ -102,6 +102,7 @@ class Comparison(Base):
         :return dict: dict with Comparison and ComparisonType column values
         """
         result_dict = {
+            'id': line.Comparison.id,
             'time': datetime.datetime.strftime(
                 line.Comparison.time, '%Y-%m-%d %H:%M:%S'
             ),
