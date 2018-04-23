@@ -69,11 +69,14 @@ class RoutesDict(Resource):
     def get(self):
         return routes('/rest')
 
-class TableDict(Resource):
-    """Dict of given table."""
+class TableList(Resource):
+    """List of items of given table."""
     table = None
     filters = None
-    default_modifiers = None
+    default_modifiers = {
+        'limit': 100,
+        'offset': 0,
+    }
 
     def modifiers(self, additional=None):
         """Get modifiers from request arguments.
@@ -93,7 +96,7 @@ class TableDict(Resource):
 
         :param sqlalchemy.orm.query.Query query: query
         :param dict modifiers: modifiers
-        :return (dict, int): (resulting dict,
+        :return (list, int): (resulting list,
                 count of items before apllying limit and offset)
         """
         first = request_parser.get_request_arguments(
@@ -105,14 +108,14 @@ class TableDict(Resource):
         query = modify_query(query, first)
         items_count = query.count()
         query = modify_query(query.from_self(), second)
-        items = dict(iter_query_result(query, self.table))
+        items = list(iter_query_result(query, self.table))
         return (items, items_count)
 
     def get(self, id=None):
-        """Get dict.
+        """Get list.
 
         :param int id: id to optionaly filter by
-        :return dict: dict of the resulting query
+        :return list: list of the items form the resulting query
         """
         query = self.table.query(g.db_session)
         additional_modifiers = None
@@ -122,20 +125,20 @@ class TableDict(Resource):
         items, _ = self.apply_modifiers(query, modifiers)
         return items
 
-class ComparisonsDict(TableDict):
-    """Dict of comparisons."""
+class ComparisonsList(TableList):
+    """List of comparisons."""
     table = Comparison
     filters = dict(
         **filter_functions.comparisons(prefix=''),
         **filter_functions.comparison_types()
     )
 
-class ComparisonTypesDict(TableDict):
-    """Dict of comparison_types."""
+class ComparisonTypesList(TableList):
+    """List of comparison_types."""
     table = ComparisonType
     filters = filter_functions.comparison_types(prefix='')
 
-class ComparisonsView(ComparisonsDict):
+class ComparisonsView(ComparisonsList):
     """View of comparisons."""
     default_modifiers = {
         'limit': 10, 'offset': 0, 'order_by': [Comparison.id.desc()]
@@ -158,7 +161,7 @@ class ComparisonsView(ComparisonsDict):
             offset=self.modifiers()['offset'],
         )
 
-class ComparisonTypesView(ComparisonTypesDict):
+class ComparisonTypesView(ComparisonTypesList):
     """View of comparison types."""
     default_modifiers = {'limit': 10, 'offset': 0}
 
@@ -173,10 +176,10 @@ class ComparisonTypesView(ComparisonTypesDict):
 
 flask_api.add_resource(RoutesDict, '/rest')
 flask_api.add_resource(
-    ComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
+    ComparisonsList, '/rest/comparisons', '/rest/comparisons/<int:id>'
 )
 flask_api.add_resource(
-    ComparisonTypesDict,
+    ComparisonTypesList,
     '/rest/comparison_types',
     '/rest/comparison_types/<int:id>'
 )

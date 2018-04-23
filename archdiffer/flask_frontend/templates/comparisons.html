@@ -8,10 +8,10 @@
     </tr>
   </thead>
   <tbody>
-    {% for id, comp in comparisons.items() %}
+    {% for comp in comparisons %}
     <tr>
       <td>
-        <a href="{{ url_for(comp['comparison_type']['name'] + '.show_group', id=id) }}" class="btn btn-primary" role="button">{{ id }}</a>
+        <a href="{{ url_for(comp['comparison_type']['name'] + '.show_group', id=comp['id']) }}" class="btn btn-primary" role="button">{{ comp['id'] }}</a>
       </td>
       <td>{{ comp['time'] }}</td>
       <td><a href="{{ url_for('index') + comp['comparison_type']['name'] }}">{{ comp['comparison_type']['name'] }}</td>

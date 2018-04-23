@@ -10,13 +10,13 @@
     </tr>
   </thead>
   <tbody>
-    {% for id, comp in comparisons.items() %}
+    {% for comp in comparisons %}
       {% if comp['comparisons']|length > 1 %}
         <tr>
           <td>
-            <a href="{{ url_for('rpmdiff.show_group', id=id) }}" class="btn btn-primary" role="button">group</a>
+            <a href="{{ url_for('rpmdiff.show_group', id=comp['id']) }}" class="btn btn-primary" role="button">group</a>
           </td>
-          <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
+          <td><a href="{{ url_for('rpmdiff.show_group', id=comp['id']) }}">{{ comp['id'] }}</a></td>
           <td>{{ comp['time'] }}</td>
           <td><a href="{{ url_for('rpmdiff.show_packages_name', name=comp['comparisons'][0]['pkg1']['name']) }}">{{ comp['comparisons'][0]['pkg1']['name'] }}</a></td>
           <td><a href="{{ url_for('rpmdiff.show_packages_name', name=comp['comparisons'][0]['pkg2']['name']) }}">{{ comp['comparisons'][0]['pkg2']['name'] }}</a></td>
@@ -25,9 +25,9 @@
       {% elif comp['comparisons']|length == 0 %}
         <tr>
           <td>
-            <a href="{{ url_for('rpmdiff.show_group', id=id) }}" class="btn btn-primary" role="button">group</a>
+            <a href="{{ url_for('rpmdiff.show_group', id=comp['id']) }}" class="btn btn-primary" role="button">group</a>
           </td>
-          <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
+          <td><a href="{{ url_for('rpmdiff.show_group', id=comp['id']) }}">{{ comp['id'] }}</a></td>
           <td>{{ comp['time'] }}</td>
           <td>-</td>
           <td>-</td>
@@ -39,7 +39,7 @@
             <td>
               <a href="{{ url_for('rpmdiff.show_differences', id=rpm_comp['id']) }}" class="btn btn-primary" role="button">{{ rpm_comp['id'] }}</a>
             </td>
-            <td><a href="{{ url_for('rpmdiff.show_group', id=id) }}">{{ id }}</a></td>
+            <td><a href="{{ url_for('rpmdiff.show_group', id=comp['id']) }}">{{ comp['id'] }}</a></td>
             <td>{{ comp['time'] }}</td>
             <td><a href="{{ url_for('rpmdiff.show_package', id=rpm_comp['pkg1']['id']) }}">{{ rpm_comp['pkg1']['filename'] }}</a></td>
             <td><a href="{{ url_for('rpmdiff.show_package', id=rpm_comp['pkg2']['id']) }}">{{ rpm_comp['pkg2']['filename'] }}</a></td>

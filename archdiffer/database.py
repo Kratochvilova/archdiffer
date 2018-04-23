@@ -329,7 +329,7 @@ def general_iter_query_result(result, group_id, group_dict,
             # Add aggregated list and yield
             if line_dict is not None and result_dict is not None:
                 result_dict[name] = outerjoin_items
-            yield (last_id, result_dict)
+            yield result_dict
             # Save new id and dict
             last_id = group_id(line)
             result_dict = group_dict(line)
@@ -342,7 +342,7 @@ def general_iter_query_result(result, group_id, group_dict,
     if line_dict is not None and result_dict is not None:
         result_dict[name] = outerjoin_items
     if last_id is not None:
-        yield (last_id, result_dict)
+        yield result_dict
 
 def iter_query_result(result, table):
     """Call general_iter_query_result based on given table.

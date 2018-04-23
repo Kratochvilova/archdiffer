@@ -11,9 +11,9 @@
     </tr>
   </thead>
   <tbody>
-    {% for id, pkg in pkgs.items() %}
+    {% for pkg in pkgs %}
       <tr>
-        <td><a href="{{ url_for('rpmdiff.show_package', id=id) }}">{{ id }}</a></td>
+        <td><a href="{{ url_for('rpmdiff.show_package', id=pkg['id']) }}">{{ pkg['id'] }}</a></td>
         <td><a href="{{ url_for('rpmdiff.show_packages_name', name=pkg['name']) }}">{{ pkg['name'] }}</a></td>
         <td>{{ pkg['arch'] }}</td>
         <td>{{ pkg['epoch'] }}</td>

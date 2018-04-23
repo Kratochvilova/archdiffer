@@ -13,7 +13,7 @@ from ....flask_frontend import request_parser
 from ....flask_frontend.filter_functions import get_first_key
 
 # Functions for making sets of filters
-def rpm_comparisons(prefix='comparisons_', relationships=False):
+def rpm_comparisons(prefix='comparison_', relationships=False):
     """Get filters for rpm comparisons.
 
     :param string prefix: prefix of the name of the filter
@@ -53,7 +53,7 @@ def rpm_comparisons(prefix='comparisons_', relationships=False):
         ))
     return filters
 
-def rpm_differences(prefix='differences_', relationships=False):
+def rpm_differences(prefix='difference_', relationships=False):
     """Get filters for rpm differences.
 
     :param string prefix: prefix of the name of the filter
@@ -101,7 +101,7 @@ def rpm_differences(prefix='differences_', relationships=False):
         ))
     return filters
 
-def rpm_packages(table=RPMPackage, prefix='packages_', relationships=False):
+def rpm_packages(table=RPMPackage, prefix='package_', relationships=False):
     """Get filters for rpm packages.
 
     :param sqlalchemy.ext.declarative.api.declarativemeta table: database model
@@ -132,7 +132,7 @@ def rpm_packages(table=RPMPackage, prefix='packages_', relationships=False):
         ))
     return filters
 
-def rpm_repositories(table=RPMRepository, prefix='repositories_'):
+def rpm_repositories(table=RPMRepository, prefix='repository_'):
     """Get filters for rpm repositories.
 
     :param sqlalchemy.ext.declarative.api.declarativemeta table: database model
@@ -149,7 +149,7 @@ def rpm_repositories(table=RPMRepository, prefix='repositories_'):
     )
     return filters
 
-def rpm_comments(table=RPMComment, prefix='comments_', relationships=False):
+def rpm_comments(table=RPMComment, prefix='comment_', relationships=False):
     """Get filters for rpm comments.
 
     :param sqlalchemy.ext.declarative.api.declarativemeta table: database model

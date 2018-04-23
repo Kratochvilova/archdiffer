@@ -1,11 +1,11 @@
 <div class="differences">
-  {% for id_comp, comp in comparison.items() %}
+  {% for comp in comparison %}
     <h3>Comparison</h3>
     <table class="table">
       <tbody>
         <tr>
           <td>Comparison</td>
-          <td><a href="{{ url_for('rpmdiff.show_groups', id=comp['id_group']) }}">{{ id_comp }}</a></td>
+          <td><a href="{{ url_for('rpmdiff.show_groups', id=comp['id_group']) }}">{{ comp['id'] }}</a></td>
         </tr>
         <tr>
           <td>Package 1</td>
@@ -22,7 +22,7 @@
       </tbody>
     </table>
 
-    <form class="btn-group" action="{{ url_for('rpmdiff.show_comments_comp', id_comp=id_comp) }}" method="get">
+    <form class="btn-group" action="{{ url_for('rpmdiff.show_comments_comp', id_comp=comp['id']) }}" method="get">
       <button type="submit" class="btn btn-default">Comments</button>
     </form>
 

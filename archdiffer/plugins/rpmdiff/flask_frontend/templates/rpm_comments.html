@@ -1,5 +1,5 @@
 <ul>
-  {% for id, comm in comments.items() %}
+  {% for comm in comments %}
     <li>
       <p>Author: {{ comm['username'] }}</p>
       <p>Time: {{ comm['time'] }}</p>

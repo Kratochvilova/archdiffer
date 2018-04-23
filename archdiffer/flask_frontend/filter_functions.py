@@ -17,7 +17,7 @@ def get_first_key(dictionary, string):
     return None
 
 # Functions for making sets of filters
-def comparisons(prefix='comparisons_'):
+def comparisons(prefix='comparison_'):
     """Get filters for comparisons.
 
     :param string prefix: prefix of the name of the filter
@@ -40,7 +40,7 @@ def comparisons(prefix='comparisons_'):
     )
     return filters
 
-def comparison_types(prefix='comparison_types_'):
+def comparison_types(prefix='comparison_type_'):
     """Get filters for comparison types.
 
     :param string prefix: prefix of the name of the filter

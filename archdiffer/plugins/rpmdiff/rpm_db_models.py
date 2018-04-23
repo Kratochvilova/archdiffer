@@ -247,6 +247,7 @@ class RPMComparison(BaseExported, Base):
         :return dict: dict with Comparison column values
         """
         return {
+            'id': line.Comparison.id,
             'time': datetime.strftime(
                 line.Comparison.time, '%Y-%m-%d %H:%M:%S'
             ),
@@ -587,7 +588,7 @@ class RPMRepository(BaseExported, Base):
         :param RPMRepository line: RPMRepository
         :return dict: dict of RPMRepository column values
         """
-        return {'path': line.path}
+        return {'id': line.id, 'path': line.path}
 
 class RPMComment(BaseExported, Base):
     """Database model of rpm comments."""

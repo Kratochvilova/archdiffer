@@ -18,7 +18,7 @@ from .. import constants
 from ....database import Comparison, User, modify_query
 from ....flask_frontend.common_tasks import (my_render_template,
                                              rest_api_auth_required)
-from ....flask_frontend.database_tasks import TableDict, routes
+from ....flask_frontend.database_tasks import TableList, routes
 from ....flask_frontend import filter_functions as app_filter_functions
 from ....flask_frontend import request_parser
 from ....flask_frontend.exceptions import BadRequest
@@ -64,14 +64,14 @@ class RoutesDict(Resource):
     def get(self):
         return routes('/rpmdiff/rest')
 
-class RPMTableDict(TableDict):
-    """Dict of given table."""
+class RPMTableList(TableList):
+    """List of items of given table."""
     def get(self, id=None):
-        """Get dict.
+        """Get list.
         (Overriden because of different iter_query_result function.)
 
         :param int id: id to optionaly filter by
-        :return dict: dict of the resulting query
+        :return list: list of the resulting query
         """
         query = self.table.query(g.db_session)
         additional_modifiers = None
@@ -79,10 +79,10 @@ class RPMTableDict(TableDict):
             additional_modifiers = {'filter': [self.table.id == id]}
         modifiers = self.modifiers(additional=additional_modifiers)
         query = modify_query(query, modifiers)
-        return dict(iter_query_result(query, self.table))
+        return list(iter_query_result(query, self.table))
 
-class RPMGroupsDict(RPMTableDict):
-    """Dict of comparison groups."""
+class RPMGroupsList(RPMTableList):
+    """List of comparison groups."""
     table = Comparison
     filters = dict(
         **app_filter_functions.comparisons(prefix=''),
@@ -94,11 +94,11 @@ class RPMGroupsDict(RPMTableDict):
     )
 
     def get(self, id=None):
-        """Get dict.
+        """Get list.
         (Overriden because of different iter_query_result function.)
 
         :param int id: id to optionaly filter by
-        :return dict: dict of the resulting query
+        :return list: list of the resulting query
         """
         query_ids = RPMComparison.query_group_ids(g.db_session)
         additional_modifiers = None
@@ -107,10 +107,10 @@ class RPMGroupsDict(RPMTableDict):
         modifiers = self.modifiers(additional=additional_modifiers)
         query_ids = modify_query(query_ids, modifiers)
         query = RPMComparison.query_groups(g.db_session, query_ids.subquery())
-        return dict(iter_query_result(query, self.table))
+        return list(iter_query_result(query, self.table))
 
-class RPMComparisonsDict(RPMTableDict):
-    """Dict of rpm comparisons."""
+class RPMComparisonsList(RPMTableList):
+    """List of rpm comparisons."""
     table = RPMComparison
     filters = dict(
         **filter_functions.rpm_comparisons(prefix=''),
@@ -121,19 +121,19 @@ class RPMComparisonsDict(RPMTableDict):
         **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
     )
 
-class RPMDifferencesDict(RPMTableDict):
-    """Dict of rpm differences."""
+class RPMDifferencesList(RPMTableList):
+    """List of rpm differences."""
     table = RPMDifference
     filters = dict(
-        **RPMComparisonsDict.filters.copy(),
+        **RPMComparisonsList.filters.copy(),
         **filter_functions.rpm_differences(),
     )
 
     def get(self, id=None):
-        """Get dict.
+        """Get list.
 
         :param int id: RPMComparison id
-        :return dict: dict of the resulting query
+        :return list: list of the resulting query
         """
         query = self.table.query(g.db_session)
         additional_modifiers = None
@@ -141,31 +141,31 @@ class RPMDifferencesDict(RPMTableDict):
             additional_modifiers = {'filter': [RPMComparison.id == id]}
         modifiers = self.modifiers(additional=additional_modifiers)
         query = modify_query(query, modifiers)
-        return dict(iter_query_result(query, self.table))
+        return list(iter_query_result(query, self.table))
 
-class RPMPackagesDict(RPMTableDict):
-    """Dict of rpm packages."""
+class RPMPackagesList(RPMTableList):
+    """List of rpm packages."""
     table = RPMPackage
     filters = dict(
         **filter_functions.rpm_packages(prefix=''),
         **filter_functions.rpm_repositories(),
     )
 
-class RPMRepositoriesDict(RPMTableDict):
-    """Dict of rpm repositories."""
+class RPMRepositoriesList(RPMTableList):
+    """List of rpm repositories."""
     table = RPMRepository
     filters = dict(**filter_functions.rpm_repositories(prefix=''))
 
-class RPMCommentsDict(RPMTableDict):
-    """Dict of rpm comments."""
+class RPMCommentsList(RPMTableList):
+    """List of rpm comments."""
     table = RPMComment
     filters = dict(**filter_functions.rpm_comments(prefix=''))
 
     def get(self, id=None, username=None, id_comp=None, id_diff=None):
-        """Get dict.
+        """Get list.
 
         :param int id: id to optionally filter by
-        :return dict: dict of the resulting query
+        :return list: list of the resulting query
         """
         query = self.table.query(g.db_session)
         additional_modifiers = None
@@ -187,24 +187,24 @@ class RPMCommentsDict(RPMTableDict):
             )
         modifiers = self.modifiers(additional=additional_modifiers)
         query = modify_query(query, modifiers)
-        return dict(iter_query_result(query, self.table))
+        return list(iter_query_result(query, self.table))
 
 flask_api.add_resource(RoutesDict, '/rest')
-flask_api.add_resource(RPMGroupsDict, '/rest/groups', '/rest/groups/<int:id>')
+flask_api.add_resource(RPMGroupsList, '/rest/groups', '/rest/groups/<int:id>')
 flask_api.add_resource(
-    RPMComparisonsDict, '/rest/comparisons', '/rest/comparisons/<int:id>'
+    RPMComparisonsList, '/rest/comparisons', '/rest/comparisons/<int:id>'
 )
 flask_api.add_resource(
-    RPMDifferencesDict, '/rest/differences', '/rest/differences/<int:id>'
+    RPMDifferencesList, '/rest/differences', '/rest/differences/<int:id>'
 )
 flask_api.add_resource(
-    RPMPackagesDict, '/rest/packages', '/rest/packages/<int:id>'
+    RPMPackagesList, '/rest/packages', '/rest/packages/<int:id>'
 )
 flask_api.add_resource(
-    RPMRepositoriesDict, '/rest/repositories', '/rest/repositories/<int:id>'
+    RPMRepositoriesList, '/rest/repositories', '/rest/repositories/<int:id>'
 )
 flask_api.add_resource(
-    RPMCommentsDict,
+    RPMCommentsList,
     '/rest/comments',
     '/rest/comments/<int:id>',
     '/rest/comments/by_user/<string:username>',
@@ -212,7 +212,7 @@ flask_api.add_resource(
     '/rest/comments/by_diff/<int:id_diff>'
 )
 
-class RPMIndexView(RPMGroupsDict):
+class RPMIndexView(RPMGroupsList):
     """View of index."""
     default_modifiers = {
         'limit': 10,
@@ -241,7 +241,7 @@ class RPMIndexView(RPMGroupsDict):
         query_ids = modify_query(query_ids, second)
         query = RPMComparison.query_groups(g.db_session, query_ids.subquery())
         query = query.from_self().order_by(*modifiers['order_by'])
-        comps = dict(iter_query_result(query, self.table))
+        comps = list(iter_query_result(query, self.table))
 
         return my_render_template(
             self.template,
@@ -261,7 +261,7 @@ class RPMGroupsView(RPMIndexView):
     template = 'rpm_show_groups.html'
     endpoint = 'rpmdiff.show_groups'
 
-class RPMDifferencesView(RPMDifferencesDict):
+class RPMDifferencesView(RPMDifferencesList):
     """View of differences."""
     default_modifiers = {'order_by': [RPMDifference.id]}
     template = 'rpm_show_differences.html'
@@ -272,7 +272,7 @@ class RPMDifferencesView(RPMDifferencesDict):
         comparison = self.get(id=id)
         return my_render_template(self.template, comparison=comparison)
 
-class RPMPackagesView(RPMPackagesDict):
+class RPMPackagesView(RPMPackagesList):
     """View of packages."""
     default_modifiers = {
         'limit': 10, 'offset': 0, 'order_by': [RPMPackage.id.desc()]
@@ -304,7 +304,7 @@ class RPMPackagesView(RPMPackagesDict):
             offset=self.modifiers()['offset'],
         )
 
-class RPMRepositoriesView(RPMRepositoriesDict):
+class RPMRepositoriesView(RPMRepositoriesList):
     """View of repositories."""
     default_modifiers = {
         'limit': 10, 'offset': 0, 'order_by': [RPMRepository.id.desc()]
@@ -330,7 +330,7 @@ class RPMRepositoriesView(RPMRepositoriesDict):
             offset=self.modifiers()['offset'],
         )
 
-class RPMCommentsView(RPMCommentsDict):
+class RPMCommentsView(RPMCommentsList):
     """View of comments."""
     default_modifiers = {
         'limit': 10, 'offset': 0, 'order_by': [RPMComment.id.desc()]
