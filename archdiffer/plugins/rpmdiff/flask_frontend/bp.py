@@ -114,7 +114,7 @@ class RPMComparisonsList(RPMTableList):
     table = RPMComparison
     filters = dict(
         **filter_functions.rpm_comparisons(prefix=''),
-        **app_filter_functions.comparisons(prefix='groups_'),
+        **app_filter_functions.comparisons(prefix='group_'),
         **filter_functions.rpm_packages(table=pkg1, prefix='pkg1_'),
         **filter_functions.rpm_packages(table=pkg2, prefix='pkg2_'),
         **filter_functions.rpm_repositories(table=repo1, prefix='repo1_'),
