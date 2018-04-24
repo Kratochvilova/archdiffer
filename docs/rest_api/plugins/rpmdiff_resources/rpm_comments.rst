@@ -93,8 +93,7 @@ Create new RPM Comment
 
 .. http:post:: /rpmdiff/rest/comments
 
-   Create new RPM Comment.
-
+   Create new RPM Comment. Authentication is required.
 
    **Example request**:
 

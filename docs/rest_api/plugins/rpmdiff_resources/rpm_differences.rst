@@ -250,7 +250,7 @@ Waive RPM Difference
 
 .. http:put:: /rpmdiff/rest/differences/(int:id)
 
-   Waive or unwaive RPM Difference.
+   Waive or unwaive RPM Difference. Authentication is required.
 
    **Example request**:
 

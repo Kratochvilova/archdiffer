@@ -151,7 +151,7 @@ Create new RPM Comparison
 
 .. http:post:: /rpmdiff/rest/comparisons
 
-   Create new RPM Comparison.
+   Create new RPM Comparison. Authentication is required.
 
 
    **Example minimal request**:
