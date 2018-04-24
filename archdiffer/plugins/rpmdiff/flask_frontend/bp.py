@@ -175,7 +175,7 @@ class RPMCommentsList(RPMTableList):
         additional_modifiers = None
         if id is not None:
             additional_modifiers = add_filter(
-                additional_modifiers, RPMComparison.id == id
+                additional_modifiers, RPMComment.id == id
             )
         if username is not None:
             additional_modifiers = add_filter(
