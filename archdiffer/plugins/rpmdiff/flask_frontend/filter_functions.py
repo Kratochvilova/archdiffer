@@ -90,6 +90,11 @@ def rpm_differences(prefix='difference_', relationships=False):
             name=prefix + 'state',
             function=(lambda x: get_first_key(constants.DIFF_STATE_STRINGS, x))
         ),
+        **request_parser.equals(
+            RPMDifference.waived,
+            name=prefix + 'waived',
+            function=(lambda x: x == 'true')
+        ),
     )
     if relationships:
         filters.update(dict(
