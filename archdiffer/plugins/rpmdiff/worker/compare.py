@@ -56,13 +56,13 @@ def download_packages(pkg):
 
     # Query packages
     pkgs = base.sack.query().available().filter(name=pkg['name'])
-    if pkg['arch'] != '':
+    if pkg['arch'] != '' and pkg['arch'] and isinstance(pkg['arch'], str):
         pkgs = pkgs.filter(arch=pkg['arch'])
-    if pkg['epoch'] != '':
+    if pkg['epoch'] != '' and isinstance(pkg['epoch'], int):
         pkgs = pkgs.filter(epoch=pkg['epoch'])
-    if pkg['release'] != '':
+    if pkg['release'] != '' and isinstance(pkg['release'], str):
         pkgs = pkgs.filter(release=pkg['release'])
-    if pkg['version'] != '':
+    if pkg['version'] != '' and isinstance(pkg['version'], str):
         pkgs = pkgs.filter(version=pkg['version'])
 
     # Download the package
