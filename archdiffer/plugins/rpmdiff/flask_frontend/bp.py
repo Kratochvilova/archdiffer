@@ -121,6 +121,37 @@ class RPMComparisonsList(RPMTableList):
         **filter_functions.rpm_repositories(table=repo2, prefix='repo2_'),
     )
 
+    @rest_api_auth_required
+    def post(self):
+        """Add request for comparison of two rpm packages."""
+        try:
+            data = json.loads(request.data.decode('utf8'))
+        except:
+            raise BadRequest(
+                "No data: please provide dict with 'pkg1' and 'pkg2' dicts."
+            )
+        pkg1 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
+        pkg2 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
+        try:
+            pkg1.update(data['pkg1'])
+            pkg2.update(data['pkg2'])
+        except KeyError:
+            raise BadRequest('Incorrect data format: missing packages.')
+        if 'name' not in pkg1 or 'name' not in pkg2:
+            raise BadRequest('Incorrect data format: missing package names.')
+        if 'repository' not in pkg1 or 'repository' not in pkg2:
+            raise BadRequest('Incorrect data format: missing repositories.')
+
+        comp = Comparison.add(g.db_session, constants.COMPARISON_TYPE)
+
+        celery_app.send_task('rpmdiff.compare', args=(comp.id, pkg1, pkg2))
+
+        resp = make_response("", 201)
+        resp.headers["Location"] = url_for(
+            'rpmdiff.rpmcomparisonslist', id=comp.id
+        )
+        return resp
+
 class RPMDifferencesList(RPMTableList):
     """List of rpm differences."""
     table = RPMDifference
@@ -142,6 +173,27 @@ class RPMDifferencesList(RPMTableList):
         modifiers = self.modifiers(additional=additional_modifiers)
         query = modify_query(query, modifiers)
         return list(iter_query_result(query, self.table))
+
+    @rest_api_auth_required
+    def put(self, id=None):
+        """Waive/unwaive a difference."""
+        if id is None:
+            raise BadRequest(
+                "The method is not allowed for the requested URL."
+            )
+        try:
+            data = json.loads(request.data.decode('utf8'))
+        except:
+            raise BadRequest(
+                "No data: please provide string 'waive' or 'unwaive'."
+            )
+        diff = g.db_session.query(RPMDifference).filter_by(id=id).first()
+        if data == 'waive':
+            diff.waive(g.db_session)
+        if data == 'unwaive':
+            diff.unwaive(g.db_session)
+        resp = make_response("", 201)
+        return resp
 
 class RPMPackagesList(RPMTableList):
     """List of rpm packages."""
@@ -192,6 +244,60 @@ class RPMCommentsList(RPMTableList):
         modifiers = self.modifiers(additional=additional_modifiers)
         query = modify_query(query, modifiers)
         return list(iter_query_result(query, self.table))
+
+    @rest_api_auth_required
+    def post(self):
+        """Add new comment."""
+        try:
+            data = json.loads(request.data.decode('utf8'))
+        except:
+            raise BadRequest(
+                "No data: please provide dict with 'text' and either "
+                "'id_comp' or 'id_diff'."
+            )
+        if 'text' not in data:
+            if 'id_comp' not in data and 'id_diff' not in data:
+                raise BadRequest("Incorrect data format: please provide dict "
+                    "with 'text' and either 'id_comp' or 'id_diff'.")
+            else:
+                raise BadRequest("Incorrect data format: missing "
+                    "'text' of the comment.")
+        if 'id_comp' not in data and 'id_diff' not in data:
+            raise BadRequest(
+                'Incorrect data format: missing id of either '
+                'comparison or difference (id_comp or id_diff).'
+            )
+        if 'id_comp' in data and 'id_diff' in data:
+            diff = g.db_session.query(RPMDifference).filter_by(
+                id=data['id_diff']
+            ).first()
+            if diff.id_comp != data['id_comp']:
+                raise BadRequest(
+                    'Incorrect data format: the comparison id does not '
+                    'match the difference id.'
+                )
+        id_comp = None
+        id_diff = None
+        if 'id_comp' in data:
+            id_comp = data['id_comp']
+        if 'id_diff' in data:
+            id_diff = data['id_diff']
+
+        RPMComment.add(
+            g.db_session,
+            data['text'],
+            g.user.openid,
+            id_comp=id_comp,
+            id_diff=id_diff
+        )
+
+        resp = make_response("", 201)
+        if 'id_diff' in data:
+            id = id_diff
+        else:
+            id = id_comp
+        resp.headers["Location"] = url_for('rpmdiff.rpmcommentslist', id=id)
+        return resp
 
 flask_api.add_resource(RoutesDict, '/rest')
 flask_api.add_resource(RPMGroupsList, '/rest/groups', '/rest/groups/<int:id>')
@@ -423,114 +529,6 @@ bp.add_url_rule(
     '/comments/by_diff/<int:id_diff>',
     view_func=RPMCommentsView.as_view('show_comments_diff')
 )
-
-class AddComparison(Resource):
-    @rest_api_auth_required
-    def post(self):
-        """Add request for comparison of two rpm packages."""
-        try:
-            data = json.loads(request.data.decode('utf8'))
-        except:
-            raise BadRequest(
-                "No data: please provide dict with 'pkg1' and 'pkg2' dicts."
-            )
-        pkg1 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
-        pkg2 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
-        try:
-            pkg1.update(data['pkg1'])
-            pkg2.update(data['pkg2'])
-        except KeyError:
-            raise BadRequest('Incorrect data format: missing packages.')
-        if 'name' not in pkg1 or 'name' not in pkg2:
-            raise BadRequest('Incorrect data format: missing package names.')
-        if 'repository' not in pkg1 or 'repository' not in pkg2:
-            raise BadRequest('Incorrect data format: missing repositories.')
-
-        comp = Comparison.add(g.db_session, constants.COMPARISON_TYPE)
-
-        celery_app.send_task('rpmdiff.compare', args=(comp.id, pkg1, pkg2))
-
-        resp = make_response("", 201)
-        resp.headers["Location"] = url_for(
-            'rpmdiff.rpmdifferencesdict', id=comp.id
-        )
-        return resp
-
-flask_api.add_resource(AddComparison, '/rest/add_comparison')
-
-class WaiveDifference(Resource):
-    @rest_api_auth_required
-    def put(self, id):
-        """Waive a difference."""
-        diff = g.db_session.query(RPMDifference).filter_by(id=id).first()
-        diff.waive(g.db_session)
-        resp = make_response("", 201)
-        return resp
-
-flask_api.add_resource(WaiveDifference, '/rest/waive/<int:id>')
-
-class UnwaiveDifference(Resource):
-    @rest_api_auth_required
-    def put(self, id):
-        """Unwaive a difference."""
-        diff = g.db_session.query(RPMDifference).filter_by(id=id).first()
-        diff.unwaive(g.db_session)
-        resp = make_response("", 201)
-        return resp
-
-flask_api.add_resource(UnwaiveDifference, '/rest/unwaive/<int:id>')
-
-class AddComment(Resource):
-    @rest_api_auth_required
-    def post(self):
-        """Add new comment."""
-        try:
-            data = json.loads(request.data.decode('utf8'))
-        except:
-            raise BadRequest(
-                "No data: please provide dict with 'text' and either "
-                "'id_comp' or 'id_diff'."
-            )
-        if 'text' not in data:
-            raise BadRequest('Incorrect data format: missing comment text.')
-        if 'id_comp' not in data and 'id_diff' not in data:
-            raise BadRequest(
-                'Incorrect data format: missing id of either '
-                'comparison or difference (id_comp or id_diff).'
-            )
-        if 'id_comp' in data and 'id_diff' in data:
-            diff = g.db_session.query(RPMDifference).filter_by(
-                id=data['id_diff']
-            ).first()
-            if diff.id_comp != data['id_comp']:
-                raise BadRequest(
-                    'Incorrect data format: the comparison id does not '
-                    'match the difference id.'
-                )
-        id_comp = None
-        id_diff = None
-        if 'id_comp' in data:
-            id_comp = data['id_comp']
-        if 'id_diff' in data:
-            id_diff = data['id_diff']
-
-        RPMComment.add(
-            g.db_session,
-            data['text'],
-            g.user.openid,
-            id_comp=id_comp,
-            id_diff=id_diff
-        )
-
-        resp = make_response("", 201)
-        if 'id_diff' in data:
-            id = id_diff
-        else:
-            id = id_comp
-        resp.headers["Location"] = url_for('rpmdiff.rpmcommentsdict', id=id)
-        return resp
-
-flask_api.add_resource(AddComment, '/rest/add_comment')
 
 @bp.route('/new')
 def show_new_comparison_form():
