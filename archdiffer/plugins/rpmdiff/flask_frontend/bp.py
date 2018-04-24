@@ -128,7 +128,7 @@ class RPMComparisonsList(RPMTableList):
             data = json.loads(request.data.decode('utf8'))
         except:
             raise BadRequest(
-                "No data: please provide dict with 'pkg1' and 'pkg2' dicts."
+                "Incorrect data format: please provide dict with 'pkg1' and 'pkg2' dicts."
             )
         pkg1 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
         pkg2 = {'arch': '', 'epoch': '', 'release': '', 'version': ''}
@@ -192,7 +192,7 @@ class RPMDifferencesList(RPMTableList):
             diff.waive(g.db_session)
         if data == 'unwaive':
             diff.unwaive(g.db_session)
-        resp = make_response("", 201)
+        resp = make_response("", 204)
         return resp
 
 class RPMPackagesList(RPMTableList):
@@ -283,7 +283,7 @@ class RPMCommentsList(RPMTableList):
         if 'id_diff' in data:
             id_diff = data['id_diff']
 
-        RPMComment.add(
+        comment = RPMComment.add(
             g.db_session,
             data['text'],
             g.user.openid,
@@ -292,11 +292,9 @@ class RPMCommentsList(RPMTableList):
         )
 
         resp = make_response("", 201)
-        if 'id_diff' in data:
-            id = id_diff
-        else:
-            id = id_comp
-        resp.headers["Location"] = url_for('rpmdiff.rpmcommentslist', id=id)
+        resp.headers["Location"] = url_for(
+            'rpmdiff.rpmcommentslist', id=comment.id
+        )
         return resp
 
 flask_api.add_resource(RoutesDict, '/rest')
