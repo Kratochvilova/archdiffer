@@ -685,8 +685,11 @@ class RPMComment(BaseExported, Base):
         result_dict['username'] = line.User.name
         if line.RPMComparison is not None:
             result_dict['comparison'] = line.RPMComparison.exported()
+            result_dict['comparison']['state'] = constants.STATE_STRINGS[
+                line.RPMComparison.state
+            ]
         if line.RPMDifference is not None:
-            result_dict['difference'] = line.RPMDifference.exported()
+            result_dict['difference'] = RPMDifference.dict_from_line(line)
         return result_dict
 
 def iter_query_result(result, table):
