@@ -407,7 +407,7 @@ class RPMPackage(BaseExported, Base):
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(255), nullable=False)
     arch = Column(String(255), nullable=False)
-    epoch = Column(String(255), nullable=False)
+    epoch = Column(Integer, nullable=False)
     version = Column(String(255), nullable=False)
     release = Column(String(255), nullable=False)
     id_repo = Column(
