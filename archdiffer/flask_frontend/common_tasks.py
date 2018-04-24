@@ -118,7 +118,7 @@ def create_profile():
             else:
                 flash(u'Profile successfully created')
             return redirect(oid.get_next_url())
-    return render_template('create_profile.html', next=oid.get_next_url())
+    return my_render_template('create_profile.html', next=oid.get_next_url())
 
 @flask_app.route('/logout')
 def logout():
