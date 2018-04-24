@@ -159,7 +159,11 @@ class RPMRepositoriesList(RPMTableList):
 class RPMCommentsList(RPMTableList):
     """List of rpm comments."""
     table = RPMComment
-    filters = dict(**filter_functions.rpm_comments(prefix=''))
+    filters = dict(
+        **filter_functions.rpm_comments(prefix=''),
+        **filter_functions.rpm_comparisons(),
+        **filter_functions.rpm_differences(),
+    )
 
     def get(self, id=None, username=None, id_comp=None, id_diff=None):
         """Get list.
