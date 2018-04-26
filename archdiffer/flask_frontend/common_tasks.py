@@ -2,7 +2,7 @@
 """
 Created on Wed Aug 30 14:55:56 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 import base64

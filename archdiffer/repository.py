@@ -2,7 +2,7 @@
 """
 Created on Mon Jul 17 10:23:02 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 import importlib

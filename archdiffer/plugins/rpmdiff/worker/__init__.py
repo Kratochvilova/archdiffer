@@ -3,7 +3,7 @@
 """
 Created on Sat Nov 25 11:43:08 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from . import compare, filter_diffs

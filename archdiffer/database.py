@@ -3,7 +3,7 @@
 """
 Created on Wed Apr  5 19:32:41 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 import datetime

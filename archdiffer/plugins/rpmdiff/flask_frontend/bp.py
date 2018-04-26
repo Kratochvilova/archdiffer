@@ -2,7 +2,7 @@
 """
 Created on Sat Sep 16 22:54:57 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 import json

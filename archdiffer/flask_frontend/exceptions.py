@@ -3,7 +3,7 @@
 """
 Created on Mon Mar 19 11:04:31 2018
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from flask import jsonify

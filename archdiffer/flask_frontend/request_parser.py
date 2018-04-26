@@ -3,7 +3,7 @@
 """
 Created on Sun Mar  4 10:23:41 2018
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 

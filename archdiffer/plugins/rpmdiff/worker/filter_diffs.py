@@ -3,7 +3,7 @@
 """
 Created on Fri Mar  9 09:01:53 2018
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from .... import database

@@ -3,7 +3,7 @@
 """
 Created on Sun Feb 11 22:01:26 2018
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 # Name of the comparison_type implemented by this module

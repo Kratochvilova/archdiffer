@@ -3,7 +3,7 @@
 """
 Created on Mon Mar  5 12:59:20 2018
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from ..database import Comparison, ComparisonType

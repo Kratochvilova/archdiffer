@@ -2,7 +2,7 @@
 """
 Created on Tue Aug 22 22:45:06 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 import os

@@ -3,7 +3,7 @@
 """
 Created on Mon Mar  5 13:11:04 2018
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,

@@ -2,7 +2,7 @@
 """
 Created on Fri Sep  1 10:22:37 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from celery import Celery

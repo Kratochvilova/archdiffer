@@ -2,7 +2,7 @@
 """
 Created on Fri Apr 14 22:18:26 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from ..config import config

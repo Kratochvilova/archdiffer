@@ -2,7 +2,7 @@
 """
 Created on Sun Sep 10 10:36:51 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from flask import Flask

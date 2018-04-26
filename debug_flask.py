@@ -3,7 +3,8 @@
 """
 Created on Tue Aug 15 20:58:38 2017
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
+
 """
 
 from archdiffer.flask_frontend import flask_app

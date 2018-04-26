@@ -3,7 +3,7 @@
 """
 Created on Fri Feb  9 22:32:02 2018
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 from operator import attrgetter

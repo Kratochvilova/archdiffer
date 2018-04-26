@@ -3,7 +3,7 @@
 """
 Created on Tue Feb 20 09:27:50 2018
 
-@author: pavla
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
 # Codes for states of comparisons used in the database
