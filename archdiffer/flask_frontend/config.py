@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+# This file is part of Archdiffer and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
+
 """
 Created on Fri Apr 14 22:18:26 2017
 

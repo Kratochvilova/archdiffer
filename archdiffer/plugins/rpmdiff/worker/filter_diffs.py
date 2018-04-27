@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# This file is part of Archdiffer and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
+
 """
 Created on Fri Mar  9 09:01:53 2018
 
