@@ -19,6 +19,6 @@ Authentication
 
 Accessing stored data is possible without authentication. For modifying data, the authentication is required.
 
-To authenticate, provide api_login:api_token using the basic HTTP authentication.
+To authenticate, provide login:token using the basic HTTP authentication.
 
-The api_login and api_token can be obtained and renewed at the /api page.
+The login and token can be obtained and renewed at the /api page.
