@@ -10,5 +10,6 @@ Created on Fri Sep  1 10:22:37 2017
 """
 
 from celery import Celery
+from ..config import config
 
-celery_app = Celery('backend', broker='pyamqp://localhost')
+celery_app = Celery('backend', broker=config['common']['MESSAGE_BROKER'])

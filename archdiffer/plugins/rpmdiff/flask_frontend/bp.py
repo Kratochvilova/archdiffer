@@ -26,9 +26,10 @@ from ....flask_frontend.database_tasks import TableList, routes
 from ....flask_frontend import filter_functions as app_filter_functions
 from ....flask_frontend import request_parser
 from ....flask_frontend.exceptions import BadRequest
+from ....config import config
 from . import filter_functions
 
-celery_app = Celery(broker='pyamqp://localhost', )
+celery_app = Celery(broker=config['common']['MESSAGE_BROKER'])
 
 bp = Blueprint(
     constants.COMPARISON_TYPE, __name__, template_folder='templates'
