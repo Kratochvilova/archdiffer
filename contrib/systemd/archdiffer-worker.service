@@ -1,0 +1,11 @@
+[Unit]
+Description=Archdiffer Worker Service
+After=rabbitmq-server.service
+
+[Service]
+User=archdiffer-worker
+Group=archdiffer-worker
+ExecStart=/usr/bin/python3 -m archdiffer.backend worker
+
+[Install]
+WantedBy=multi-user.target
