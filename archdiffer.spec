@@ -23,8 +23,15 @@ UNKNOWN
 %package common
 Summary: %{name} common part
 Requires: python3, python3-sqlalchemy
+Requires(pre): shadow-utils
 %description common
 Common part for %{name}
+%pre common
+getent group archdiffer >/dev/null || groupadd -r archdiffer
+getent passwd archdiffer >/dev/null || \
+    useradd -r -g archdiffer -d / -s /sbin/nologin \
+    -c "This account is used by archdiffer." archdiffer
+exit 0
 
 %package flask-frontend
 Summary: %{name} flask frontend
@@ -35,15 +42,8 @@ Flask frontend for %{name}
 %package backend
 Summary: %{name} backend
 Requires: python3-celery, rpmlint, python3-dnf, python3-rpm
-Requires(pre): shadow-utils
 %description backend
 Backend for %{name}
-%pre
-getent group archdiffer-worker >/dev/null || groupadd -r archdiffer-worker
-getent passwd archdiffer-worker >/dev/null || \
-    useradd -r -g archdiffer-worker -d / -s /sbin/nologin \
-    -c "Useful comment about the purpose of this account" archdiffer-worker
-exit 0
 
 %prep
 %setup -n %{name}-%{unmangled_version}
