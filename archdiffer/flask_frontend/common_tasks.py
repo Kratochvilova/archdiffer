@@ -63,6 +63,23 @@ def get_openid_url(url, username):
     """Fill in username into url."""
     return url.replace('<username>', username)
 
+@flask_app.route('/comparison_type_unavailable/<comparison_type>')
+def comparison_type_unavailable(comparison_type):
+    return my_render_template(
+        'comparison_type_unavailable.html', comparison_type=comparison_type
+    )
+
+def external_url_handler(error, endpoint, values):
+    "Looks up an external URL when `url_for` cannot build a URL."
+    for comparison_type in ComparisonType.get_cache(g.db_session).keys():
+        if endpoint.startswith(comparison_type):
+            return url_for(
+                'comparison_type_unavailable', comparison_type=comparison_type
+            )
+    raise error
+
+flask_app.url_build_error_handlers.append(external_url_handler)
+
 @flask_app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
