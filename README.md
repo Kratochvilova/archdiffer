@@ -16,6 +16,8 @@ To run archdiffer, you need to set up:
 
 * message broker that is [supported by Celery](docs.celeryproject.org/en/latest/getting-started/brokers/index.html) (for example RabbitMQ)
 
+* HTTP server - for example Apache (requires httpd and python3-mod_wsgi), archdiffer provides .wsgi file and .conf file for apache
+
 ### Installing
 
 Either install separately frontend and backend:
@@ -31,6 +33,19 @@ Or install both at once:
 $ sudo dnf install archdiffer
 ```
 
+Then install all desired plugins, for example plugin rpmdiff:
+
+```
+$ sudo dnf install archdiffer-plugin-rpmdiff
+```
+
+or
+
+```
+$ sudo dnf install archdiffer-plugin-rpmdiff-flask-frontend
+$ sudo dnf install archdiffer-plugin-rpmdiff-backend
+```
+
 ### Configuration
 
 Change configuration file:
@@ -39,9 +54,41 @@ Change configuration file:
 /etc/archdiffer.conf
 ```
 
-set values for [DATABASE_URL](http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls), [MESSAGE_BROKER](http://docs.celeryproject.org/en/latest/getting-started/brokers/index.html), SECRET_KEY
+Set values for [DATABASE_URL](http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls), [MESSAGE_BROKER](http://docs.celeryproject.org/en/latest/getting-started/brokers/index.html), SECRET_KEY.
 
-...not complete yet...
+Configure archdiffer-worker to automatically start on boot:
+
+```
+$ sudo systemctl enable archdiffer-worker
+```
+
+### Initialization:
+
+Initialize database:
+
+```
+$ sudo /usr/libexec/archdiffer/init_db
+```
+
+Initialize database for all desired plugins, for example rpmdiff:
+
+```
+$ sudo /usr/libexec/archdiffer/init_db_rpmdiff
+```
+
+### Start
+
+Start backend:
+
+```
+$ sudo systemctl start archdiffer-worker
+```
+
+Start your web server. For example for apache:
+
+```
+$ sudo systemctl start httpd
+```
 
 ## Database schema
 
@@ -53,7 +100,7 @@ Schema for archdiffer + plugin rpmdiff:
 
 ![rpmdiff schema](images/erd-rpmdiff.png)
 
-## How to add plugins
+## How to develop plugins
 
 ## Licence
 
