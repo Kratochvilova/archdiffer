@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='archdiffer',
-    version='1.1',
+    version='1.0',
     description='Web service for generic archive comparison',
     author='Pavla Kratochvilova',
     author_email='pavla.kratochvilova@gmail.com',
