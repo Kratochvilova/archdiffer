@@ -71,7 +71,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files flask-frontend
 /usr/share/archdiffer/archdiffer.wsgi
-/etc/httpd/conf.d/archdiffer.conf
+%config /etc/httpd/conf.d/archdiffer.conf
 %{python3_sitelib}/archdiffer/flask_frontend/*.py
 %{python3_sitelib}/archdiffer/flask_frontend/__pycache__/*
 %{python3_sitelib}/archdiffer/flask_frontend/templates/*
