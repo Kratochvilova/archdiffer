@@ -1,7 +1,7 @@
 %define name archdiffer
-%define version 1.1
-%define unmangled_version 1.1
-%define release 8
+%define version 1.0
+%define unmangled_version 1.0
+%define release 1
 
 Summary: Web service for generic archive comparison
 Name: %{name}
