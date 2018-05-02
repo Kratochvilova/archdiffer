@@ -49,10 +49,10 @@ Backend for %{name}
 %setup -n %{name}-%{unmangled_version}
 
 %build
-python3 setup-all.py build
+python3 setup.py build
 
 %install
-python3 setup-all.py install -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+python3 setup.py install -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
 
 %clean
 rm -rf $RPM_BUILD_ROOT
