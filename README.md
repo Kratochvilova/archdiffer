@@ -16,7 +16,7 @@ To run archdiffer, you need to set up:
 
 * message broker that is [supported by Celery](docs.celeryproject.org/en/latest/getting-started/brokers/index.html) (for example RabbitMQ)
 
-* HTTP server - for example Apache (requires httpd and python3-mod_wsgi), archdiffer provides .wsgi file and .conf file for apache
+* HTTP server - for example Apache (requires httpd and python3-mod_wsgi), archdiffer provides .wsgi file and .conf file for Apache
 
 ### Installing
 
@@ -60,6 +60,12 @@ Configure archdiffer-worker to automatically start on boot:
 
 ```
 $ sudo systemctl enable archdiffer-worker
+```
+
+If you are running Apache and have SELinux in enforcing mode, you need to allow Apache to connect over HTTP for OpenID authentication:
+
+```
+$ sudo setsebool -P httpd_can_network_connect=1
 ```
 
 ### Initialization:
