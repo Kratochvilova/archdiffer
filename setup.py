@@ -31,7 +31,8 @@ setup(
         ('/etc/httpd/conf.d', ['contrib/apache/archdiffer.conf']),
         ('/lib/systemd/system', ['contrib/systemd/archdiffer-worker.service']),
         ('/usr/share/archdiffer', ['contrib/apache/archdiffer.wsgi']),
-        ('/usr/libexec/archdiffer', ['contrib/scripts/init_db', 'contrib/scripts/init_db_rpmdiff']),
+        ('/usr/libexec/archdiffer',
+         ['contrib/scripts/init_db', 'contrib/scripts/init_db_rpmdiff']),
     ],
     install_requires=[
         'Flask',
