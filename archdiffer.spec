@@ -60,7 +60,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 
 %files common
-%config %attr(0600, root, root) /etc/archdiffer.conf
+%config %attr(0600, archdiffer, archdiffer) /etc/archdiffer.conf
 %attr(0755, root, root) /usr/libexec/archdiffer/init_db
 %attr(0755, root, root) /usr/libexec/archdiffer/init_db_rpmdiff
 %{python3_sitelib}/archdiffer-*.egg-info
