@@ -10,11 +10,11 @@ The web is written in Flask, the comparison tasks are managed using Celery. Arch
 
 Schema for archdiffer:
 
-# ![archdiffer schema](images/erd_archdiffer.png)
+![archdiffer schema](images/erd-archdiffer.png)
 
 Schema for archdiffer + plugin rpmdiff:
 
-# ![rpmdiff schema](images/erd_rpmdiff.png)
+![rpmdiff schema](images/erd-rpmdiff.png)
 
 ## How to add plugins
 
