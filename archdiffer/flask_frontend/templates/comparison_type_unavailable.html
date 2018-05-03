@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% set active_page = "comparison_types" %}
+{% block body %}
+  <h2 class="sub-header">Comparison Type Not Available</h2>
+  <p><i>Plugin {% if comparison_type %}for {{ comparison_type }}{% endif %} is not installed.</i></p>
+{% endblock %}
+
