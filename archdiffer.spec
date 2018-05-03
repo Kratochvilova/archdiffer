@@ -15,7 +15,7 @@ Prefix: %{_prefix}
 BuildArch: noarch
 Vendor: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 Url: https://github.com/Kratochvilova/archdiffer
-Requires: %{name}-common == %{version}, %{name}-flask-frontend == %{version}, %{name}-backend == %{version}
+Requires: %{name}-common == %{version}-%{release}, %{name}-flask-frontend == %{version}-%{release}, %{name}-backend == %{version}-%{release}
 
 %description
 UNKNOWN
@@ -35,13 +35,13 @@ exit 0
 
 %package flask-frontend
 Summary: %{name} flask frontend
-Requires: python3-flask, python3-flask-restful, python3-flask-openid, python3-celery, %{name}-common == %{version}
+Requires: python3-flask, python3-flask-restful, python3-flask-openid, python3-celery, %{name}-common == %{version}-%{release}
 %description flask-frontend
 Flask frontend for %{name}
 
 %package backend
 Summary: %{name} backend
-Requires: python3-celery, rpmlint, python3-dnf, python3-rpm, %{name}-common == %{version}
+Requires: python3-celery, rpmlint, python3-dnf, python3-rpm, %{name}-common == %{version}-%{release}
 %description backend
 Backend for %{name}
 
