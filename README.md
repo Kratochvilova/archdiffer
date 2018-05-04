@@ -6,6 +6,45 @@ The web is written in Flask, the comparison tasks are managed using Celery. Arch
 
 ## Getting Started
 
+If you only want to try out Archdiffer without installation, for example during development, see [Quict Start](#quick-start).
+
+Otherwise, see [Deploying Archdiffer](#deploying-archdiffer).
+
+## Quick Start
+
+To quickly try out Archdiffer (one system, sqlite database, no installation or configuration), follow these steps:
+
+1. Download the Archdiffer git repository:
+```
+$ git clone https://github.com/Kratochvilova/archdiffer.git
+```
+2. Go to the directory:
+```
+$ cd archdiffer
+```
+3. Install rabbitmq-server:
+```
+$ sudo dnf install rabbitmq-server
+```
+4. Start rabbitmq server:
+```
+$ sudo systemctl start rabbitmq-server
+```
+5. Initialize database:
+```
+$ ARCHDIFFER_CONFIG=debug.conf python3 init_db.py
+$ ARCHDIFFER_CONFIG=debug.conf python3 init_db_rpmdiff.py
+```
+6. Start Archdiffer worker and flask-frontend:
+```
+$ ARCHDIFFER_CONFIG=debug.conf python3 -m archdiffer.backend worker &
+$ ARCHDIFFER_CONFIG=debug.conf python3 debug_flask.py &
+```
+
+(If you don't wish to run Archdiffer in debug mode, set DEBUG = False in debug.conf)
+
+## Deploying Archdiffer
+
 Archdiffer consists of two parts, flask-frontend and backend, and can be therefore installed on two separate systems.
 
 ### Prerequisites
