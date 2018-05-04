@@ -13,4 +13,4 @@ Created on Tue Aug 15 20:58:38 2017
 
 from archdiffer.flask_frontend import flask_app
 
-flask_app.run(debug=True)
+flask_app.run()
