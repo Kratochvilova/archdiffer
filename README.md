@@ -18,7 +18,7 @@ To quickly try out Archdiffer (one system, sqlite database, no installation or c
 ```
 $ git clone https://github.com/Kratochvilova/archdiffer.git
 ```
-2. Go to the directory:
+2. Go to the project directory:
 ```
 $ cd archdiffer
 ```
