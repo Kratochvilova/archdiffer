@@ -35,10 +35,10 @@ $ sudo systemctl start rabbitmq-server
 $ ARCHDIFFER_CONFIG=debug.conf python3 init_db.py
 $ ARCHDIFFER_CONFIG=debug.conf python3 init_db_rpmdiff.py
 ```
-6. Start Archdiffer worker and flask-frontend:
+6. Start Archdiffer worker and flask-frontend (on background or in separate terminals):
 ```
-$ ARCHDIFFER_CONFIG=debug.conf python3 -m archdiffer.backend worker &
-$ ARCHDIFFER_CONFIG=debug.conf python3 debug_flask.py &
+$ ARCHDIFFER_CONFIG=debug.conf python3 -m archdiffer.backend worker
+$ ARCHDIFFER_CONFIG=debug.conf python3 debug_flask.py
 ```
 
 (If you don't wish to run Archdiffer in debug mode, set DEBUG = False in debug.conf)
