@@ -149,7 +149,7 @@ Schema for archdiffer + plugin rpmdiff:
 
 An example of very basic plugin is the `example_plugin` in the plugins directory.
 
-To add new plugin, simple add a module in the plugins directory with submodules named `flask_frontend` and `worker`.
+To add new plugin, simply add a module in the plugins directory with submodules named `flask_frontend` and `worker`.
 
 ### Flask-frontend
 
@@ -181,7 +181,7 @@ The name for the task should be a unique string, so it is recommended to use the
 
 ### Sending tasks
 
-To send tasks, you will also need to define celery app in the frontend (importing the app from backend would also work, but then it wouldn't be possible to have backend and frontend on two different systems). Example:
+To send tasks, you will also need to define celery app in the frontend (importing the app from backend would also work, but in that case it wouldn't be possible to have backend and frontend on two different systems). Example:
 
 ```
 from celery import Celery
