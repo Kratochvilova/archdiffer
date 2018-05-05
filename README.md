@@ -153,14 +153,18 @@ To add new plugin, simple add a module in the plugins directory with submodules 
 
 ### Flask-frontend
 
-If there is a module named `flask_frontend` directly in `plugin.some_plugin`, it will be imported by flask-frontend. You can then register blueprints to extend the flask application. Example:
+If there is a module named `flask_frontend` directly in `plugin.some_plugin`, it will be imported by flask-frontend. You can create blueprints and define views, and then register the blueprints to extend the flask application. Example:
 
 ```
 from ...flask_frontend.flask_app import flask_app
-flask_app.register_blueprint(bp, url_prefix='/example_plugin')
-```
+blueprint = Blueprint('example_plugin', __name__, template_folder='templates')
 
-Then register views under this blueprint.
+@blueprint.route('/', methods=['GET'])
+def index():
+    return render_template('example_plugin_index.html')
+
+flask_app.register_blueprint(blueprint, url_prefix='/example_plugin')
+```
 
 ### Backend
 
