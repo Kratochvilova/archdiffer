@@ -145,7 +145,59 @@ Schema for archdiffer + plugin rpmdiff:
 
 ![rpmdiff schema](images/erd-rpmdiff.png)
 
-## How to develop plugins
+## How to Develop Plugins
+
+An example of very basic plugin is the `example_plugin` in the plugins directory.
+
+To add new plugin, simple add a module in the plugins directory with submodules named `flask_frontend` and `worker`.
+
+### Flask-frontend
+
+If there is a module named `flask_frontend` directly in `plugin.some_plugin`, it will be imported by flask-frontend. You can then register blueprints to extend the flask application. Example:
+
+```
+from ...flask_frontend.flask_app import flask_app
+flask_app.register_blueprint(bp, url_prefix='/example_plugin')
+```
+
+Then register views under this blueprint.
+
+### Backend
+
+If there is a module named `worker` directly in `plugin.some_plugin`, it will be imported by backend. In this module, you can define celery tasks. Example:
+
+```
+from ...backend.celery_app import celery_app
+@celery_app.task(name='example_plugin.example_task')
+def example_task():
+    pass
+```
+
+The name for the task should be a unique string, so it is recommended to use the plugin name as prefix.
+
+### Sending tasks
+
+To send tasks, you will also need to define celery app in the frontend (importing the app from backend would also work, but then it wouldn't be possible to have backend and frontend on two different systems). Example:
+
+```
+from celery import Celery
+celery_app = Celery(broker=config['common']['MESSAGE_BROKER'])
+```
+
+Sending tasks:
+
+```
+celery_app.send_task('example_plugin.example_task')
+```
+
+### Comparison Type
+
+If the plugin implements some type of comparison, you can extend the database with necessary tables and add new comparison type to an existing table named `comparison_types`. The name of the type must be unique.
+
+In order to show your comparison type on the Archdiffer's web site:
+
+1. Register blueprint with url_prefix=<comparison_type_name>.
+2. Register view named `index` in this blueprint.
 
 ## Licence
 
