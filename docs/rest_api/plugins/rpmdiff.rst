@@ -14,9 +14,8 @@ Resources
 
    rpmdiff_resources/routes
    rpmdiff_resources/rpm_comparisons
+   rpmdiff_resources/rpm_groups
    rpmdiff_resources/rpm_differences
    rpmdiff_resources/rpm_packages
    rpmdiff_resources/rpm_repositories
-   rpmdiff_resources/rpm_differences
-   rpmdiff_resources/rpm_groups
    rpmdiff_resources/rpm_comments
