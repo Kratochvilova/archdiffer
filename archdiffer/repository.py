@@ -14,6 +14,7 @@ import os
 
 workers = {}
 flask_frontends = {}
+tests = {}
 
 def load_plugins_workers():
     """Load worker plugins from all plugins if possible."""
@@ -31,6 +32,16 @@ def load_plugins_flask_frontends():
         try:
             flask_frontends[name] = importlib.import_module(
                 '.plugins.' + name + '.flask_frontend', 'archdiffer'
+            )
+        except ImportError as ie:
+            print(ie)
+
+def load_plugins_tests():
+    """Load tests from all plugins if possible."""
+    for name in os.listdir(os.path.join(os.path.dirname(__file__), 'plugins')):
+        try:
+            tests[name] = importlib.import_module(
+                '.plugins.' + name + '.tests', 'archdiffer'
             )
         except ImportError as ie:
             print(ie)
