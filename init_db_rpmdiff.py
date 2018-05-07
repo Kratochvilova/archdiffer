@@ -10,16 +10,6 @@ Created on Wed Oct  4 14:02:49 2017
 @author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
-from archdiffer import database
-from archdiffer.plugins.rpmdiff import rpm_db_models
+from archdiffer.plugins.rpmdiff.database import init_db
 
-COMPARISON_TYPE = 'rpmdiff'
-
-database.Base.metadata.create_all(database.engine())
-
-session = database.session()
-if session.query(database.ComparisonType).filter_by(
-        name=COMPARISON_TYPE
-).one_or_none() is None:
-    session.add(database.ComparisonType(name=COMPARISON_TYPE))
-    session.commit()
+init_db()
