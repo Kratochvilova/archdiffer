@@ -41,7 +41,7 @@ Flask frontend for %{name}
 
 %package backend
 Summary: %{name} backend
-Requires: python3-celery, rpmlint, python3-dnf, python3-rpm, %{name}-common == %{version}-%{release}
+Requires: python3-celery, %{name}-common == %{version}-%{release}
 %description backend
 Backend for %{name}
 
@@ -65,7 +65,7 @@ Flask frontend for rpmdiff plugin
 
 %package plugin-rpmdiff-backend
 Summary: rpmdiff plugin backend
-Requires: %{name}-backend == %{version}-%{release}, %{name}-plugin-rpmdiff-common == %{version}-%{release}
+Requires: rpmlint, python3-dnf, python3-rpm, %{name}-backend == %{version}-%{release}, %{name}-plugin-rpmdiff-common == %{version}-%{release}
 %description plugin-rpmdiff-backend
 Backend for rpmdiff plugin
 
