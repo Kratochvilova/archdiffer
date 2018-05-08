@@ -135,3 +135,8 @@ body {
 .table-hover tbody tr:hover > td.info {
   background-color: #c4e3f3 !important;
 }
+
+.form-group.required .control-label:before { 
+   content:"*";
+   color:red;
+}
