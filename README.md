@@ -22,9 +22,9 @@ $ git clone https://github.com/Kratochvilova/archdiffer.git
 ```
 $ cd archdiffer
 ```
-3. Install rabbitmq-server:
+3. Install dependencies:
 ```
-$ sudo dnf install rabbitmq-server
+$ sudo dnf install rabbitmq-server python3-sqlalchemy python3-flask python3-flask-restful python3-flask-openid python3-celery python3-dnf python3-rpm rpmlint
 ```
 4. Start rabbitmq server:
 ```
