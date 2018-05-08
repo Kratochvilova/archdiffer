@@ -1,6 +1,7 @@
 {% extends "rpm_layout.html" %}
 {% set active_page = "rpm_comparisons" %}
 {% block body %}
+  {% include 'messages.html' %}
   <h2 class="sub-header">Differences</h2>
   {% include 'rpm_differences.html' %}
 {% endblock %}

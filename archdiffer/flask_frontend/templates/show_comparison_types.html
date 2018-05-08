@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% set active_page = "comparison_types" %}
 {% block body %}
+  {% include 'messages.html' %}
   <h2 class="sub-header">Comparison Types</h2>
   {% include 'pagination.html' %}
   {% include 'comparison_types.html' %}

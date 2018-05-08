@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% set active_page = "rest_api" %}
 {% block body %}
+  {% include 'messages.html' %}
   <h3 class="sub-header">REST API Token</h3>
   {% include 'rest_api_token.html' %}
   <h3 class="sub-header">REST API Documentation</h3>

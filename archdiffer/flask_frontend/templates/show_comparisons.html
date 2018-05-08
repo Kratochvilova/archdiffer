@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% set active_page = "comparisons" %}
 {% block body %}
+  {% include 'messages.html' %}
   <h2 class="sub-header">Comparisons</h2>
   {% include 'pagination.html' %}
   {% include 'comparisons.html' %}

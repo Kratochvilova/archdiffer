@@ -112,7 +112,7 @@ def create_or_login(resp):
     flask_session['openid'] = resp.identity_url
     user = User.query(g.db_session, openid=resp.identity_url)
     if user is not None:
-        flash(u'Successfully signed in')
+        flash('Successfully signed in.', 'success')
         g.user = user
         return redirect(oid.get_next_url())
     return redirect(
@@ -129,15 +129,15 @@ def create_profile():
     if request.method == 'POST':
         username = request.form['username']
         if not username:
-            flash(u'Error: you have to provide username')
+            flash('You have to provide username.', 'danger')
         else:
             g.user = User.add(
                 g.db_session, flask_session['openid'], username
             )
             if g.user is None:
-                flash(u'Error: username already exists')
+                flash('Username already exists.', 'danger')
             else:
-                flash(u'Profile successfully created')
+                flash('Profile successfully created.', 'success')
             return redirect(oid.get_next_url())
     return my_render_template('create_profile.html', next=oid.get_next_url())
 
@@ -146,7 +146,7 @@ def logout():
     """Logout user."""
     flask_session.pop('openid', None)
     g.user = None
-    flash(u'You were signed out')
+    flash('You were signed out.', 'success')
     return redirect(oid.get_next_url())
 
 def rest_api_auth_required(f):

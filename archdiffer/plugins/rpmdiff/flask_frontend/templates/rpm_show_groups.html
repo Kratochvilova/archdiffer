@@ -1,6 +1,7 @@
 {% extends "rpm_layout.html" %}
 {% set active_page = "rpm_comparisons" %}
 {% block body %}
+  {% include 'messages.html' %}
   <h2 class="sub-header">Comparison Groups</h2>
   {% include 'pagination.html' %}
   {% include 'rpm_groups.html' %}

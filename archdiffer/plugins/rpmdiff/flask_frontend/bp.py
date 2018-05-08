@@ -11,7 +11,7 @@ Created on Sat Sep 16 22:54:57 2017
 
 import json
 from flask import (Blueprint, abort, request, flash, redirect, url_for, g,
-                   make_response)
+                   make_response, Markup)
 from flask import session as flask_session
 from flask_restful import Api, Resource
 from celery import Celery
@@ -547,6 +547,14 @@ def add_comparison():
     """Add request for comparison of two rpm packages."""
     if g.get('user', None) is None:
         abort(401)
+
+    if request.form['name1'] == '' or request.form['name2'] == '':
+        flash('Missing name of a package.', 'danger')
+        return redirect(url_for('rpmdiff.index'))
+    if request.form['repo1'] == '' or request.form['repo2'] == '':
+        flash('Missing repository path.', 'danger')
+        return redirect(url_for('rpmdiff.index'))
+
     pkg1 = {
         'name': request.form['name1'],
         'arch': request.form['arch1'],
@@ -567,7 +575,13 @@ def add_comparison():
     comp = Comparison.add(g.db_session, constants.COMPARISON_TYPE)
 
     celery_app.send_task('rpmdiff.compare', args=(comp.id, pkg1, pkg2))
-    flash('New entry was successfully posted')
+    flash(
+        Markup(
+            'New comparison group created <a href=%s class="alert-link">'
+            'here</a>.' % url_for('rpmdiff.show_group', id=comp.id)
+        ),
+        'success'
+    )
     return redirect(url_for('rpmdiff.index'))
 
 @bp.route('/waive', methods=['POST'])
