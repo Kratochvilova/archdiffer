@@ -1,6 +1,7 @@
 {% for comp in comparisons %}
   <a href="{{ url_for('rpmdiff.show_group', id=comp['id']) }}"><h3>Group {{ comp['id'] }}</h3></a>
   <p>{{ comp['time'] }}</p>
+  <p>State: {{ comp['state'] }}</p>
   <table class="table table-striped">
     <thead>
       <tr>
