@@ -1,11 +1,11 @@
 {% extends "rpm_layout.html" %}
 {% set active_page = "rpm_index" %}
 {% block body %}
+  {% include 'messages.html' %}
   {% if g.user %}
     <h2 class="sub-header">New Comparison</h2>
   {% endif %}
   {% include 'rpm_new_comparison_form.html' %}
-  {% include 'messages.html' %}
   <h2 class="sub-header">Comparisons</h2>
   {% include 'pagination.html' %}
   {% include 'rpm_comparisons.html' %}

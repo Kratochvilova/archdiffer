@@ -1,9 +1,9 @@
 {% extends "rpm_layout.html" %}
 {% set active_page = "rpm_comparisons" %}
 {% block body %}
+  {% include 'messages.html' %}
   <h2 class="sub-header">New Comment</h2>
   {% include 'rpm_new_comment_form.html' %}
-  {% include 'messages.html' %}
   <h2 class="sub-header">Comments</h2>
   {% include 'pagination.html' %}
   {% include 'rpm_comments.html' %}
