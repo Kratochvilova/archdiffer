@@ -4,7 +4,7 @@ Archdiffer is a web service for generic archive comparison. The main purpose is 
 
 The web is written in Flask, the comparison tasks are managed using Celery. Archdiffer is extensible by plugins. So far, only plugin rpmdiff for comparing RPM packages is implemented.
 
-<img src="images/Screenshot-2018-5-9 Rpmdiff-comps.png" width="425"/> <img src="images/Screenshot-2018-5-9 Rpmdiff-diffs.png" width="425"/>
+Screenshots: [comparisons](images/screenshot-comps.png), [differences](images/screenshot-diffs.png)
 
 ## Getting Started
 
