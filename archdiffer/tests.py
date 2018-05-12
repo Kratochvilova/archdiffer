@@ -67,12 +67,14 @@ class RESTTest(unittest.TestCase):
         port = sock.getsockname()[1]
         self.baseurl = 'http://127.0.0.1:%s/' % port
         sock.close()
+
         # Run frontend
         self.frontend = subprocess.Popen(
             ['python3', _frontend_launcher, str(port)],
             cwd=_basedir,
             env=env,
         )
+
         # Run backend
         self.backend = subprocess.Popen(
             ['python3', '-m', 'archdiffer.backend', 'worker'],
@@ -90,18 +92,14 @@ class RESTTest(unittest.TestCase):
 
     def push(self, route, data):
         r = requests.post(
-            self.baseurl + route,
-            auth=(self.api_login, self.api_token),
-            data=json.dumps(data),
+            self.baseurl + route, auth=self.auth, data=json.dumps(data),
         )
         self.status_code = r.status_code
         self.response = r.json()
 
     def put(self, route, data):
         r = requests.put(
-            self.baseurl + route,
-            auth=(self.api_login, self.api_token),
-            data=json.dumps(data),
+            self.baseurl + route, auth=self.auth, data=json.dumps(data),
         )
         self.status_code = r.status_code
         self.response = r.json()
@@ -113,6 +111,7 @@ class RESTTest(unittest.TestCase):
         self.backend.wait()
         # Remove the temporal directory.
         rmtree(self.tmpdir)
+
         print('teardown')
 
 class RESTTest1(RESTTest):
