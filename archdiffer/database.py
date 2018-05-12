@@ -10,6 +10,8 @@ Created on Wed Apr  5 19:32:41 2017
 """
 
 import datetime
+import random
+import string
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Column, Integer, String, DateTime, Date, ForeignKey,
                         func)
@@ -197,6 +199,26 @@ class User(Base):
             self.api_token,
             self.api_token_expiration,
         )
+
+    def generate_api_token(self, size=30):
+        """Generate a random string used as login or token for REST API.
+
+        :param int size: the size of the token to generate, defaults to
+            30 chars
+        :return string: the API token for the user
+        """
+        return ''.join(
+            random.choice(string.ascii_lowercase) for x in range(size)
+        )
+
+    def new_token(self, ses, size=30, token_expiration=180):
+        self.api_login = self.generate_api_token(size)
+        self.api_token = self.generate_api_token(size)
+        self.api_token_expiration = datetime.date.today() + datetime.timedelta(
+            days=token_expiration
+        )
+        ses.add(self)
+        ses.commit()
 
     @staticmethod
     def query(ses, openid=None, name=None, api_login=None):

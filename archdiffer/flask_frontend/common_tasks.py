@@ -181,26 +181,16 @@ def show_rest_api():
     """Show page for api."""
     return my_render_template('show_rest_api.html')
 
-def generate_api_token(size=30):
-    """Generate a random string used as login or token for REST API.
-
-    :param int size: the size of the token to generate, defaults to 30 chars
-    :return string: the API token for the user
-    """
-    return ''.join(random.choice(string.ascii_lowercase) for x in range(size))
-
 @flask_app.route('/generate_token', methods=['POST'])
 def generate_token():
     """Generate new login and token for REST API."""
     if g.get('user', None) is None:
         abort(401)
 
-    g.user.api_login = generate_api_token(flask_app.config["API_TOKEN_LENGTH"])
-    g.user.api_token = generate_api_token(flask_app.config["API_TOKEN_LENGTH"])
-    g.user.api_token_expiration = datetime.date.today() + datetime.timedelta(
-        days=flask_app.config["API_TOKEN_EXPIRATION"]
+    g.user.new_token(
+        g.db_session,
+        size=flask_app.config['API_TOKEN_LENGTH'],
+        token_expiration=flask_app.config['API_TOKEN_EXPIRATION'],
     )
-    g.db_session.add(g.user)
-    g.db_session.commit()
 
     return redirect(url_for('show_rest_api'))
