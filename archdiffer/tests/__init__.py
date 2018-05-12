@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 Created on Thu May 10 10:22:09 2018
 
@@ -173,14 +174,6 @@ class RESTTest(unittest.TestCase):
         rmtree(self.tmpdir)
 
         print('teardown')
-
-class RESTTest1(RESTTest):
-    def test_foo(self):
-        self.assertEqual(0, 0)
-        # self.assertEqual(r.status_code, requests.codes.ok)
-
-    def test_foo2(self):
-        self.assertEqual(0, 0)
 
 if __name__ == '__main__':
     unittest.main()
