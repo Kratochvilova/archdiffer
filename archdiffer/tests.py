@@ -16,6 +16,8 @@ import unittest
 import socket
 import requests
 import json
+from .config import config
+from . import database
 
 _curdir = os.path.dirname(os.path.abspath(__file__))
 _basedir = os.path.dirname(_curdir)
@@ -25,19 +27,33 @@ _frontend_launcher = 'debug_flask.py'
 _config = 'debug.conf'
 
 class RESTTest(unittest.TestCase):
+    def update_configfile(self):
+        self.config_path = os.path.join(self.tmpdir, 'test.conf')
+        config['common']['DATABASE_URL'] = self.database_url
+        with open(self.config_path, 'w') as configfile:
+            config.write(configfile)
+
     def setUp(self):
         # Make temporal directory to store database.
         self.tmpdir = mkdtemp()
-        # TODO: Create database
-        # TODO: Initialize database
-        # TODO: (optional) or fill database
-        # TODO: create config
+
+        # Update config with database url
+        self.database_path = os.path.join(self.tmpdir, 'test.db')
+        self.database_url = 'sqlite:///%s' % self.database_path
+        self.update_configfile()
+
+        # Initialize database
+        database.Base.metadata.create_all(database.engine(force_new=True))
+
+        # TODO: (optional) fill in database
+
         # Create user with api_login and api_token
         self.api_login = self.api_token = 'foo'
         # Create env with ARCHDIFFER_CONFIG
         env = copy.copy(os.environ)
-        env.update({'ARCHDIFFER_CONFIG': _config})
-        # Get random port
+        env.update({'ARCHDIFFER_CONFIG': self.config_path})
+
+        # Get random port for flask
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind(('localhost', 0))
         port = sock.getsockname()[1]
