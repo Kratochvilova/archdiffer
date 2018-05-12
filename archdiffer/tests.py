@@ -137,10 +137,14 @@ class RESTTest(unittest.TestCase):
             pass
 
     def tearDown(self):
+        # Terminate frontend
         self.frontend.terminate()
         self.frontend.wait()
+
+        # Terminate backend
         self.backend.terminate()
         self.backend.wait()
+
         # Remove the temporal directory.
         rmtree(self.tmpdir)
 
