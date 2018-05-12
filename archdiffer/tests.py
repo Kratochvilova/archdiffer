@@ -144,6 +144,21 @@ class RESTTest(unittest.TestCase):
         except ValueError:
             self.response = None
 
+    def assert_code_eq(self, code):
+        """Assert that response status code is equal to given code.
+
+        :param int code: status code to compare to response
+        """
+        self.assertEqual(self.status_code, code)
+
+    def assert_code_ok(self):
+        """Assert that response status code is OK."""
+        self.assert_code_eq(requests.codes.ok)
+
+    def assert_response_emptylist(self):
+        """Assert that response is empty list."""
+        self.assertEqual(self.response, [])
+
     def tearDown(self):
         """Terminate flask-frontend and backend; remove temporal files."""
         # Terminate frontend
