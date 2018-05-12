@@ -81,8 +81,16 @@ class RESTTest(unittest.TestCase):
             cwd=_basedir,
             env=env,
         )
-        # TODO: instead of waiting, repeatedly try request on /
-        time.sleep(5)
+
+        # Repeatedly try request to ensure the frontend started
+        for i in range(0, 5):
+            time.sleep(2**i)
+            try:
+                self.get('rest')
+                break
+            except requests.exceptions.ConnectionError:
+                print('Waiting for flask to start.')
+
         print('setup')
 
     def get(self, route, params):
