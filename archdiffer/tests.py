@@ -26,6 +26,8 @@ _frontend_launcher = 'debug_flask.py'
 
 class RESTTest(unittest.TestCase):
     def update_configfile(self):
+        self.database_path = os.path.join(self.tmpdir, 'test.db')
+        self.database_url = 'sqlite:///%s' % self.database_path
         self.config_path = os.path.join(self.tmpdir, 'test.conf')
         config['common']['DATABASE_URL'] = self.database_url
         with open(self.config_path, 'w') as configfile:
@@ -36,8 +38,6 @@ class RESTTest(unittest.TestCase):
         self.tmpdir = mkdtemp()
 
         # Update config with database url
-        self.database_path = os.path.join(self.tmpdir, 'test.db')
-        self.database_url = 'sqlite:///%s' % self.database_path
         self.update_configfile()
 
         # Initialize database
