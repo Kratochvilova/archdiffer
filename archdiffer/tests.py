@@ -93,24 +93,48 @@ class RESTTest(unittest.TestCase):
 
         print('setup')
 
-    def get(self, route, params):
+    def get(self, route, params=None):
+        '''Send GET request and save response status code and data.
+
+        :param string route: route to the source
+        :param dict params: parameters to be passed in url
+        '''
         r = requests.get(self.baseurl + route, params=params)
         self.status_code = r.status_code
-        self.response = r.json()
+        try:
+            self.response = r.json()
+        except ValueError:
+            pass
 
-    def push(self, route, data):
+    def post(self, route, data=None):
+        '''Send POST request and save response status code and data.
+
+        :param string route: route to the source
+        :param data: data of the request, will be jsonified
+        '''
         r = requests.post(
             self.baseurl + route, auth=self.auth, data=json.dumps(data),
         )
         self.status_code = r.status_code
-        self.response = r.json()
+        try:
+            self.response = r.json()
+        except ValueError:
+            pass
 
-    def put(self, route, data):
+    def put(self, route, data=None):
+        '''Send PUT request and save response status code and data.
+
+        :param string route: route to the source
+        :param data: data of the request, will be jsonified
+        '''
         r = requests.put(
             self.baseurl + route, auth=self.auth, data=json.dumps(data),
         )
         self.status_code = r.status_code
-        self.response = r.json()
+        try:
+            self.response = r.json()
+        except ValueError:
+            pass
 
     def tearDown(self):
         self.frontend.terminate()
