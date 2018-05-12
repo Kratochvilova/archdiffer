@@ -77,7 +77,7 @@ class RESTTest(unittest.TestCase):
 
         # Run backend
         self.backend = subprocess.Popen(
-            ['python3', '-m', 'archdiffer.backend', 'worker'],
+            ['python3', '-m', 'archdiffer.backend', 'worker', '-c', '1'],
             cwd=_basedir,
             env=env,
         )
