@@ -102,7 +102,7 @@ class RESTTest(unittest.TestCase):
         try:
             self.response = r.json()
         except ValueError:
-            pass
+            self.response = None
 
     def post(self, route, data=None):
         '''Send POST request and save response status code and data.
@@ -117,7 +117,7 @@ class RESTTest(unittest.TestCase):
         try:
             self.response = r.json()
         except ValueError:
-            pass
+            self.response = None
 
     def put(self, route, data=None):
         '''Send PUT request and save response status code and data.
@@ -132,7 +132,7 @@ class RESTTest(unittest.TestCase):
         try:
             self.response = r.json()
         except ValueError:
-            pass
+            self.response = None
 
     def tearDown(self):
         # Terminate frontend
