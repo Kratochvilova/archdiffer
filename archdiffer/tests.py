@@ -48,7 +48,15 @@ class RESTTest(unittest.TestCase):
         # TODO: (optional) fill in database
 
         # Create user with api_login and api_token
-        self.api_login = self.api_token = 'foo'
+        db_session = database.session()
+        user = database.User.add(db_session, 'test_openid', 'test_username')
+        user.new_token(
+            db_session,
+            size=int(config['web']['API_TOKEN_LENGTH']),
+            token_expiration=int(config['web']['API_TOKEN_EXPIRATION']),
+        )
+        self.auth = (user.api_login, user.api_token)
+
         # Create env with ARCHDIFFER_CONFIG
         env = copy.copy(os.environ)
         env.update({'ARCHDIFFER_CONFIG': self.config_path})
