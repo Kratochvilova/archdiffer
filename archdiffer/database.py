@@ -265,20 +265,31 @@ class SessionSingleton():
     engine = None
 
     @staticmethod
-    def init():
-        """Create engine if None."""
-        if SessionSingleton.engine is None:
+    def init(force_new=False):
+        """Create engine if None.
+
+        :param bool force_new: if True, this will always create new instance of
+            engine; this option should only be used for testing purposes
+        """
+        if SessionSingleton.engine is None or force_new:
             SessionSingleton.engine = create_engine(
                 config['common']['DATABASE_URL'], echo=True
             )
 
     @staticmethod
-    def get_engine():
+    def deinit():
+        """Force reloading engine."""
+        SessionSingleton.engine = None
+
+    @staticmethod
+    def get_engine(force_new=False):
         """Get the engine.
 
+        :param bool force_new: if True, this will always create new instance of
+            engine; this option should only be used for testing purposes
         :return sqlalchemy.engine.Engine: engine
         """
-        SessionSingleton.init()
+        SessionSingleton.init(force_new)
         return SessionSingleton.engine
 
     @staticmethod
@@ -291,12 +302,14 @@ class SessionSingleton():
         """
         return Session(*args, bind=SessionSingleton.get_engine(), **kwargs)
 
-def engine():
+def engine(force_new=False):
     """Get the engine.
 
+    :param bool force_new: if True, this will always create new instance of
+        engine; this option should only be used for testing purposes
     :return sqlalchemy.engine.Engine: engine
     """
-    return SessionSingleton.get_engine()
+    return SessionSingleton.get_engine(force_new)
 
 def session(*args, **kwargs):
     """Get new session.
