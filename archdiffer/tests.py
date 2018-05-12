@@ -26,14 +26,24 @@ _frontend_launcher = 'debug_flask.py'
 
 class RESTTest(unittest.TestCase):
     def update_configfile(self):
+        """Update config with new database url and save to temporary test
+        configfile.
+        """
+        # New database path
         self.database_path = os.path.join(self.tmpdir, 'test.db')
         self.database_url = 'sqlite:///%s' % self.database_path
-        self.config_path = os.path.join(self.tmpdir, 'test.conf')
+
+        # Update config with database url
         config['common']['DATABASE_URL'] = self.database_url
+
+        # New config file
+        self.config_path = os.path.join(self.tmpdir, 'test.conf')
         with open(self.config_path, 'w') as configfile:
             config.write(configfile)
 
     def setUp(self):
+        """Create new database with test user; run flask-frontend and backend.
+        """
         # Make temporal directory to store database.
         self.tmpdir = mkdtemp()
 
@@ -92,11 +102,11 @@ class RESTTest(unittest.TestCase):
         print('setup')
 
     def get(self, route, params=None):
-        '''Send GET request and save response status code and data.
+        """Send GET request and save response status code and data.
 
         :param string route: route to the source
         :param dict params: parameters to be passed in url
-        '''
+        """
         r = requests.get(self.baseurl + route, params=params)
         self.status_code = r.status_code
         try:
@@ -105,11 +115,11 @@ class RESTTest(unittest.TestCase):
             self.response = None
 
     def post(self, route, data=None):
-        '''Send POST request and save response status code and data.
+        """Send POST request and save response status code and data.
 
         :param string route: route to the source
         :param data: data of the request, will be jsonified
-        '''
+        """
         r = requests.post(
             self.baseurl + route, auth=self.auth, data=json.dumps(data),
         )
@@ -120,11 +130,11 @@ class RESTTest(unittest.TestCase):
             self.response = None
 
     def put(self, route, data=None):
-        '''Send PUT request and save response status code and data.
+        """Send PUT request and save response status code and data.
 
         :param string route: route to the source
         :param data: data of the request, will be jsonified
-        '''
+        """
         r = requests.put(
             self.baseurl + route, auth=self.auth, data=json.dumps(data),
         )
@@ -135,6 +145,7 @@ class RESTTest(unittest.TestCase):
             self.response = None
 
     def tearDown(self):
+        """Terminate flask-frontend and backend; remove temporal files."""
         # Terminate frontend
         self.frontend.terminate()
         self.frontend.wait()
