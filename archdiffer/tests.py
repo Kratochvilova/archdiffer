@@ -23,8 +23,6 @@ _curdir = os.path.dirname(os.path.abspath(__file__))
 _basedir = os.path.dirname(_curdir)
 #_frontend_launcher = os.path.join(_basedir, 'debug_flask.py')
 _frontend_launcher = 'debug_flask.py'
-#_config = os.path.join(_basedir, 'debug.conf')
-_config = 'debug.conf'
 
 class RESTTest(unittest.TestCase):
     def update_configfile(self):
