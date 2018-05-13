@@ -41,6 +41,52 @@ class RESTTest(unittest.TestCase):
         with open(self.config_path, 'w') as configfile:
             config.write(configfile)
 
+    def fill_db(self):
+        """Fill in database."""
+        pass
+
+    def create_test_user(self):
+        """Add new user to the database and generate new api_login and
+        api_token. Save the api_login and api_token into auth.
+        """
+        db_session = database.session()
+        user = database.User.add(db_session, 'test_openid', 'test_username')
+        user.new_token(
+            db_session,
+            size=int(config['web']['API_TOKEN_LENGTH']),
+            token_expiration=int(config['web']['API_TOKEN_EXPIRATION']),
+        )
+        self.auth = (user.api_login, user.api_token)
+
+    def random_port(self):
+        """Get random port for frontend. Save the whole url into baseurl.
+        
+        :return int port: random port
+        """
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('localhost', 0))
+        port = sock.getsockname()[1]
+        self.baseurl = 'http://127.0.0.1:%s/' % port
+        sock.close()
+        return port
+
+    def wait_for_frontend_start(self):
+        """Repeatedly try request to ensure the frontend started. Otherwise
+        raise an exception.
+
+        :raise Exception: if frontend doesn't start in 5 seconds.
+        """
+        for i in range(50):
+            time.sleep(0.1)
+            try:
+                self.get('rest')
+                break
+            except requests.exceptions.ConnectionError:
+                print('Waiting for frontend to start.')
+        else:
+            raise Exception("Frontend didn't start even after 5 seconds.")
+        
+
     def setUp(self):
         """Create new database with test user; run flask-frontend and backend.
         """
@@ -53,32 +99,19 @@ class RESTTest(unittest.TestCase):
         # Initialize database
         database.Base.metadata.create_all(database.engine(force_new=True))
 
-        # TODO: (optional) fill in database
+        # Fill in database
+        self.fill_db()
 
         # Create user with api_login and api_token
-        db_session = database.session()
-        user = database.User.add(db_session, 'test_openid', 'test_username')
-        user.new_token(
-            db_session,
-            size=int(config['web']['API_TOKEN_LENGTH']),
-            token_expiration=int(config['web']['API_TOKEN_EXPIRATION']),
-        )
-        self.auth = (user.api_login, user.api_token)
+        self.create_test_user()
 
         # Create env with ARCHDIFFER_CONFIG
         env = copy.copy(os.environ)
         env.update({'ARCHDIFFER_CONFIG': self.config_path})
 
-        # Get random port for flask
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(('localhost', 0))
-        port = sock.getsockname()[1]
-        self.baseurl = 'http://127.0.0.1:%s/' % port
-        sock.close()
-
         # Run frontend
         self.frontend = subprocess.Popen(
-            ['python3', _frontend_launcher, str(port)],
+            ['python3', _frontend_launcher, str(self.random_port())],
             cwd=_basedir,
             env=env,
         )
@@ -90,14 +123,8 @@ class RESTTest(unittest.TestCase):
             env=env,
         )
 
-        # Repeatedly try request to ensure the frontend started
-        for i in range(0, 5):
-            time.sleep(2**i)
-            try:
-                self.get('rest')
-                break
-            except requests.exceptions.ConnectionError:
-                print('Waiting for flask to start.')
+        # Wait for frontend to start
+        self.wait_for_frontend_start()
 
         print('setup')
 
