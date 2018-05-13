@@ -17,12 +17,11 @@ import unittest
 import socket
 import requests
 import json
-from .config import config
-from . import database
+from ..config import config
+from .. import database
 
 _curdir = os.path.dirname(os.path.abspath(__file__))
-_basedir = os.path.dirname(_curdir)
-#_frontend_launcher = os.path.join(_basedir, 'debug_flask.py')
+_basedir = os.path.dirname(os.path.dirname(_curdir))
 _frontend_launcher = 'debug_flask.py'
 
 class RESTTest(unittest.TestCase):
