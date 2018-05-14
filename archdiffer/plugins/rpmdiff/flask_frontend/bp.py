@@ -153,7 +153,7 @@ class RPMComparisonsList(RPMTableList):
 
         resp = make_response("", 201)
         resp.headers["Location"] = url_for(
-            'rpmdiff.rpmcomparisonslist', id=comp.id
+            'rpmdiff.rpmcomparisonone', id=comp.id
         )
         return resp
 
@@ -180,12 +180,8 @@ class RPMDifferencesList(RPMTableList):
         return list(iter_query_result(query, self.table))
 
     @rest_api_auth_required
-    def put(self, id=None):
+    def put(self, id):
         """Waive/unwaive a difference."""
-        if id is None:
-            raise BadRequest(
-                "The method is not allowed for the requested URL."
-            )
         try:
             data = json.loads(request.data.decode('utf8'))
         except:
@@ -298,17 +294,35 @@ class RPMCommentsList(RPMTableList):
 
         resp = make_response("", 201)
         resp.headers["Location"] = url_for(
-            'rpmdiff.rpmcommentslist', id=comment.id
+            'rpmdiff.rpmcommentone', id=comment.id
         )
         return resp
 
 flask_api.add_resource(RoutesDict, '/rest')
 flask_api.add_resource(RPMGroupsList, '/rest/groups', '/rest/groups/<int:id>')
 flask_api.add_resource(
-    RPMComparisonsList, '/rest/comparisons', '/rest/comparisons/<int:id>'
+    RPMComparisonsList,
+    '/rest/comparisons',
+    endpoint='rpmcomparisonslist',
+    methods=['GET', 'POST'],
 )
 flask_api.add_resource(
-    RPMDifferencesList, '/rest/differences', '/rest/differences/<int:id>'
+    RPMComparisonsList,
+    '/rest/comparisons/<int:id>',
+    endpoint='rpmcomparisonone',
+    methods=['GET'],
+)
+flask_api.add_resource(
+    RPMDifferencesList,
+    '/rest/differences',
+    endpoint='rpmdifferenceslist',
+    methods=['GET'],
+)
+flask_api.add_resource(
+    RPMDifferencesList,
+    '/rest/differences/<int:id>',
+    endpoint='rpmdifferenceone',
+    methods=['GET', 'PUT'],
 )
 flask_api.add_resource(
     RPMPackagesList, '/rest/packages', '/rest/packages/<int:id>'
@@ -318,11 +332,16 @@ flask_api.add_resource(
 )
 flask_api.add_resource(
     RPMCommentsList,
-    '/rest/comments',
+    '/rest/comments', endpoint='rpmcommentslist', methods=['GET', 'POST'],
+)
+flask_api.add_resource(
+    RPMCommentsList,
     '/rest/comments/<int:id>',
     '/rest/comments/by_user/<string:username>',
     '/rest/comments/by_comp/<int:id_comp>',
-    '/rest/comments/by_diff/<int:id_diff>'
+    '/rest/comments/by_diff/<int:id_diff>',
+    endpoint='rpmcommentone',
+    methods=['GET'],
 )
 
 class RPMIndexView(RPMGroupsList):
