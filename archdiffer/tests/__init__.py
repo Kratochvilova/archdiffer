@@ -70,6 +70,7 @@ class RESTTest(unittest.TestCase):
             except requests.exceptions.ConnectionError:
                 print('Waiting for frontend to start.')
         else:
+            cls.cleanupClass()
             raise Exception("Frontend didn't start even after 5 seconds.")
 
     @classmethod
@@ -193,16 +194,6 @@ class RESTTest(unittest.TestCase):
         """Assert that response is empty list."""
         self.assertEqual(self.response, [])
 
-    @classmethod
-    def tearDownClass(cls):
-        """Terminate frontend; remove temporal files."""
-        # Terminate frontend
-        cls.frontend.terminate()
-        cls.frontend.wait()
-
-        # Remove the temporal directory.
-        rmtree(cls.tmpdir)
-
     def tearDown(self):
         """Terminate backend; remove database."""
         # Terminate backend
@@ -211,6 +202,20 @@ class RESTTest(unittest.TestCase):
 
         # Remove the database.
         os.remove(os.path.join(self.tmpdir, 'test.db'))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.cleanupClass()
+
+    @classmethod
+    def cleanupClass(cls):
+        """Terminate frontend; remove temporal files."""
+        # Terminate frontend
+        cls.frontend.terminate()
+        cls.frontend.wait()
+
+        # Remove the temporal directory.
+        rmtree(cls.tmpdir)
 
 if __name__ == '__main__':
     unittest.main()
