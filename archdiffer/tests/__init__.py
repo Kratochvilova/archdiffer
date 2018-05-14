@@ -25,21 +25,75 @@ _basedir = os.path.dirname(os.path.dirname(_curdir))
 _frontend_launcher = 'debug_flask.py'
 
 class RESTTest(unittest.TestCase):
-    def update_configfile(self):
+    @classmethod
+    def update_configfile(cls):
         """Update config with new database url and save to temporary test
         configfile.
         """
         # New database path
-        self.database_path = os.path.join(self.tmpdir, 'test.db')
-        self.database_url = 'sqlite:///%s' % self.database_path
+        cls.database_path = os.path.join(cls.tmpdir, 'test.db')
+        cls.database_url = 'sqlite:///%s' % cls.database_path
 
         # Update config with database url
-        config['common']['DATABASE_URL'] = self.database_url
+        config['common']['DATABASE_URL'] = cls.database_url
 
         # New config file
-        self.config_path = os.path.join(self.tmpdir, 'test.conf')
-        with open(self.config_path, 'w') as configfile:
+        cls.config_path = os.path.join(cls.tmpdir, 'test.conf')
+        with open(cls.config_path, 'w') as configfile:
             config.write(configfile)
+
+    @classmethod
+    def random_port(cls):
+        """Get random port for frontend. Save the whole url into baseurl.
+        
+        :return int port: random port
+        """
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('localhost', 0))
+        port = sock.getsockname()[1]
+        cls.baseurl = 'http://127.0.0.1:%s/' % port
+        sock.close()
+        return port
+
+    @classmethod
+    def wait_for_frontend_start(cls):
+        """Repeatedly try request to ensure the frontend started. Otherwise
+        raise an exception.
+
+        :raise Exception: if frontend doesn't start in 5 seconds.
+        """
+        for i in range(50):
+            time.sleep(0.1)
+            try:
+                requests.get(cls.baseurl + 'rest')
+                break
+            except requests.exceptions.ConnectionError:
+                print('Waiting for frontend to start.')
+        else:
+            raise Exception("Frontend didn't start even after 5 seconds.")
+
+    @classmethod
+    def setUpClass(cls):
+        """Update config; run frontend."""
+        # Make temporal directory to store database.
+        cls.tmpdir = mkdtemp()
+
+        # Update config with database url
+        cls.update_configfile()
+
+        # Create env with ARCHDIFFER_CONFIG
+        env = copy.copy(os.environ)
+        env.update({'ARCHDIFFER_CONFIG': cls.config_path})
+
+        # Run frontend
+        cls.frontend = subprocess.Popen(
+            ['python3', _frontend_launcher, str(cls.random_port())],
+            cwd=_basedir,
+            env=env,
+        )
+
+        # Wait for frontend to start
+        cls.wait_for_frontend_start()
 
     def fill_db(self):
         """Fill in database."""
@@ -58,44 +112,9 @@ class RESTTest(unittest.TestCase):
         )
         self.auth = (user.api_login, user.api_token)
 
-    def random_port(self):
-        """Get random port for frontend. Save the whole url into baseurl.
-        
-        :return int port: random port
-        """
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(('localhost', 0))
-        port = sock.getsockname()[1]
-        self.baseurl = 'http://127.0.0.1:%s/' % port
-        sock.close()
-        return port
-
-    def wait_for_frontend_start(self):
-        """Repeatedly try request to ensure the frontend started. Otherwise
-        raise an exception.
-
-        :raise Exception: if frontend doesn't start in 5 seconds.
-        """
-        for i in range(50):
-            time.sleep(0.1)
-            try:
-                self.get('rest')
-                break
-            except requests.exceptions.ConnectionError:
-                print('Waiting for frontend to start.')
-        else:
-            raise Exception("Frontend didn't start even after 5 seconds.")
-        
-
     def setUp(self):
-        """Create new database with test user; run flask-frontend and backend.
+        """Create new database with test user; run backend.
         """
-        # Make temporal directory to store database.
-        self.tmpdir = mkdtemp()
-
-        # Update config with database url
-        self.update_configfile()
-
         # Initialize database
         database.Base.metadata.create_all(database.engine(force_new=True))
 
@@ -109,24 +128,12 @@ class RESTTest(unittest.TestCase):
         env = copy.copy(os.environ)
         env.update({'ARCHDIFFER_CONFIG': self.config_path})
 
-        # Run frontend
-        self.frontend = subprocess.Popen(
-            ['python3', _frontend_launcher, str(self.random_port())],
-            cwd=_basedir,
-            env=env,
-        )
-
         # Run backend
         self.backend = subprocess.Popen(
             ['python3', '-m', 'archdiffer.backend', 'worker', '-c', '1'],
             cwd=_basedir,
             env=env,
         )
-
-        # Wait for frontend to start
-        self.wait_for_frontend_start()
-
-        print('setup')
 
     def get(self, route, params=None):
         """Send GET request and save response status code and data.
@@ -186,20 +193,24 @@ class RESTTest(unittest.TestCase):
         """Assert that response is empty list."""
         self.assertEqual(self.response, [])
 
-    def tearDown(self):
-        """Terminate flask-frontend and backend; remove temporal files."""
+    @classmethod
+    def tearDownClass(cls):
+        """Terminate frontend; remove temporal files."""
         # Terminate frontend
-        self.frontend.terminate()
-        self.frontend.wait()
+        cls.frontend.terminate()
+        cls.frontend.wait()
 
+        # Remove the temporal directory.
+        rmtree(cls.tmpdir)
+
+    def tearDown(self):
+        """Terminate backend; remove database."""
         # Terminate backend
         self.backend.terminate()
         self.backend.wait()
 
-        # Remove the temporal directory.
-        rmtree(self.tmpdir)
-
-        print('teardown')
+        # Remove the database.
+        os.remove(os.path.join(self.tmpdir, 'test.db'))
 
 if __name__ == '__main__':
     unittest.main()
