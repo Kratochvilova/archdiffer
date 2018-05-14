@@ -81,8 +81,8 @@ List RPM Packages
    :query epoch: the RPM Package epoch
    :query version: the RPM Package version
    :query release: the RPM Package release
-   :query repo_id: the id of the RPM Repository
-   :query repo_path: the path to the RPM Repository
+   :query repository_id: the id of the RPM Repository
+   :query repository_path: the path to the RPM Repository
    :query offset: offset number, default is 0
    :query limit: limit number, default is 100
    :statuscode 200: no error
