@@ -1,0 +1,141 @@
+# -*- coding: utf-8 -*-
+
+# This file is part of Archdiffer and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
+
+"""
+Created on Sat May 12 20:39:46 2018
+
+@author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
+"""
+
+from random import choice
+from datetime import datetime
+from . import RESTTest
+from ..constants import STATE_STRINGS
+
+DATETIMES = [
+    datetime(2018, 1, 1),
+    datetime(1, 1, 1),
+    datetime(9999, 1, 1),
+]
+
+IDS = LIMITS = OFFSETS = [0, 1, 2, 10, 999999]
+
+STATES = list(STATE_STRINGS.values())
+
+class RESTTestRoutes(RESTTest):
+    expected_response = {
+        "/rest": {
+            "methods": [
+                "GET"
+            ],
+            "routes": {
+                "/rest/comparison_types": {
+                    "methods": [
+                        "GET"
+                    ],
+                    "routes": {
+                        "/rest/comparison_types/<int:id>": {
+                            "methods": [
+                                "GET"
+                            ],
+                            "routes": {}
+                        }
+                    }
+                },
+                "/rest/comparisons": {
+                    "methods": [
+                        "GET"
+                    ],
+                    "routes": {
+                        "/rest/comparisons/<int:id>": {
+                            "methods": [
+                                "GET"
+                            ],
+                            "routes": {}
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    def assert_response(self):
+        self.assertEqual(self.response, self.expected_response)
+
+    def test_get_routes(self):
+        self.get('rest')
+        self.assert_code_ok()
+        self.assert_response()
+
+class RESTTestLists(RESTTest):
+    route = None
+    param_choices = {}
+
+    def setUp(self):
+        super().setUp()
+        self.params = {}
+
+    def set_params(self, parameters):
+        for param in self.param_choices:
+            if param in parameters:
+                self.params[param] = choice(self.param_choices[param])
+
+    def form_request(self):
+        self.get(self.route, params=self.params)
+
+    def form_request_one(self):
+        self.get('%s/%s' % (self.route, choice(IDS)), params=self.params)
+
+class RESTTestListsEmpty(RESTTestLists):    
+    def run(self, result=None):
+        if type(self) == RESTTestListsEmpty:
+            return result
+        return super().run(result)
+
+    def test_basic(self):
+        self.form_request()
+        self.assert_code_ok()
+        self.assert_response_emptylist()
+
+    def test_basic_one(self):
+        self.form_request_one()
+        self.assert_code_ok()
+        self.assert_response_emptylist()
+
+    def test_individual_params(self):
+        for param in self.param_choices:
+            with self.subTest(param=param):
+                self.params = {}
+                self.set_params([param])
+                self.test_basic()
+
+    def test_all_params(self):
+        self.params = {}
+        self.set_params(self.param_choices)
+        self.test_basic()
+
+class RESTTestComparisons(RESTTestListsEmpty):
+    route = 'rest/comparisons'
+
+    param_choices = {
+        'id': IDS,
+        'state': STATES,
+        'before': DATETIMES,
+        'after': DATETIMES,
+        'comparison_type_id': IDS,
+        'comparison_type_name': [''],
+        'limit': LIMITS,
+        'offset': OFFSETS,
+    }
+
+class RESTTestComparisonTypes(RESTTestListsEmpty):
+    route = 'rest/comparison_types'
+
+    param_choices = {
+        'id': IDS,
+        'name': [''],
+        'limit': LIMITS,
+        'offset': OFFSETS,
+    }
