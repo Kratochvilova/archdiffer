@@ -112,6 +112,7 @@ class RESTTest(unittest.TestCase):
             token_expiration=int(config['web']['API_TOKEN_EXPIRATION']),
         )
         self.auth = (user.api_login, user.api_token)
+        db_session.close()
 
     def setUp(self):
         """Create new database with test user; run backend.
