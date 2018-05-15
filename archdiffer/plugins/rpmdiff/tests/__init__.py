@@ -11,7 +11,6 @@ Created on Mon May  7 12:25:31 2018
 """
 
 from datetime import datetime
-import unittest
 from ....tests import RESTTest
 from ....tests.tests_rest_routes import RESTTestListsEmpty
 from .... import constants as app_constants
@@ -32,6 +31,7 @@ DIFF_TYPES = list(constants.DIFF_TYPE_STRINGS.values())
 DIFF_STATES = list(constants.DIFF_STATE_STRINGS.values())
 
 class RESTTestRpmdiffRoutes(RESTTest):
+    """Tests for route 'rpmdiff/rest'."""
     expected_response = {
         "/rpmdiff/rest": {
             "methods": [
@@ -142,15 +142,18 @@ class RESTTestRpmdiffRoutes(RESTTest):
     }
 
     def assert_response(self):
+        """Asert that response is as expected."""
         self.assertEqual(self.response, self.expected_response)
 
     def test_get_routes(self):
+        """Test GET method on 'rpmdiff/rest'."""
         self.maxDiff = None
         self.get('rpmdiff/rest')
         self.assert_code_ok()
         self.assert_response()
 
 class RESTTestRpmdiffComparisons(RESTTestListsEmpty):
+    """Tests for getting comparisons from empty database."""
     route = 'rpmdiff/rest/comparisons'
 
     param_choices = {
@@ -181,6 +184,7 @@ class RESTTestRpmdiffComparisons(RESTTestListsEmpty):
     }
 
 class RESTTestRpmdiffGroups(RESTTestListsEmpty):
+    """Tests for getting comparison groups from empty database."""
     route = 'rpmdiff/rest/groups'
 
     param_choices = {
@@ -211,6 +215,7 @@ class RESTTestRpmdiffGroups(RESTTestListsEmpty):
     }
 
 class RESTTestRpmdiffDifferences(RESTTestListsEmpty):
+    """Tests for getting differences from empty database."""
     route = 'rpmdiff/rest/differences'
 
     param_choices = {
@@ -248,6 +253,7 @@ class RESTTestRpmdiffDifferences(RESTTestListsEmpty):
     }
 
 class RESTTestRpmdiffPackages(RESTTestListsEmpty):
+    """Tests for getting packages from empty database."""
     route = 'rpmdiff/rest/packages'
 
     param_choices = {
@@ -264,6 +270,7 @@ class RESTTestRpmdiffPackages(RESTTestListsEmpty):
     }
 
 class RESTTestRpmdiffRepositories(RESTTestListsEmpty):
+    """Tests for getting repositories from empty database."""
     route = 'rpmdiff/rest/repositories'
 
     param_choices = {
@@ -274,6 +281,7 @@ class RESTTestRpmdiffRepositories(RESTTestListsEmpty):
     }
 
 class RESTTestRpmdiffComments(RESTTestListsEmpty):
+    """Tests for getting comments from empty database."""
     route = 'rpmdiff/rest/comments'
 
     param_choices = {
