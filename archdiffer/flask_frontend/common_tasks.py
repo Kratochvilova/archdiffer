@@ -10,8 +10,6 @@ Created on Wed Aug 30 14:55:56 2017
 """
 
 import base64
-import random
-import string
 import datetime
 import functools
 from flask import render_template, request, flash, redirect, url_for, g, abort
