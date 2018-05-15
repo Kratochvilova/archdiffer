@@ -50,7 +50,7 @@ def routes(prefix):
         :param dict: routes
         """
         routes[rule.rule] = {
-            'methods': list(rule.methods),
+            'methods': sorted(list(rule.methods)),
             'routes': {}
         }
         if 'HEAD' in rule.methods:
