@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 # This file is part of Archdiffer and is released under
@@ -147,7 +146,6 @@ class RESTTestRpmdiffRoutes(RESTTest):
 
     def test_get_routes(self):
         """Test GET method on 'rpmdiff/rest'."""
-        self.maxDiff = None
         self.get('rpmdiff/rest')
         self.assert_code_ok()
         self.assert_response()
