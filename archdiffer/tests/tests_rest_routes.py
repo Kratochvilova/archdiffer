@@ -15,12 +15,12 @@ from . import RESTTest
 from ..constants import STATE_STRINGS
 
 DATETIMES = [
-    datetime(2018, 1, 1),
-    datetime(1, 1, 1),
-    datetime(9999, 1, 1),
+    '1000-01-01 00:00:00',
+    '2018-01-01 00:00:00',
+    '9999-01-01 00:00:00',
 ]
 
-IDS = LIMITS = OFFSETS = [0, 1, 2, 10, 999999]
+IDS = LIMITS = OFFSETS = ['0', '1', '2', '10', '999999']
 
 STATES = list(STATE_STRINGS.values())
 
