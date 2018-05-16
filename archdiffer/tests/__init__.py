@@ -96,6 +96,10 @@ class RESTTest(unittest.TestCase):
         # Wait for frontend to start
         cls.wait_for_frontend_start()
 
+    def init_db(self):
+        """Initialize database."""
+        database.Base.metadata.create_all(database.engine(force_new=True))
+
     def fill_db(self):
         """Fill in database."""
         pass
@@ -118,7 +122,7 @@ class RESTTest(unittest.TestCase):
         """Create new database with test user; run backend.
         """
         # Initialize database
-        database.Base.metadata.create_all(database.engine(force_new=True))
+        self.init_db()
 
         # Fill in database
         self.fill_db()
