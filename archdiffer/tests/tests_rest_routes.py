@@ -99,6 +99,12 @@ class RESTTestLists(RESTTest):
         """Form GET request for random item based on route and parameters."""
         self.get('%s/%s' % (self.route, choice(IDS)), params=self.params)
 
+    def assert_response(self, expected):
+        self.assertEqual(
+            sorted(self.response, key=lambda k: k['id']),
+            sorted(expected, key=lambda k: k['id']),
+        )
+
 class RESTTestListsEmpty(RESTTestLists):
     """Tests for getting lists from empty database. Abstract."""
     def run(self, result=None):
@@ -111,13 +117,13 @@ class RESTTestListsEmpty(RESTTestLists):
         """Test getting list - with no params set."""
         self.form_request()
         self.assert_code_ok()
-        self.assert_response_emptylist()
+        self.assert_response([])
 
     def test_basic_one(self):
         """Test getting instance - with no params set."""
         self.form_request_one()
         self.assert_code_ok()
-        self.assert_response_emptylist()
+        self.assert_response([])
 
     def test_individual_params(self):
         """Test getting list - for each param set individually."""

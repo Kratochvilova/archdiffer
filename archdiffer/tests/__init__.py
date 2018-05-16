@@ -191,10 +191,6 @@ class RESTTest(unittest.TestCase):
         """Assert that response status code is OK."""
         self.assert_code_eq(requests.codes.ok)
 
-    def assert_response_emptylist(self):
-        """Assert that response is empty list."""
-        self.assertEqual(self.response, [])
-
     def tearDown(self):
         """Terminate backend; remove database."""
         # Terminate backend
