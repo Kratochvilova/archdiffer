@@ -100,10 +100,29 @@ class RESTTestLists(RESTTest):
         """Form GET request for random item based on route and parameters."""
         self.get('%s/%s' % (self.route, choice(IDS)), params=self.params)
 
+    def deep_sort(self, response):
+        """Order all lists in the response.
+
+        :param list response: response
+        :return list: ordered response
+        """
+        if type(response) == list:
+            response = sorted(response, key=lambda k: k['id'])
+            new_response = []
+            for item in response:
+                new_response.append(self.deep_sort(item))
+        elif type(response) == dict:
+            for key, value in response.items():
+                response[key] = self.deep_sort(value)
+        return response
+
     def assert_response(self, expected):
+        """Assert that response is as expected, aside from lists ordering.
+
+        :param list expected: expected response
+        """
         self.assertEqual(
-            sorted(self.response, key=lambda k: k['id']),
-            sorted(expected, key=lambda k: k['id']),
+            self.deep_sort(self.response), self.deep_sort(expected)
         )
 
 class RESTTestListsEmpty(RESTTestLists):
