@@ -13,6 +13,7 @@ from random import choice
 from datetime import datetime
 from . import RESTTest
 from ..constants import STATE_STRINGS
+from .. import database
 
 DATETIMES = [
     '1000-01-01 00:00:00',
@@ -162,3 +163,153 @@ class RESTTestComparisonTypesEmpty(RESTTestListsEmpty):
         'limit': LIMITS,
         'offset': OFFSETS,
     }
+
+class RESTTestComparisonsFilled(RESTTestLists):
+    """Tests for getting comparisons from filled database."""
+    route = RESTTestComparisonsEmpty.route
+    param_choices = RESTTestComparisonsEmpty.param_choices
+
+    def fill_db(self):
+        """Fill database. Called in setUp."""
+        db_session = database.session()
+        comparison_types = [
+            database.ComparisonType(id=1, name='1'),
+            database.ComparisonType(id=2, name='2'),
+        ]
+        comparisons = [
+            database.Comparison(
+                id=1, state=1, time=datetime(9999, 1, 1), comparison_type_id=1
+            ),
+            database.Comparison(
+                id=2, state=0, time=datetime(1000, 1, 1), comparison_type_id=2
+            ),
+            database.Comparison(
+                id=3, state=0, time=datetime(2018, 1, 1), comparison_type_id=1
+            ),
+            database.Comparison(
+                id=4, state=1, time=datetime(2018, 3, 1), comparison_type_id=1
+            ),
+        ]
+        db_session.add_all(comparison_types)
+        db_session.add_all(comparisons)
+        db_session.commit()
+        db_session.close()
+
+    # Expected result for request without any parameters.
+    expected = [
+        {
+            'id': 1,
+            'state': STATE_STRINGS[1],
+            'time': '9999-01-01 00:00:00',
+            'comparison_type': {
+                'id': 1,
+                'name': '1',
+            },
+        },
+        {
+            'id': 2,
+            'state': STATE_STRINGS[0],
+            'time': '1000-01-01 00:00:00',
+            'comparison_type': {
+                'id': 2,
+                'name': '2',
+            },
+        },
+        {
+            'id': 3,
+            'state': STATE_STRINGS[0],
+            'time': '2018-01-01 00:00:00',
+            'comparison_type': {
+                'id': 1,
+                'name': '1',
+            },
+        },
+        {
+            'id': 4,
+            'state': STATE_STRINGS[1],
+            'time': '2018-03-01 00:00:00',
+            'comparison_type': {
+                'id': 1,
+                'name': '1',
+            },
+        },
+    ]
+
+    # Tuples of query parameters and corresponding expected result.
+    tuples_params_results = [
+        ({}, expected),
+        ({'id': '2'}, [expected[1]]),
+        ({'state': STATE_STRINGS[0]}, [expected[1], expected[2]]),
+        ({'before': '2018-02-01 00:00:00'}, [expected[1], expected[2]]),
+        ({'after': '2018-02-01 00:00:00'}, [expected[0], expected[3]]),
+        ({'comparison_type_id': '1'}, [expected[0], expected[2], expected[3]]),
+        ({'comparison_type_name': '2'}, [expected[1]]),
+        ({'limit': '2'}, [expected[0], expected[1]]),
+        ({'offset': '3'}, [expected[3]]),
+        (
+            {
+                'comparison_type_id': '1',
+                'state': STATE_STRINGS[1],
+                'after': '2017-01-01 00:00:00',
+            },
+            [expected[0], expected[3]]
+        ),
+    ]
+
+    def test_params(self):
+        """Run test for each of the tuples_params_results. Check that with
+        given parameters the response is as expected."""
+        for params, expected in self.tuples_params_results:
+            with self.subTest(**params):
+                self.params = params
+                self.form_request()
+                self.assert_code_ok()
+                self.assert_response(expected)
+
+class RESTTestComparisonTypesFilled(RESTTestLists):
+    """Tests for getting comparison types from filled database."""
+    route = RESTTestComparisonTypesEmpty.route
+    param_choices = RESTTestComparisonTypesEmpty.param_choices
+
+    def fill_db(self):
+        """Fill database. Called in setUp."""
+        db_session = database.session()
+        comparison_types = [
+            database.ComparisonType(id=1, name='1'),
+            database.ComparisonType(id=2, name='2'),
+            database.ComparisonType(id=3, name='3'),
+            database.ComparisonType(id=4, name='4'),
+            database.ComparisonType(id=5, name='5'),
+        ]
+        db_session.add_all(comparison_types)
+        db_session.commit()
+        db_session.close()
+
+    # Expected result for request without any parameters.
+    expected = [
+        {'id': 1, 'name': '1'},
+        {'id': 2, 'name': '2'},
+        {'id': 3, 'name': '3'},
+        {'id': 4, 'name': '4'},
+        {'id': 5, 'name': '5'},
+    ]
+
+    # Tuples of query parameters and corresponding expected result.
+    params_results = [
+        ({}, expected),
+        ({'id': '2'}, [expected[1]]),
+        ({'name': '4'}, [expected[3]]),
+        ({'limit': '3'}, [expected[0], expected[1], expected[2]]),
+        ({'offset': '3'}, [expected[3], expected[4]]),
+        ({'id': '4', 'name': '4'}, [expected[3]]),
+    ]
+
+    def test_params(self):
+        """Run test for each of the tuples_params_results. Check that with
+        given parameters the response is as expected."""
+        for params, expected in self.params_results:
+            with self.subTest(**params):
+                self.params = params
+                self.form_request()
+                self.assert_code_ok()
+                self.assert_response(expected)
