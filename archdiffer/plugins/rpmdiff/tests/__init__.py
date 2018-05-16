@@ -143,7 +143,7 @@ class RESTTestRpmdiffRoutes(RESTTest):
         self.assert_code_ok()
         self.assert_response()
 
-class RESTTestRpmdiffComparisons(RESTTestListsEmpty):
+class RESTTestRpmdiffComparisonsEmpty(RESTTestListsEmpty):
     """Tests for getting comparisons from empty database."""
     route = 'rpmdiff/rest/comparisons'
 
@@ -174,7 +174,7 @@ class RESTTestRpmdiffComparisons(RESTTestListsEmpty):
         'offset': OFFSETS,
     }
 
-class RESTTestRpmdiffGroups(RESTTestListsEmpty):
+class RESTTestRpmdiffGroupsEmpty(RESTTestListsEmpty):
     """Tests for getting comparison groups from empty database."""
     route = 'rpmdiff/rest/groups'
 
@@ -205,7 +205,7 @@ class RESTTestRpmdiffGroups(RESTTestListsEmpty):
         'offset': OFFSETS,
     }
 
-class RESTTestRpmdiffDifferences(RESTTestListsEmpty):
+class RESTTestRpmdiffDifferencesEmpty(RESTTestListsEmpty):
     """Tests for getting differences from empty database."""
     route = 'rpmdiff/rest/differences'
 
@@ -243,7 +243,7 @@ class RESTTestRpmdiffDifferences(RESTTestListsEmpty):
         'offset': OFFSETS,
     }
 
-class RESTTestRpmdiffPackages(RESTTestListsEmpty):
+class RESTTestRpmdiffPackagesEmpty(RESTTestListsEmpty):
     """Tests for getting packages from empty database."""
     route = 'rpmdiff/rest/packages'
 
@@ -260,7 +260,7 @@ class RESTTestRpmdiffPackages(RESTTestListsEmpty):
         'offset': OFFSETS,
     }
 
-class RESTTestRpmdiffRepositories(RESTTestListsEmpty):
+class RESTTestRpmdiffRepositoriesEmpty(RESTTestListsEmpty):
     """Tests for getting repositories from empty database."""
     route = 'rpmdiff/rest/repositories'
 
@@ -271,7 +271,7 @@ class RESTTestRpmdiffRepositories(RESTTestListsEmpty):
         'offset': OFFSETS,
     }
 
-class RESTTestRpmdiffComments(RESTTestListsEmpty):
+class RESTTestRpmdiffCommentsEmpty(RESTTestListsEmpty):
     """Tests for getting comments from empty database."""
     route = 'rpmdiff/rest/comments'
 
