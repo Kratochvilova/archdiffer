@@ -139,10 +139,9 @@ class RESTTestListsEmpty(RESTTestLists):
         self.set_params(self.param_choices)
         self.test_basic()
 
-class RESTTestComparisons(RESTTestListsEmpty):
+class RESTTestComparisonsEmpty(RESTTestListsEmpty):
     """Tests for getting comparisons from empty database."""
     route = 'rest/comparisons'
-
     param_choices = {
         'id': IDS,
         'state': STATES,
@@ -154,10 +153,9 @@ class RESTTestComparisons(RESTTestListsEmpty):
         'offset': OFFSETS,
     }
 
-class RESTTestComparisonTypes(RESTTestListsEmpty):
+class RESTTestComparisonTypesEmpty(RESTTestListsEmpty):
     """Tests for getting comparison types from empty database."""
     route = 'rest/comparison_types'
-
     param_choices = {
         'id': IDS,
         'name': [''],
