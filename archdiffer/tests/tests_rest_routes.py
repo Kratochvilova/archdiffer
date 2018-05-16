@@ -183,7 +183,25 @@ class RESTTestComparisonTypesEmpty(RESTTestListsEmpty):
         'offset': OFFSETS,
     }
 
-class RESTTestComparisonsFilled(RESTTestLists):
+class RESTTestListsFilled(RESTTestLists):
+    """Tests for getting lists from filled database. Abstract."""
+    def run(self, result=None):
+        """Overriden run so that it doesn't run these tests on this class."""
+        if type(self) == RESTTestListsFilled:
+            return result
+        return super().run(result)
+
+    def test_params(self):
+        """Run test for each of the tuples_params_results. Check that with
+        given parameters the response is as expected."""
+        for params, expected in self.tuples_params_results:
+            with self.subTest(**params):
+                self.params = params
+                self.form_request()
+                self.assert_code_ok()
+                self.assert_response(expected)
+
+class RESTTestComparisonsFilled(RESTTestListsFilled):
     """Tests for getting comparisons from filled database."""
     route = RESTTestComparisonsEmpty.route
     param_choices = RESTTestComparisonsEmpty.param_choices
@@ -275,17 +293,7 @@ class RESTTestComparisonsFilled(RESTTestLists):
         ),
     ]
 
-    def test_params(self):
-        """Run test for each of the tuples_params_results. Check that with
-        given parameters the response is as expected."""
-        for params, expected in self.tuples_params_results:
-            with self.subTest(**params):
-                self.params = params
-                self.form_request()
-                self.assert_code_ok()
-                self.assert_response(expected)
-
-class RESTTestComparisonTypesFilled(RESTTestLists):
+class RESTTestComparisonTypesFilled(RESTTestListsFilled):
     """Tests for getting comparison types from filled database."""
     route = RESTTestComparisonTypesEmpty.route
     param_choices = RESTTestComparisonTypesEmpty.param_choices
@@ -314,7 +322,7 @@ class RESTTestComparisonTypesFilled(RESTTestLists):
     ]
 
     # Tuples of query parameters and corresponding expected result.
-    params_results = [
+    tuples_params_results = [
         ({}, expected),
         ({'id': '2'}, [expected[1]]),
         ({'name': '4'}, [expected[3]]),
@@ -322,13 +330,3 @@ class RESTTestComparisonTypesFilled(RESTTestLists):
         ({'offset': '3'}, [expected[3], expected[4]]),
         ({'id': '4', 'name': '4'}, [expected[3]]),
     ]
-
-    def test_params(self):
-        """Run test for each of the tuples_params_results. Check that with
-        given parameters the response is as expected."""
-        for params, expected in self.params_results:
-            with self.subTest(**params):
-                self.params = params
-                self.form_request()
-                self.assert_code_ok()
-                self.assert_response(expected)
