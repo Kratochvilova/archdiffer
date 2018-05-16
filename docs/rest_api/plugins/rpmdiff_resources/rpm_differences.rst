@@ -154,8 +154,8 @@ List RPM Differences
    :query difference_diff_info: changed file attributes
    :query difference_state: the RPM Difference state, options: normal
    :query difference_waived: if the RPM Difference is waived, options: true, false
-   :query offset: offset number, default is 0
-   :query limit: limit number, default is 100
+   :query offset: offset number, default is 0 - the offset is set on the individual differences
+   :query limit: limit number, default is 100 - the limit is set on the individual differences
    :statuscode 200: no error
 
 

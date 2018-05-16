@@ -127,8 +127,10 @@ List RPM Groups
                   formats: "YY-MM-DD", "YY-MM-DD hh:mm:ss"
    :query after: filter Comparison Groups created after given time,
                  formats: "YY-MM-DD", "YY-MM-DD hh:mm:ss"
-   :query comparisons_id: the RPM Comparison id
+   :query comparisons_id: the RPM Comparison id - however, the whole group
+		          always appears in the result
    :query comparisons_state: the RPM Comparison state, options: new, done, error
+			     - however, the whole group always appears in the result
    :query pkg1_id: the pkg1 id
    :query pkg1_name: the pkg1 name
    :query pkg1_arch: the pkg1 architecture
