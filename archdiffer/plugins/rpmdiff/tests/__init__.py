@@ -11,17 +11,10 @@ Created on Mon May  7 12:25:31 2018
 
 from datetime import datetime
 from ....tests import RESTTest
-from ....tests.tests_rest_routes import RESTTestListsEmpty
+from ....tests.tests_rest_routes import (RESTTestLists, RESTTestListsEmpty,
+                                         DATETIMES, IDS, LIMITS, OFFSETS)
 from .... import constants as app_constants
 from .. import constants
-
-DATETIMES = [
-    datetime(2018, 1, 1),
-    datetime(1, 1, 1),
-    datetime(9999, 1, 1),
-]
-
-IDS = LIMITS = OFFSETS = [0, 1, 2, 10, 999999]
 
 GROUP_STATES = list(app_constants.STATE_STRINGS.values())
 STATES = list(constants.STATE_STRINGS.values())
