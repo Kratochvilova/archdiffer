@@ -10,6 +10,7 @@ Created on Mon May  7 12:25:31 2018
 """
 
 from datetime import datetime
+from random import choice
 from ....tests import RESTTest
 from ....tests.tests_rest_routes import (RESTTestListsEmpty,
                                          RESTTestListsFilled,
@@ -292,6 +293,24 @@ class RESTTestRpmdiffCommentsEmpty(RESTTestListsEmpty):
         'limit': LIMITS,
         'offset': OFFSETS,
     }
+
+    def test_by_comp_id(self):
+        """Test getting instance by comparison id - with no params set."""
+        self.get('%s/by_comp/%s' % (self.route, choice(IDS)))
+        self.assert_code_ok()
+        self.assert_response([])
+
+    def test_by_diff_id(self):
+        """Test getting instance by difference id - with no params set."""
+        self.get('%s/by_diff/%s' % (self.route, choice(IDS)))
+        self.assert_code_ok()
+        self.assert_response([])
+
+    def test_by_username(self):
+        """Test getting instance by username - with no params set."""
+        self.get('%s/by_user/%s' % (self.route, choice([''])))
+        self.assert_code_ok()
+        self.assert_response([])
 
 class RESTTestRpmdiffComparisonsFilled(RESTTestListsFilled):
     """Tests for getting comparisons from filled database."""
