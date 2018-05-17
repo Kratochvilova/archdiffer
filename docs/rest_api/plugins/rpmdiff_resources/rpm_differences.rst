@@ -161,7 +161,7 @@ List RPM Differences
 
 .. _rpm_differences_one:
 
-Get one RPM Differences of one RPM Comparison
+Get RPM Differences of one RPM Comparison
 ---------------------------------------------
 
 .. http:get:: /rpmdiff/rest/differences/(int:id)
@@ -256,7 +256,7 @@ Waive RPM Difference
 
    .. sourcecode:: http
 
-      GET /rpmdiff/rest/differences/1 HTTP/1.1
+      PUT /rpmdiff/rest/differences/1 HTTP/1.1
       Host: archdiffer.example.com
       Authorization: Basic base64=encoded=string
       Content-Type: text/javascript

@@ -99,7 +99,7 @@ Create new RPM Comment
 
    .. sourcecode:: http
 
-      GET /rpmdiff/rest/comments HTTP/1.1
+      POST /rpmdiff/rest/comments HTTP/1.1
       Host: archdiffer.example.com
       Authorization: Basic base64=encoded=string
       Content-Type: text/javascript

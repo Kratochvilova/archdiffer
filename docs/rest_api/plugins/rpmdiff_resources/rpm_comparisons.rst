@@ -158,7 +158,7 @@ Create new RPM Comparison
 
    .. sourcecode:: http
 
-      GET /rpmdiff/rest/comparisons HTTP/1.1
+      POST /rpmdiff/rest/comparisons HTTP/1.1
       Host: archdiffer.example.com
       Authorization: Basic base64=encoded=string
       Content-Type: text/javascript
@@ -178,7 +178,7 @@ Create new RPM Comparison
 
    .. sourcecode:: http
 
-      GET /rpmdiff/rest/comparisons HTTP/1.1
+      POST /rpmdiff/rest/comparisons HTTP/1.1
       Host: archdiffer.example.com
       Authorization: Basic base64=encoded=string
       Content-Type: text/javascript
