@@ -166,11 +166,11 @@ Create new RPM Comparison
       {
           "pkg1": {
               "name": "python3",
-              "repository":"http://mirror.karneval.cz/pub/fedora/linux/releases/25/Everything/x86_64/os/"
+              "repository": "http://mirror.karneval.cz/pub/fedora/linux/releases/25/Everything/x86_64/os/"
           },
           "pkg2": {
               "name": "python3",
-              "repository":"http://mirror.karneval.cz/pub/fedora/linux/releases/26/Everything/x86_64/os/"
+              "repository": "http://mirror.karneval.cz/pub/fedora/linux/releases/26/Everything/x86_64/os/"
           }
       }
 
@@ -190,7 +190,7 @@ Create new RPM Comparison
               "epoch": 0,
               "version": "3.5.2",
               "release": "4.fc25",
-              "repository":"http://mirror.karneval.cz/pub/fedora/linux/releases/25/Everything/x86_64/os/"
+              "repository": "http://mirror.karneval.cz/pub/fedora/linux/releases/25/Everything/x86_64/os/"
           },
           "pkg2": {
               "name": "python3",
@@ -198,7 +198,7 @@ Create new RPM Comparison
               "epoch": 0,
               "version": "3.6.1",
               "release": "8.fc26",
-              "repository":"http://mirror.karneval.cz/pub/fedora/linux/releases/26/Everything/x86_64/os/"
+              "repository": "http://mirror.karneval.cz/pub/fedora/linux/releases/26/Everything/x86_64/os/"
           }
       }
 
