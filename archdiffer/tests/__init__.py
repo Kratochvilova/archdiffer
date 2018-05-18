@@ -19,6 +19,7 @@ import unittest
 import socket
 import requests
 import json
+import celery
 from ..config import config
 from .. import database
 
@@ -192,65 +193,40 @@ class RESTTest(unittest.TestCase):
         """Assert that response status code is OK."""
         self.assert_code_eq(requests.codes.ok)
 
-    def run_celery_inspect(self, inspect_type):
-        """Run celery inspect utility and return its output.
-
-        :param string inspect_type: first parameter to the celery inspect
-        :return string: celery inspect output
-        """
-        return subprocess.check_output(
-            ['celery-3', '-A', 'archdiffer.backend', 'inspect', inspect_type],
-            cwd=_basedir,
-            env=self.env,
-        ).decode('utf-8')
-
     def check_inspect_output(self, inspect_output):
         """Check if all items in the inspect output are empty.
 
-        :param string inspect_output: celery inspect output
+        :param dict inspect_output: dict of tasks from the inspect output
         :return bool: True if all is empty
         """
-        empty = True
-        for line in inspect_output:
-            if line.startswith('->') and not empty:
-                # TODO: wait for the tasks to end
+        if inspect_output is None:
+            return True
+        for value in inspect_output.values():
+            if value != []:
                 return False
-            elif line.startswith('->') and empty:
-                empty = False
-            elif 'empty' in line:
-                empty = True
-        return empty
+        return True
 
     def wait_for_unfinished_tasks(self):
         """Wait for all active celery tasks to finish."""
-        active_tasks = self.run_celery_inspect('active')
+        waited = False
+        i = celery.task.control.inspect()
+        active_tasks = i.active()
         while not self.check_inspect_output(active_tasks):
-            active_tasks.stdout.close()
+            waited = True
             time.sleep(0.5)
-            active_tasks = self.run_celery_inspect('active')
+            active_tasks = i.active()
+        return waited
 
     def tearDown(self):
         """Ensure there are no celery tasks remaining; remove database."""
-        # Check there are no scheduled tasks
-        scheduled_tasks = self.run_celery_inspect('scheduled')
-        reserved_tasks = self.run_celery_inspect('reserved')
-        active_tasks = self.run_celery_inspect('active')
-        scheduled_empty = self.check_inspect_output(scheduled_tasks)
-        reserved_empty = self.check_inspect_output(reserved_tasks)
-        active_empty = self.check_inspect_output(active_tasks)
-
-        # Remove messages from queues
-        subprocess.call(
-            ['celery-3', '-A', 'archdiffer.backend', 'purge', '-f'],
-            cwd=_basedir,
-            env=self.env,
-        )
+        # Discard all waiting tasks
+        discarded = celery.task.control.discard_all()
 
         # Wait for any unfinished active tasks
-        self.wait_for_unfinished_tasks()
+        waited = self.wait_for_unfinished_tasks()
 
         # Determine if exception should be raised
-        if not scheduled_empty or not reserved_empty or not active_empty:
+        if discarded != 0 or waited:
             raise Exception
 
         # Remove the database.
