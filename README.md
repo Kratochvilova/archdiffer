@@ -53,7 +53,7 @@ Archdiffer consists of two parts, flask-frontend and backend, and can be therefo
 
 To run archdiffer, you need to set up:
 
-* database that is [supported by SQLAlchemy](http://docs.sqlalchemy.org/en/latest/core/engines.html#supported-databases) (in some cases you will also need to install some additional dependencies, for example python3-psycopg2 for postgresql)
+* database that is [supported by SQLAlchemy](http://docs.sqlalchemy.org/en/latest/core/engines.html#supported-databases) (in some cases you will also need to install some additional dependencies, for example python3-psycopg2 for postgresql) - however, do not use sqlite, as it doesn't support write concurrency
 
 * message broker that is [supported by Celery](docs.celeryproject.org/en/latest/getting-started/brokers/index.html) (for example RabbitMQ)
 
