@@ -77,7 +77,7 @@ class RESTTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Update config; run frontend."""
+        """Update config; run frontend and backend."""
         # Make temporal directory to store database.
         cls.tmpdir = mkdtemp()
 
@@ -85,14 +85,21 @@ class RESTTest(unittest.TestCase):
         cls.update_configfile()
 
         # Create env with ARCHDIFFER_CONFIG
-        env = copy.copy(os.environ)
-        env.update({'ARCHDIFFER_CONFIG': cls.config_path})
+        cls.env = copy.copy(os.environ)
+        cls.env.update({'ARCHDIFFER_CONFIG': cls.config_path})
 
         # Run frontend
         cls.frontend = subprocess.Popen(
             ['python3', _frontend_launcher, str(cls.random_port())],
             cwd=_basedir,
-            env=env,
+            env=cls.env,
+        )
+
+        # Run backend
+        cls.backend = subprocess.Popen(
+            ['python3', '-m', 'archdiffer.backend', 'worker', '-c', '1'],
+            cwd=_basedir,
+            env=cls.env,
         )
 
         # Wait for frontend to start
@@ -121,8 +128,7 @@ class RESTTest(unittest.TestCase):
         db_session.close()
 
     def setUp(self):
-        """Create new database with test user; run backend.
-        """
+        """Create new database with test user."""
         # Initialize database
         self.init_db()
 
@@ -131,17 +137,6 @@ class RESTTest(unittest.TestCase):
 
         # Create user with api_login and api_token
         self.create_test_user()
-
-        # Create env with ARCHDIFFER_CONFIG
-        env = copy.copy(os.environ)
-        env.update({'ARCHDIFFER_CONFIG': self.config_path})
-
-        # Run backend
-        self.backend = subprocess.Popen(
-            ['python3', '-m', 'archdiffer.backend', 'worker', '-c', '1'],
-            cwd=_basedir,
-            env=env,
-        )
 
     def get(self, route, params=None):
         """Send GET request and save response status code and data.
@@ -197,11 +192,66 @@ class RESTTest(unittest.TestCase):
         """Assert that response status code is OK."""
         self.assert_code_eq(requests.codes.ok)
 
+    def run_celery_inspect(self, inspect_type):
+        """Run celery inspect utility and return its output.
+
+        :param string inspect_type: first parameter to the celery inspect
+        :return string: celery inspect output
+        """
+        return subprocess.check_output(
+            ['celery-3', '-A', 'archdiffer.backend', 'inspect', inspect_type],
+            cwd=_basedir,
+            env=self.env,
+        ).decode('utf-8')
+
+    def check_inspect_output(self, inspect_output):
+        """Check if all items in the inspect output are empty.
+
+        :param string inspect_output: celery inspect output
+        :return bool: True if all is empty
+        """
+        empty = True
+        for line in inspect_output:
+            if line.startswith('->') and not empty:
+                # TODO: wait for the tasks to end
+                return False
+            elif line.startswith('->') and empty:
+                empty = False
+            elif 'empty' in line:
+                empty = True
+        return empty
+
+    def wait_for_unfinished_tasks(self):
+        """Wait for all active celery tasks to finish."""
+        active_tasks = self.run_celery_inspect('active')
+        while not self.check_inspect_output(active_tasks):
+            active_tasks.stdout.close()
+            time.sleep(0.5)
+            active_tasks = self.run_celery_inspect('active')
+
     def tearDown(self):
-        """Terminate backend; remove database."""
-        # Terminate backend
-        self.backend.terminate()
-        self.backend.wait()
+        """Ensure there are no celery tasks remaining; remove database."""
+        # Check there are no scheduled tasks
+        scheduled_tasks = self.run_celery_inspect('scheduled')
+        reserved_tasks = self.run_celery_inspect('reserved')
+        active_tasks = self.run_celery_inspect('active')
+        scheduled_empty = self.check_inspect_output(scheduled_tasks)
+        reserved_empty = self.check_inspect_output(reserved_tasks)
+        active_empty = self.check_inspect_output(active_tasks)
+
+        # Remove messages from queues
+        subprocess.call(
+            ['celery-3', '-A', 'archdiffer.backend', 'purge', '-f'],
+            cwd=_basedir,
+            env=self.env,
+        )
+
+        # Wait for any unfinished active tasks
+        self.wait_for_unfinished_tasks()
+
+        # Determine if exception should be raised
+        if not scheduled_empty or not reserved_empty or not active_empty:
+            raise Exception
 
         # Remove the database.
         os.remove(os.path.join(self.tmpdir, 'test.db'))
@@ -212,10 +262,14 @@ class RESTTest(unittest.TestCase):
 
     @classmethod
     def cleanupClass(cls):
-        """Terminate frontend; remove temporal files."""
+        """Terminate frontend and backend; remove temporal files."""
         # Terminate frontend
         cls.frontend.terminate()
         cls.frontend.wait()
+
+        # Terminate backend
+        cls.backend.terminate()
+        cls.backend.wait()
 
         # Remove the temporal directory.
         rmtree(cls.tmpdir)
