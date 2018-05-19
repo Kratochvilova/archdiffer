@@ -17,6 +17,9 @@ from ....tests import RESTTest
 from .... import database
 from .tests_rest_constants import ROUTES
 
+def current_utc_time():
+    return pytz.utc.localize(datetime.datetime.utcnow())
+
 class RESTTestRpmdiffPostComparison(RESTTest):
     """Tests for posting comparison."""
     route = ROUTES['comparisons']
@@ -125,7 +128,7 @@ class RESTTestRpmdiffPostComparison(RESTTest):
 
         :param int rpm_comparison_id: id of the rpm comparison
         """
-        self.get('%s/%s' % (self.route, rpm_comparison_id))
+        self.get(self.route, rpm_comparison_id)
         self.assert_code_ok()
         self.assertEqual(len(self.response), 1)
         rpm_comp = self.response[0]
@@ -147,9 +150,9 @@ class RESTTestRpmdiffPostComparison(RESTTest):
 
     def test_post(self):
         """Test posting new comparison."""
-        self.time_before = pytz.utc.localize(datetime.datetime.utcnow())
+        self.time_before = current_utc_time()
         self.post(route=self.route, data=self.data)
-        self.time_after = pytz.utc.localize(datetime.datetime.utcnow())
+        self.time_after = current_utc_time()
         self.assertLessEqual(
             self.time_after - self.time_before, datetime.timedelta(seconds=1)
         )
