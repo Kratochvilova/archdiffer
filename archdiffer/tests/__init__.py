@@ -193,41 +193,54 @@ class RESTTest(unittest.TestCase):
         """Assert that response status code is OK."""
         self.assert_code_eq(requests.codes.ok)
 
-    def check_inspect_output(self, inspect_output):
-        """Check if all items in the inspect output are empty.
+    def task_queue_empty(self, task_queue):
+        """Check if given task queue is empty for all.
 
-        :param dict inspect_output: dict of tasks from the inspect output
-        :return bool: True if all is empty
+        :param dict task_queue: task queue dict
+        :return bool: True if empty
         """
-        if inspect_output is None:
+        if task_queue is None:
             return True
-        for value in inspect_output.values():
+        for value in task_queue.values():
             if value != []:
                 return False
         return True
 
-    def wait_for_unfinished_tasks(self):
-        """Wait for all active celery tasks to finish."""
+    def task_queues_empty(self, celery_inspect):
+        """Check if task queues reserved, scheduled and active are all empty.
+
+        :param celery.app.control.Inspect celery_inspect: celery inspect object
+        :return bool: True if empty
+        """
+        reserved_empty = self.task_queue_empty(celery_inspect.reserved())
+        scheduled_empty = self.task_queue_empty(celery_inspect.scheduled())
+        active_empty = self.task_queue_empty(celery_inspect.active())
+        return reserved_empty and scheduled_empty and active_empty
+
+    def wait_for_unfinished_tasks(self, celery_inspect):
+        """Wait for all active celery tasks to finish.
+
+        :param celery.app.control.Inspect celery_inspect: celery inspect object
+        """
         waited = False
-        i = celery.task.control.inspect()
-        active_tasks = i.active()
-        while not self.check_inspect_output(active_tasks):
+        while not self.task_queues_empty(celery_inspect):
             waited = True
             time.sleep(0.5)
-            active_tasks = i.active()
         return waited
 
     def tearDown(self):
         """Ensure there are no celery tasks remaining; remove database."""
         # Discard all waiting tasks
-        discarded = celery.task.control.discard_all()
+        celery_app = celery.Celery(broker=config['common']['MESSAGE_BROKER'])
+        discarded = celery_app.control.discard_all()
 
         # Wait for any unfinished active tasks
-        waited = self.wait_for_unfinished_tasks()
+        celery_inspect = celery_app.control.inspect()
+        waited = self.wait_for_unfinished_tasks(celery_inspect)
 
         # Determine if exception should be raised
         if discarded != 0 or waited:
-            raise Exception
+            raise Exception('Some tasks were unfinished at the end of test.')
 
         # Remove the database.
         os.remove(os.path.join(self.tmpdir, 'test.db'))
