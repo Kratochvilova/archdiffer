@@ -98,7 +98,7 @@ class RESTTestLists(RESTTest):
 
     def form_request_one(self):
         """Form GET request for random item based on route and parameters."""
-        self.get('%s/%s' % (self.route, choice(IDS)), params=self.params)
+        self.get(self.route, choice(IDS), params=self.params)
 
     def deep_sort(self, response):
         """Order all lists in the response.
