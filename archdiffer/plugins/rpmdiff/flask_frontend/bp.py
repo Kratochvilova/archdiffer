@@ -153,7 +153,7 @@ class RPMComparisonsList(RPMTableList):
 
         resp = make_response("", 201)
         resp.headers["Location"] = url_for(
-            'rpmdiff.rpmcomparisonone', id=comp.id
+            'rpmdiff.rpmgroupslist', id=comp.id
         )
         return resp
 
