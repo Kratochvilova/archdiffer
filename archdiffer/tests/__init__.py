@@ -139,13 +139,26 @@ class RESTTest(unittest.TestCase):
         # Create user with api_login and api_token
         self.create_test_user()
 
-    def get(self, route, params=None):
+    def form_url(self, route, id=None):
+        """Form URL out of baseurl, specific route and optional id.
+
+        :param string route: soute to be appended to the baseurl
+        :param int id: optional id
+        :return string: resulting URL
+        """
+        if id is None:
+            return '%s%s' % (self.baseurl, route)
+        else:
+            return '%s%s/%s' % (self.baseurl, route, str(id))
+
+    def get(self, route, id=None, params=None):
         """Send GET request and save response status code and data.
 
-        :param string route: route to the source
+        :param string route: route to the resource
+        :param int id: optional id of the resource
         :param dict params: parameters to be passed in url
         """
-        r = requests.get(self.baseurl + route, params=params)
+        r = requests.get(self.form_url(route, id), params=params)
         self.status_code = r.status_code
         try:
             self.response = r.json()
@@ -155,11 +168,12 @@ class RESTTest(unittest.TestCase):
     def post(self, route, data=None):
         """Send POST request and save response status code and data.
 
-        :param string route: route to the source
+        :param string route: route to the resource
+        :param int id: optional id of the resource
         :param data: data of the request, will be jsonified
         """
         r = requests.post(
-            self.baseurl + route, auth=self.auth, data=json.dumps(data),
+            self.form_url(route), auth=self.auth, data=json.dumps(data),
         )
         self.status_code = r.status_code
         self.headers = r.headers
@@ -168,14 +182,15 @@ class RESTTest(unittest.TestCase):
         except ValueError:
             self.response = None
 
-    def put(self, route, data=None):
+    def put(self, route, id=None, data=None):
         """Send PUT request and save response status code and data.
 
-        :param string route: route to the source
+        :param string route: route to the resource
+        :param int id: optional id of the resource
         :param data: data of the request, will be jsonified
         """
         r = requests.put(
-            self.baseurl + route, auth=self.auth, data=json.dumps(data),
+            self.form_url(route, id), auth=self.auth, data=json.dumps(data),
         )
         self.status_code = r.status_code
         try:
