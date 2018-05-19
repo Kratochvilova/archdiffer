@@ -19,6 +19,7 @@ from .. import rpm_db_models
 from .tests_rest_constants import ROUTES
 
 def current_utc_time():
+    """Get current UTC time."""
     return pytz.utc.localize(datetime.datetime.utcnow())
 
 class RESTTestRpmdiffPostComparison(RESTTest):
