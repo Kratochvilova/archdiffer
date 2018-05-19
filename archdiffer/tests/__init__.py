@@ -162,6 +162,7 @@ class RESTTest(unittest.TestCase):
             self.baseurl + route, auth=self.auth, data=json.dumps(data),
         )
         self.status_code = r.status_code
+        self.headers = r.headers
         try:
             self.response = r.json()
         except ValueError:
