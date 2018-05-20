@@ -14,9 +14,14 @@ from ..database import Comparison, ComparisonType
 from .. import constants
 from . import request_parser
 
-def get_first_key(dictionary, string):
-    for key, value in dictionary.items():
-        if value == string:
+def get_first_key(dictionary, value):
+    """Get first key in a dict for a given value.
+
+    :param dict dictionary:
+    :param string value:
+    """
+    for key, val in dictionary.items():
+        if val == value:
             return key
     return None
 
