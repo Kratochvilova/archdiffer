@@ -64,7 +64,6 @@ List RPM Differences
       HTTP/1.1 200 OK
       Content-Type: application/json
 
-
       [
           {
               "differences": [
@@ -86,7 +85,6 @@ List RPM Differences
                       "state": "normal",
                       "waived": false
                   },
-                  (...)
               ],
               "id": 2,
               "id_group": 2,
@@ -120,7 +118,6 @@ List RPM Differences
               "time": "2018-04-20 12:18:26",
               "type": "rpmdiff"
           },
-          (...)
       ]
 
    :query id: the RPM Comparison id
@@ -182,7 +179,6 @@ Get RPM Differences of one RPM Comparison
       HTTP/1.1 200 OK
       Content-Type: application/json
 
-
       [
           {
               "differences": [
@@ -204,7 +200,6 @@ Get RPM Differences of one RPM Comparison
                       "state": "normal",
                       "waived": false
                   },
-                  (...)
               ],
               "id": 2,
               "id_group": 2,

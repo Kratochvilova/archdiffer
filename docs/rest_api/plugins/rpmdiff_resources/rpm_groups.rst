@@ -118,7 +118,6 @@ List RPM Groups
               "time": "2018-04-20 12:19:19",
               "type": "rpmdiff"
           }
-          (...)
       ]
 
    :query id: the Comparison Group id
