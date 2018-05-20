@@ -14,5 +14,3 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read(os.environ.get('ARCHDIFFER_CONFIG', '/etc/archdiffer.conf'))
-
-# TODO: solve problem: if required thing is not in config
