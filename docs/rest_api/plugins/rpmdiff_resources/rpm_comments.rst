@@ -42,7 +42,7 @@ List RPM Comments
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {
@@ -102,7 +102,7 @@ Create new RPM Comment
       POST /rpmdiff/rest/comments HTTP/1.1
       Host: archdiffer.example.com
       Authorization: Basic base64=encoded=string
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       {
           "text": "Text of this new comment.",
@@ -153,7 +153,7 @@ Get one RPM Comment
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {
@@ -193,7 +193,7 @@ List RPM Comments by RPM Comparison id
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {
@@ -233,7 +233,7 @@ List RPM Comments by RPM Difference id
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {
@@ -278,7 +278,7 @@ List RPM Comments by username
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {

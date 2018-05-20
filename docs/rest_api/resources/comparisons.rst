@@ -40,7 +40,7 @@ List Comparisons
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {
@@ -97,7 +97,7 @@ Get one Comparison
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {

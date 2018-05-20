@@ -62,7 +62,7 @@ List RPM Differences
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
 
       [
@@ -180,7 +180,7 @@ Get RPM Differences of one RPM Comparison
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
 
       [
@@ -259,7 +259,7 @@ Waive RPM Difference
       PUT /rpmdiff/rest/differences/1 HTTP/1.1
       Host: archdiffer.example.com
       Authorization: Basic base64=encoded=string
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       "waive"
 

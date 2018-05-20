@@ -44,7 +44,7 @@ List RPM Comparisons
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {
@@ -161,7 +161,7 @@ Create new RPM Comparison
       POST /rpmdiff/rest/comparisons HTTP/1.1
       Host: archdiffer.example.com
       Authorization: Basic base64=encoded=string
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       {
           "pkg1": {
@@ -181,7 +181,7 @@ Create new RPM Comparison
       POST /rpmdiff/rest/comparisons HTTP/1.1
       Host: archdiffer.example.com
       Authorization: Basic base64=encoded=string
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       {
           "pkg1": {
@@ -246,7 +246,7 @@ Get one RPM Comparison
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {

@@ -38,7 +38,7 @@ List RPM Repositories
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {
@@ -79,7 +79,7 @@ Get one RPM Repository
    .. sourcecode:: http
 
       HTTP/1.1 200 OK
-      Content-Type: text/javascript
+      Content-Type: application/json
 
       [
           {
