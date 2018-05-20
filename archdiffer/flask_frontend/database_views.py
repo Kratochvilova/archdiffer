@@ -16,7 +16,7 @@ from flask_restful import Resource
 from .flask_app import flask_app, flask_api
 from ..database import (Comparison, ComparisonType, modify_query,
                         iter_query_result)
-from .common_tasks import my_render_template
+from .common_views import my_render_template
 from . import request_parser
 from . import filter_functions
 

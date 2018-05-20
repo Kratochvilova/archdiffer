@@ -20,9 +20,9 @@ from ..rpm_db_models import (RPMComparison, RPMDifference, RPMPackage,
                              repo2, iter_query_result)
 from .. import constants
 from ....database import Comparison, User, modify_query
-from ....flask_frontend.common_tasks import (my_render_template,
-                                             rest_api_auth_required)
-from ....flask_frontend.database_tasks import TableList, routes
+from ....flask_frontend.common_views import my_render_template
+from ....flask_frontend.database_views import TableList, routes
+from ....flask_frontend.rest_api_views import rest_api_auth_required
 from ....flask_frontend import filter_functions as app_filter_functions
 from ....flask_frontend import request_parser
 from ....flask_frontend.exceptions import BadRequest

@@ -11,6 +11,6 @@ Created on Tue Apr 18 11:58:24 2017
 
 from .flask_app import flask_app
 from ..repository import load_plugins_flask_frontends
-from . import common_tasks, database_tasks
+from . import common_views, database_views, login_views, rest_api_views
 
 load_plugins_flask_frontends()
