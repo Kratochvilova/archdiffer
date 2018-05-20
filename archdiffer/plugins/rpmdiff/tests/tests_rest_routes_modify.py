@@ -121,6 +121,37 @@ class RESTTestRpmdiffPostComparison(RESTTest):
             response_pkg['repo']['path'], expected_pkg['repository']
         )
 
+    def assert_rpm_differences(self, rpm_comparison_id):
+        """Assert the differences are as expected.
+
+        :param int rpm_comparison_id: the comparison id
+        """
+        self.get('rpmdiff/rest/differences', rpm_comparison_id)
+        self.assert_code_ok()
+        self.assertEqual(len(self.response), 1)
+        rpm_diffs = self.response[0]['differences']
+        expected_diffs = {
+            '/usr/bin/file1': 'removed',
+            '/usr/bin/file2': 'changed',
+            '/usr/bin/dire1': 'changed',
+            '/usr/bin/dire1/file4': 'removed',
+            '/usr/bin/dire1/file5': 'changed',
+            '/usr/bin/file7': 'added',
+            '/usr/bin/dire1/file8': 'added',
+        }
+        result_diffs = {}
+        for diff in rpm_diffs:
+            self.assertIn('id', diff)
+            self.assertIn('category', diff)
+            self.assertIn('diff', diff)
+            self.assertIn('diff_info', diff)
+            self.assertIn('diff_type', diff)
+            self.assertIn('state', diff)
+            self.assertIn('waived', diff)
+            self.assertEqual(diff['waived'], False)
+            result_diffs[diff['diff']] = diff['diff_type']
+        self.assertEqual(result_diffs, expected_diffs)
+
     def assert_rpm_comparison(self, rpm_comparison_id):
         """Assert that the rpm comparison is well formed.
 
@@ -145,6 +176,7 @@ class RESTTestRpmdiffPostComparison(RESTTest):
         self.assertEqual(rpm_comp['type'], 'rpmdiff')
         self.assert_rpm_package(rpm_comp['pkg1'], self.data['pkg1'])
         self.assert_rpm_package(rpm_comp['pkg2'], self.data['pkg2'])
+        self.assert_rpm_differences(rpm_comparison_id)
 
     def test_post(self):
         """Test posting new comparison."""
