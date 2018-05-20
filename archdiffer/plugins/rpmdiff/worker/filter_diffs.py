@@ -15,9 +15,10 @@ from ....backend.celery_app import celery_app
 from ..rpm_db_models import RPMComparison, RPMDifference
 from .. import constants
 
+# Rules to filter by.
 RULES = [RPMDifference.category == 1, RPMDifference.diff_type == 0]
-RULES = []
 
+# The filter_diffs task is not completed and not used.
 @celery_app.task(name='rpmdiff.filter_diffs')
 def filter_diffs(id_comp):
     """Compare two packages and write results to the database.
