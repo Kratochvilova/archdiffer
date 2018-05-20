@@ -9,6 +9,7 @@ Created on Fri May 18 13:13:29 2018
 @author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
+import os
 import time
 import datetime
 import requests
@@ -17,6 +18,9 @@ from ....tests import RESTTest
 from .... import database
 from .. import rpm_db_models
 from .tests_rest_constants import ROUTES
+
+_curdir = os.path.dirname(os.path.abspath(__file__))
+_testdata_dir = os.path.join(_curdir, 'test_repository')
 
 def current_utc_time():
     """Get current UTC time."""
@@ -36,25 +40,19 @@ class RESTTestRpmdiffPostComparison(RESTTest):
 
     data = {
         'pkg1': {
-            'name': 'python3',
-            'arch': 'x86_64',
-            'epoch': 0,
-            'version': '3.5.2',
-            'release': '4.fc25',
+            'name': 'testrpm',
+            'version': '1.0',
+            'release': '1',
             'repository': (
-                'http://mirror.karneval.cz/pub/fedora/linux/releases/'
-                '25/Everything/x86_64/os/'
+                'file://' + _testdata_dir
             ),
         },
         'pkg2': {
-            'name': 'python3',
-            'arch': 'x86_64',
-            'epoch': 0,
-            'version': '3.6.1',
-            'release': '8.fc26',
+            'name': 'testrpm',
+            'version': '1.1',
+            'release': '1',
             'repository': (
-                'http://mirror.karneval.cz/pub/fedora/linux/releases/'
-                '26/Everything/x86_64/os/'
+                'file://' + _testdata_dir
             ),
         }
     }
@@ -117,8 +115,6 @@ class RESTTestRpmdiffPostComparison(RESTTest):
         self.assertIn('id', response_pkg['repo'])
         self.assertIn('path', response_pkg['repo'])
         self.assertEqual(response_pkg['name'], expected_pkg['name'])
-        self.assertEqual(response_pkg['arch'], expected_pkg['arch'])
-        self.assertEqual(response_pkg['epoch'], expected_pkg['epoch'])
         self.assertEqual(response_pkg['version'], expected_pkg['version'])
         self.assertEqual(response_pkg['release'], expected_pkg['release'])
         self.assertEqual(
@@ -165,8 +161,10 @@ class RESTTestRpmdiffPostComparison(RESTTest):
         self.final_comparison = self.wait_for_compare(self.headers['location'])
         # TODO: assert the timeout didn't occur
         self.assert_comparison(self.headers['location'])
-        for rpm_comparison in self.final_comparison['comparisons']:
-            self.assert_rpm_comparison(rpm_comparison['id'])
+        self.assertEqual(len(self.final_comparison['comparisons']), 1)
+        self.assert_rpm_comparison(
+            self.final_comparison['comparisons'][0]['id']
+        )
 
 class RESTTestRpmdiffPostComment(RESTTest):
     """Tests for posting comment."""
