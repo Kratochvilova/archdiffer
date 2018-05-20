@@ -49,6 +49,9 @@ def download_packages(pkg):
     label = 'temp_repo_label'
     base.repos.add_new_repo(label, base.conf, baseurl=[pkg['repository']])
     base.repos[label].enable()
+    # Set cache directory to the tmpdir. Otherwise it won't see any changes in
+    # repository.
+    base.conf.cachedir = '.'
     try:
         print('Loading repository: %s' % pkg['repository'])
         base.repos[label].load()
