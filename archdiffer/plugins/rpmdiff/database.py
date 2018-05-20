@@ -11,6 +11,9 @@ from . import rpm_db_models
 from .constants import COMPARISON_TYPE
 
 def init_db():
+    """Initialize database: create tables according to rpmdiff models;
+    create comparison type for rpmdiff.
+    """
     database.Base.metadata.create_all(database.engine())
     
     session = database.session()
