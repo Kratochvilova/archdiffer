@@ -10,7 +10,6 @@ Created on Sun Mar  4 10:23:41 2018
 @author: Pavla Kratochvilova <pavla.kratochvilova@gmail.com>
 """
 
-
 import operator
 import datetime
 from flask import request
